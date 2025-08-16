@@ -113,6 +113,7 @@ except ImportError:
         {
             "get_current_span": lambda: NoOpSpan(),
             "set_tracer_provider": lambda provider: None,
+            "get_tracer": lambda name, version=None: NoOpTracer(),
         },
     )()
     metrics = type(
@@ -121,6 +122,7 @@ except ImportError:
         {
             "get_meter_provider": lambda: NoOpMeterProvider(),
             "set_meter_provider": lambda provider: None,
+            "get_meter": lambda name, version=None: NoOpMeter(),
         },
     )()
 

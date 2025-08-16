@@ -34,6 +34,14 @@ def ensure_fake_opentelemetry() -> None:
     metrics = add_module("opentelemetry.metrics")
     baggage = add_module("opentelemetry.baggage")
 
+    # Metrics API Platzhalter
+    def get_meter(name, version=None):
+        return types.SimpleNamespace(create_counter=lambda name, **kwargs: lambda **kw: None)
+    def set_meter_provider(provider):
+        pass
+    metrics.get_meter = get_meter
+    metrics.set_meter_provider = set_meter_provider
+
     # Trace API Platzhalter
     class Status:  # noqa: D401
         """Fake Status."""
@@ -44,9 +52,15 @@ def ensure_fake_opentelemetry() -> None:
         ERROR = "ERROR"
     def get_current_span(ctx=None):
         return types.SimpleNamespace(get_span_context=lambda: types.SimpleNamespace(trace_id=0, span_id=0))
+    def get_tracer(name, version=None):
+        return types.SimpleNamespace(start_as_current_span=lambda name, **kwargs: types.SimpleNamespace())
+    def set_tracer_provider(provider):
+        pass
     trace.Status = Status
     trace.StatusCode = StatusCode
     trace.get_current_span = get_current_span
+    trace.get_tracer = get_tracer
+    trace.set_tracer_provider = set_tracer_provider
 
     # Exporter
     jaeger_thrift = add_module("opentelemetry.exporter.jaeger.thrift")
