@@ -72,7 +72,7 @@ dependencies = [
 
     # Enterprise Features
     "psutil>=5.9.0,<6.0.0",  # System monitoring
-    "structlog>=23.1.0,<24.0.0",  # Structured logging
+    "structlog>=23.1.0,<26.0.0",  # Structured logging
 ]
 
 [project.optional-dependencies]
