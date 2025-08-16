@@ -64,7 +64,7 @@ jobs:
     steps:
       # Repository auschecken
       - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       
       # Python Setup
       - name: 🐍 Setup Python
@@ -150,7 +150,7 @@ jobs:
     steps:
       # Repository auschecken
       - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       
       # Python Setup
       - name: 🐍 Setup Python ${{ matrix.python-version }}
@@ -192,7 +192,7 @@ jobs:
     steps:
       # Repository auschecken
       - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       
       # Python Setup
       - name: 🐍 Setup Python
@@ -276,7 +276,7 @@ jobs:
     steps:
       # Repository auschecken
       - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       
       # Python Setup
       - name: 🐍 Setup Python
@@ -310,7 +310,7 @@ jobs:
     steps:
       # Repository auschecken
       - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       
       # Python Setup
       - name: 🐍 Setup Python

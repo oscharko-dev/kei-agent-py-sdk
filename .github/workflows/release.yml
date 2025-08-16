@@ -54,7 +54,7 @@ jobs:
     steps:
       # Repository auschecken
       - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0  # Vollständige Historie für Changelog
       
@@ -139,7 +139,7 @@ jobs:
     steps:
       # Repository auschecken
       - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       
       # Python Setup
       - name: 🐍 Setup Python
@@ -274,7 +274,7 @@ jobs:
     steps:
       # Repository auschecken
       - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       
@@ -332,7 +332,7 @@ jobs:
       
       # GitHub Release erstellen
       - name: 🏷️ Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ needs.validate-release.outputs.version }}
           name: KEI-Agent Python SDK v${{ needs.validate-release.outputs.version }}
