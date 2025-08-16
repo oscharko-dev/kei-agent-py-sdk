@@ -10,75 +10,6 @@ Integriert alle KEI-Protokolle (RPC, Stream, Bus, MCP) in einer einheitlichen AP
 
 from __future__ import annotations
 
-# Basic Agent Components (from kei_agent.py)
-from .kei_agent import (
-    AgentConfig,
-    AgentSkeleton
-)
-
-# Core SDK Components
-from .client import (
-    KeiAgentClient,
-    AgentClientConfig,
-    ConnectionConfig,
-    RetryConfig,
-    TracingConfig
-)
-
-# Unified Protocol Integration (Legacy)
-from .unified_client import (
-    UnifiedKeiAgentClient as LegacyUnifiedKeiAgentClient,
-)
-
-# Refactored Unified Protocol Integration
-from .protocol_types import (
-    ProtocolType,
-    AuthType,
-    ProtocolConfig,
-    SecurityConfig
-)
-from .security_manager import SecurityManager
-from .protocol_clients import (
-    BaseProtocolClient,
-    KEIRPCClient,
-    KEIStreamClient,
-    KEIBusClient,
-    KEIMCPClient
-)
-from .protocol_selector import ProtocolSelector
-from .unified_client_refactored import UnifiedKeiAgentClient
-
-# Enterprise Features
-from .enterprise_logging import (
-    LogContext,
-    StructuredFormatter,
-    EnterpriseLogger,
-    get_logger,
-    configure_logging
-)
-from .health_checks import (
-    HealthStatus,
-    HealthCheckResult,
-    BaseHealthCheck,
-    DatabaseHealthCheck,
-    APIHealthCheck,
-    MemoryHealthCheck,
-    HealthCheckSummary,
-    HealthCheckManager,
-    get_health_manager
-)
-from .input_validation import (
-    ValidationSeverity,
-    ValidationResult,
-    BaseValidator,
-    StringValidator,
-    NumberValidator,
-    JSONValidator,
-    CompositeValidator,
-    InputValidator,
-    get_input_validator
-)
-
 # Agent-to-Agent Communication
 from .a2a import (
     A2AClient,
@@ -86,26 +17,7 @@ from .a2a import (
     A2AResponse,
     CommunicationProtocol,
     LoadBalancingStrategy,
-    FailoverConfig
-)
-
-# Distributed Tracing
-from .tracing import (
-    TracingManager,
-    TraceContext,
-    SpanBuilder,
-    TracingExporter,
-    PerformanceMetrics
-)
-
-# Retry Mechanisms
-from .retry import (
-    RetryManager,
-    RetryStrategy,
-    CircuitBreaker,
-    CircuitBreakerState,
-    DeadLetterQueue,
-    RetryPolicy
+    FailoverConfig,
 )
 
 # Capability Advertisement
@@ -114,8 +26,11 @@ from .capabilities import (
     CapabilityProfile,
     MCPIntegration,
     CapabilityNegotiation,
-    CapabilityVersioning
+    CapabilityVersioning,
 )
+
+# Core SDK Components
+from .client import KeiAgentClient, AgentClientConfig, ConnectionConfig, RetryConfig, TracingConfig
 
 # Service Discovery
 from .discovery import (
@@ -123,18 +38,16 @@ from .discovery import (
     AgentDiscoveryClient,
     DiscoveryStrategy,
     HealthMonitor,
-    LoadBalancer
+    LoadBalancer,
 )
 
-# Models and Types
-from .models import (
-    Agent,
-    AgentMetadata,
-    AgentCapability,
-    AgentHealth,
-    AgentInstance,
-    DiscoveryQuery,
-    DiscoveryResult
+# Enterprise Features
+from .enterprise_logging import (
+    LogContext,
+    StructuredFormatter,
+    EnterpriseLogger,
+    get_logger,
+    configure_logging,
 )
 
 # Exceptions
@@ -146,8 +59,75 @@ from .exceptions import (
     RetryExhaustedError,
     CircuitBreakerOpenError,
     CapabilityError,
-    TracingError
+    TracingError,
 )
+from .health_checks import (
+    HealthStatus,
+    HealthCheckResult,
+    BaseHealthCheck,
+    DatabaseHealthCheck,
+    APIHealthCheck,
+    MemoryHealthCheck,
+    HealthCheckSummary,
+    HealthCheckManager,
+    get_health_manager,
+)
+from .input_validation import (
+    ValidationSeverity,
+    ValidationResult,
+    BaseValidator,
+    StringValidator,
+    NumberValidator,
+    JSONValidator,
+    CompositeValidator,
+    InputValidator,
+    get_input_validator,
+)
+
+# Basic Agent Components (from kei_agent.py)
+from .kei_agent import AgentConfig, AgentSkeleton
+
+# Models and Types
+from .models import (
+    Agent,
+    AgentMetadata,
+    AgentCapability,
+    AgentHealth,
+    AgentInstance,
+    DiscoveryQuery,
+    DiscoveryResult,
+)
+from .protocol_clients import (
+    BaseProtocolClient,
+    KEIRPCClient,
+    KEIStreamClient,
+    KEIBusClient,
+    KEIMCPClient,
+)
+from .protocol_selector import ProtocolSelector
+
+# Refactored Unified Protocol Integration
+from .protocol_types import ProtocolType, AuthType, ProtocolConfig, SecurityConfig
+
+# Retry Mechanisms
+from .retry import (
+    RetryManager,
+    RetryStrategy,
+    CircuitBreaker,
+    CircuitBreakerState,
+    DeadLetterQueue,
+    RetryPolicy,
+)
+from .security_manager import SecurityManager
+
+# Distributed Tracing
+from .tracing import TracingManager, TraceContext, SpanBuilder, TracingExporter, PerformanceMetrics
+
+# Unified Protocol Integration (Legacy)
+from .unified_client import (
+    UnifiedKeiAgentClient as LegacyUnifiedKeiAgentClient,
+)
+from .unified_client_refactored import UnifiedKeiAgentClient
 
 # Utilities
 from .utils import (
@@ -155,7 +135,7 @@ from .utils import (
     parse_agent_id,
     validate_capability,
     format_trace_id,
-    calculate_backoff
+    calculate_backoff,
 )
 
 # Version Information
@@ -181,8 +161,7 @@ __all__ = [
     "ConnectionConfig",
     "RetryConfig",
     "TracingConfig",
-
-    # Unified Protocol Integration (Refactored)
+    # Unified Protocol Integration
     "UnifiedKeiAgentClient",
     "ProtocolType",
     "AuthType",
@@ -195,10 +174,8 @@ __all__ = [
     "KEIBusClient",
     "KEIMCPClient",
     "ProtocolSelector",
-
     # Legacy Support
     "LegacyUnifiedKeiAgentClient",
-
     # Enterprise Features
     "LogContext",
     "StructuredFormatter",
@@ -223,7 +200,6 @@ __all__ = [
     "CompositeValidator",
     "InputValidator",
     "get_input_validator",
-
     # Agent-to-Agent Communication
     "A2AClient",
     "A2AMessage",
@@ -231,14 +207,12 @@ __all__ = [
     "CommunicationProtocol",
     "LoadBalancingStrategy",
     "FailoverConfig",
-
     # Distributed Tracing
     "TracingManager",
     "TraceContext",
     "SpanBuilder",
     "TracingExporter",
     "PerformanceMetrics",
-
     # Retry Mechanisms
     "RetryManager",
     "RetryStrategy",
@@ -246,21 +220,18 @@ __all__ = [
     "CircuitBreakerState",
     "DeadLetterQueue",
     "RetryPolicy",
-
     # Capability Advertisement
     "CapabilityManager",
     "CapabilityProfile",
     "MCPIntegration",
     "CapabilityNegotiation",
     "CapabilityVersioning",
-
     # Service Discovery
     "ServiceDiscovery",
     "AgentDiscoveryClient",
     "DiscoveryStrategy",
     "HealthMonitor",
     "LoadBalancer",
-
     # Models
     "Agent",
     "AgentMetadata",
@@ -269,7 +240,6 @@ __all__ = [
     "AgentInstance",
     "DiscoveryQuery",
     "DiscoveryResult",
-
     # Exceptions
     "KeiSDKError",
     "AgentNotFoundError",
@@ -279,18 +249,15 @@ __all__ = [
     "CircuitBreakerOpenError",
     "CapabilityError",
     "TracingError",
-
     # Utilities
     "create_correlation_id",
     "parse_agent_id",
     "validate_capability",
     "format_trace_id",
     "calculate_backoff",
-
     # Basic Agent Components
     "AgentConfig",
     "AgentSkeleton",
-
     # Version Info
     "__version__",
     "__author__",
@@ -298,7 +265,7 @@ __all__ = [
     "__title__",
     "__description__",
     "__url__",
-    "__email__"
+    "__email__",
 ]
 
 # Version Information
@@ -310,10 +277,11 @@ __description__ = "KEI-Agent Python SDK - Enterprise-Grade Multi-Agent Framework
 __url__ = "https://github.com/oscharko/keiko-personal-assistant"
 __email__ = "dev@kei-agent-framework.com"
 
+
 # SDK Initialization
 def get_sdk_info() -> dict[str, str]:
     """Holt SDK-Informationen.
-    
+
     Returns:
         Dictionary mit SDK-Metadaten
     """
@@ -325,34 +293,24 @@ def get_sdk_info() -> dict[str, str]:
         "license": __license__,
         "url": __url__,
         "python_requires": __python_requires__,
-        "framework_version": __framework_version__
+        "framework_version": __framework_version__,
     }
 
 
-def create_default_client(
-    base_url: str,
-    api_token: str,
-    agent_id: str,
-    **kwargs
-) -> KeiAgentClient:
+def create_default_client(base_url: str, api_token: str, agent_id: str, **kwargs) -> KeiAgentClient:
     """Erstellt Standard-Client mit optimalen Einstellungen.
-    
+
     Args:
         base_url: KEI-Framework Base-URL
         api_token: API-Token für Authentifizierung
         agent_id: Eindeutige Agent-ID
         **kwargs: Zusätzliche Konfigurationsparameter
-        
+
     Returns:
         Konfigurierter KeiAgentClient
     """
-    config = AgentClientConfig(
-        base_url=base_url,
-        api_token=api_token,
-        agent_id=agent_id,
-        **kwargs
-    )
-    
+    config = AgentClientConfig(base_url=base_url, api_token=api_token, agent_id=agent_id, **kwargs)
+
     return KeiAgentClient(config)
 
 
@@ -362,10 +320,10 @@ def create_a2a_client(
     agent_id: str,
     discovery_enabled: bool = True,
     tracing_enabled: bool = True,
-    **kwargs
+    **kwargs,
 ) -> A2AClient:
     """Erstellt Agent-to-Agent-Client mit Enterprise-Features.
-    
+
     Args:
         base_url: KEI-Framework Base-URL
         api_token: API-Token für Authentifizierung
@@ -373,22 +331,22 @@ def create_a2a_client(
         discovery_enabled: Service Discovery aktivieren
         tracing_enabled: Distributed Tracing aktivieren
         **kwargs: Zusätzliche Konfigurationsparameter
-        
+
     Returns:
         Konfigurierter A2AClient
     """
     # Erstelle Basis-Client
     client = create_default_client(base_url, api_token, agent_id, **kwargs)
-    
+
     # Erstelle A2A-Client mit erweiterten Features
     a2a_client = A2AClient(client)
-    
+
     if discovery_enabled:
         a2a_client.enable_service_discovery()
-    
+
     if tracing_enabled:
         a2a_client.enable_distributed_tracing()
-    
+
     return a2a_client
 
 
@@ -405,9 +363,7 @@ _logger.propagate = False
 # Füge Standard-Handler hinzu falls noch keiner existiert
 if not _logger.handlers:
     _handler = logging.StreamHandler()
-    _formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
+    _formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     _handler.setFormatter(_formatter)
     _logger.addHandler(_handler)
 
