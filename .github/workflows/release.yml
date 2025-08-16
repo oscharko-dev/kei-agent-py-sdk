@@ -1,0 +1,335 @@
+# GitHub Actions Workflow für KEI-Agent Python SDK Release und PyPI Publishing
+# Automatisiert das Erstellen und Veröffentlichen von Releases
+
+name: 🚀 Release & Publish
+
+on:
+  # Trigger bei Git-Tags (v*.*.*)
+  push:
+    tags:
+      - 'v*.*.*'
+      - 'v*.*.*-alpha.*'
+      - 'v*.*.*-beta.*'
+      - 'v*.*.*-rc.*'
+  
+  # Manueller Trigger für Testing
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.0.0)'
+        required: true
+        type: string
+      publish_to_pypi:
+        description: 'Publish to PyPI'
+        required: false
+        default: false
+        type: boolean
+      publish_to_test_pypi:
+        description: 'Publish to TestPyPI'
+        required: false
+        default: true
+        type: boolean
+
+# Berechtigungen
+permissions:
+  contents: write
+  id-token: write  # Für PyPI Trusted Publishing
+
+# Umgebungsvariablen
+env:
+  PYTHONUNBUFFERED: 1
+  PYTHONDONTWRITEBYTECODE: 1
+  PIP_NO_CACHE_DIR: 1
+  PIP_DISABLE_PIP_VERSION_CHECK: 1
+
+jobs:
+  # Job 1: Release Validation
+  validate-release:
+    name: 🔍 Validate Release
+    runs-on: ubuntu-latest
+    
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      is_prerelease: ${{ steps.version.outputs.is_prerelease }}
+      
+    steps:
+      # Repository auschecken
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Vollständige Historie für Changelog
+      
+      # Python Setup
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      # Dependencies installieren
+      - name: 📦 Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      
+      # Version extrahieren
+      - name: 🏷️ Extract Version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/v}
+          fi
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          
+          # Pre-Release Check
+          if [[ "$VERSION" =~ (alpha|beta|rc) ]]; then
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+            echo "🔖 Pre-Release Version: $VERSION"
+          else
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+            echo "🔖 Release Version: $VERSION"
+          fi
+      
+      # Version in pyproject.toml validieren
+      - name: ✅ Validate Version
+        run: |
+          PYPROJECT_VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          TAG_VERSION="${{ steps.version.outputs.version }}"
+          
+          echo "📋 pyproject.toml Version: $PYPROJECT_VERSION"
+          echo "📋 Tag Version: $TAG_VERSION"
+          
+          if [[ "$PYPROJECT_VERSION" != "$TAG_VERSION" ]]; then
+            echo "❌ Version-Mismatch zwischen pyproject.toml ($PYPROJECT_VERSION) und Tag ($TAG_VERSION)"
+            exit 1
+          fi
+          
+          echo "✅ Version validiert: $TAG_VERSION"
+      
+      # Qualitätsprüfungen
+      - name: 🔍 Quality Checks
+        run: |
+          echo "🔍 Führe Release-Qualitätsprüfungen aus..."
+          make quality
+      
+      # Tests ausführen
+      - name: 🧪 Run Tests
+        run: |
+          echo "🧪 Führe alle Tests aus..."
+          make test-all
+
+  # Job 2: Build Package
+  build-package:
+    name: 🏗️ Build Package
+    runs-on: ubuntu-latest
+    needs: validate-release
+    
+    steps:
+      # Repository auschecken
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+      
+      # Python Setup
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      # Dependencies installieren
+      - name: 📦 Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      
+      # Package erstellen mit build_and_publish.py
+      - name: 🏗️ Build Package
+        run: |
+          echo "🏗️ Erstelle Package mit build_and_publish.py..."
+          python build_and_publish.py --build-only
+      
+      # Build-Artefakte validieren
+      - name: ✅ Validate Build
+        run: |
+          echo "✅ Validiere Build-Artefakte..."
+          make check-build
+          
+          # Zusätzliche Validierungen
+          echo "📊 Build-Statistiken:"
+          ls -la dist/
+          
+          # Wheel-Inhalt prüfen
+          python -m zipfile -l dist/*.whl | head -20
+          
+          # Metadaten prüfen
+          python -m twine check dist/* --strict
+      
+      # Build-Artefakte hochladen
+      - name: 📤 Upload Build Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-packages-${{ needs.validate-release.outputs.version }}
+          path: dist/
+          retention-days: 90
+
+  # Job 3: TestPyPI Publishing
+  publish-test:
+    name: 🧪 Publish to TestPyPI
+    runs-on: ubuntu-latest
+    needs: [validate-release, build-package]
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_to_test_pypi == 'true')
+    
+    environment:
+      name: test-pypi
+      url: https://test.pypi.org/project/kei-agent-sdk/
+    
+    steps:
+      # Build-Artefakte herunterladen
+      - name: 📥 Download Build Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-packages-${{ needs.validate-release.outputs.version }}
+          path: dist/
+      
+      # TestPyPI Upload
+      - name: 🧪 Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          verbose: true
+      
+      # TestPyPI Installation testen
+      - name: ✅ Test TestPyPI Installation
+        run: |
+          echo "✅ Teste Installation von TestPyPI..."
+          python -m pip install --index-url https://test.pypi.org/simple/ \
+            --extra-index-url https://pypi.org/simple/ \
+            kei-agent-sdk==${{ needs.validate-release.outputs.version }}
+          
+          # Basis-Import testen
+          python -c "import kei_agent; print(f'✅ Import erfolgreich: {kei_agent.__version__}')"
+
+  # Job 4: PyPI Publishing (nur für finale Releases)
+  publish-prod:
+    name: 🚀 Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: [validate-release, build-package, publish-test]
+    if: |
+      needs.validate-release.outputs.is_prerelease == 'false' && (
+        (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_to_pypi == 'true')
+      )
+    
+    environment:
+      name: pypi
+      url: https://pypi.org/project/kei-agent-sdk/
+    
+    steps:
+      # Build-Artefakte herunterladen
+      - name: 📥 Download Build Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-packages-${{ needs.validate-release.outputs.version }}
+          path: dist/
+      
+      # PyPI Upload
+      - name: 🚀 Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          verbose: true
+      
+      # PyPI Installation testen
+      - name: ✅ Test PyPI Installation
+        run: |
+          echo "✅ Teste Installation von PyPI..."
+          sleep 60  # Warten bis Package verfügbar ist
+          python -m pip install kei-agent-sdk==${{ needs.validate-release.outputs.version }}
+          
+          # Basis-Import testen
+          python -c "import kei_agent; print(f'✅ Import erfolgreich: {kei_agent.__version__}')"
+
+  # Job 5: GitHub Release erstellen
+  create-release:
+    name: 📝 Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [validate-release, build-package]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+      # Repository auschecken
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      # Build-Artefakte herunterladen
+      - name: 📥 Download Build Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-packages-${{ needs.validate-release.outputs.version }}
+          path: dist/
+      
+      # Release Notes generieren
+      - name: 📝 Generate Release Notes
+        id: release_notes
+        run: |
+          VERSION="${{ needs.validate-release.outputs.version }}"
+          
+          # Changelog aus Git-Tags generieren
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
+          if [[ -n "$PREVIOUS_TAG" ]]; then
+            echo "📋 Änderungen seit $PREVIOUS_TAG:"
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" $PREVIOUS_TAG..HEAD)
+          else
+            echo "📋 Erste Release:"
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" HEAD)
+          fi
+          
+          # Release Notes erstellen
+          cat > release_notes.md << EOF
+          # KEI-Agent Python SDK v$VERSION
+          
+          ## 🚀 Änderungen
+          
+          $CHANGELOG
+          
+          ## 📦 Installation
+          
+          \`\`\`bash
+          pip install kei-agent-sdk==$VERSION
+          \`\`\`
+          
+          ## 📚 Dokumentation
+          
+          - [Dokumentation](https://docs.kei-agent-framework.com)
+          - [API-Referenz](https://docs.kei-agent-framework.com/api/)
+          - [Beispiele](https://docs.kei-agent-framework.com/examples/)
+          
+          ## 🔗 Links
+          
+          - [PyPI Package](https://pypi.org/project/kei-agent-sdk/$VERSION/)
+          - [GitHub Repository](https://github.com/oscharko/kei-agent-python-sdk)
+          EOF
+          
+          echo "release_notes_file=release_notes.md" >> $GITHUB_OUTPUT
+      
+      # GitHub Release erstellen
+      - name: 🏷️ Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.validate-release.outputs.version }}
+          name: KEI-Agent Python SDK v${{ needs.validate-release.outputs.version }}
+          body_path: release_notes.md
+          files: dist/*
+          prerelease: ${{ needs.validate-release.outputs.is_prerelease == 'true' }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
