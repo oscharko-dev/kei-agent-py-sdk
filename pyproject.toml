@@ -109,7 +109,7 @@ all = [
 ]
 
 [project.scripts]
-kei-agent = "kei_agent.cli:main"
+kei-agent = "cli:main"
 
 [project.urls]
 Homepage = "https://docs.kei-agent-framework.com"
@@ -121,10 +121,7 @@ Changelog = "https://github.com/oscharko/kei-agent-python-sdk/blob/main/CHANGELO
 # Tool-Konfigurationen
 
 [tool.setuptools]
-package-dir = {"" = "."}
-
-[tool.setuptools.py-modules]
-py_modules = [
+py-modules = [
     "kei_agent", "client", "models", "exceptions", "protocol_types",
     "protocol_clients", "protocol_selector", "unified_client",
     "unified_client_refactored", "capabilities", "discovery", "a2a",
@@ -133,7 +130,7 @@ py_modules = [
 ]
 
 [tool.setuptools.package-data]
-"" = ["py.typed", "*.pyi"]
+"*" = ["py.typed", "*.pyi"]
 
 # Black Code Formatter
 [tool.black]

@@ -12,6 +12,7 @@ on:
       - '*.md'
       - 'LICENSE'
       - '.gitignore'
+      - 'mkdocs.yml'
   
   # Trigger bei Pull Requests
   pull_request:
@@ -85,6 +86,9 @@ jobs:
           }
           echo "✅ Dependencies erfolgreich installiert"
           pip list | grep -E "(ruff|mypy|bandit|pytest)"
+
+          # Test basic import
+          python -c "import kei_agent; print(f'✅ KEI-Agent SDK importiert: {kei_agent.__version__ if hasattr(kei_agent, \"__version__\") else \"unknown\"}')" || echo "⚠️ Import-Test fehlgeschlagen"
       
       # Ruff Linting
       - name: 🔍 Ruff Linting
