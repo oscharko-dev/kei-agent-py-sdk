@@ -36,7 +36,12 @@ def ensure_fake_opentelemetry() -> None:
 
     # Metrics API Platzhalter
     def get_meter(name, version=None):
-        return types.SimpleNamespace(create_counter=lambda name, **kwargs: lambda **kw: None)
+        return types.SimpleNamespace(
+            create_counter=lambda name, **kwargs: lambda **kw: None,
+            create_histogram=lambda name, **kwargs: lambda **kw: None,
+            create_gauge=lambda name, **kwargs: lambda **kw: None,
+            create_up_down_counter=lambda name, **kwargs: lambda **kw: None
+        )
     def set_meter_provider(provider):
         pass
     metrics.get_meter = get_meter
