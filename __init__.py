@@ -19,6 +19,7 @@ from .a2a import (
     LoadBalancingStrategy,
     FailoverConfig,
 )
+
 # Capability Advertisement
 from .capabilities import (
     CapabilityManager,
@@ -27,8 +28,10 @@ from .capabilities import (
     CapabilityNegotiation,
     CapabilityVersioning,
 )
+
 # Core SDK Components
 from .client import KeiAgentClient, AgentClientConfig, ConnectionConfig, RetryConfig, TracingConfig
+
 # Service Discovery
 from .discovery import (
     ServiceDiscovery,
@@ -37,6 +40,7 @@ from .discovery import (
     HealthMonitor,
     LoadBalancer,
 )
+
 # Enterprise Features
 from .enterprise_logging import (
     LogContext,
@@ -45,6 +49,7 @@ from .enterprise_logging import (
     get_logger,
     configure_logging,
 )
+
 # Exceptions
 from .exceptions import (
     KeiSDKError,
@@ -78,8 +83,10 @@ from .input_validation import (
     InputValidator,
     get_input_validator,
 )
+
 # Basic Agent Components (from kei_agent.py)
 from .kei_agent import AgentConfig, AgentSkeleton
+
 # Models and Types
 from .models import (
     Agent,
@@ -98,8 +105,10 @@ from .protocol_clients import (
     KEIMCPClient,
 )
 from .protocol_selector import ProtocolSelector
+
 # Refactored Unified Protocol Integration
 from .protocol_types import ProtocolType, AuthType, ProtocolConfig, SecurityConfig
+
 # Retry Mechanisms
 from .retry import (
     RetryManager,
@@ -110,13 +119,16 @@ from .retry import (
     RetryPolicy,
 )
 from .security_manager import SecurityManager
+
 # Distributed Tracing
 from .tracing import TracingManager, TraceContext, SpanBuilder, TracingExporter, PerformanceMetrics
+
 # Unified Protocol Integration (Legacy)
 from .unified_client import (
     UnifiedKeiAgentClient as LegacyUnifiedKeiAgentClient,
 )
 from .unified_client_refactored import UnifiedKeiAgentClient
+
 # Utilities
 from .utils import (
     create_correlation_id,
@@ -303,12 +315,12 @@ def create_default_client(base_url: str, api_token: str, agent_id: str, **kwargs
 
 
 def create_a2a_client(
-        base_url: str,
-        api_token: str,
-        agent_id: str,
-        discovery_enabled: bool = True,
-        tracing_enabled: bool = True,
-        **kwargs,
+    base_url: str,
+    api_token: str,
+    agent_id: str,
+    discovery_enabled: bool = True,
+    tracing_enabled: bool = True,
+    **kwargs,
 ) -> A2AClient:
     """Erstellt Agent-to-Agent-Client mit Enterprise-Features.
 
