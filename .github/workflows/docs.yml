@@ -117,7 +117,7 @@ jobs:
       
       # Build-Artefakte hochladen
       - name: 📤 Upload Documentation Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: documentation-site
           path: site/
@@ -269,7 +269,7 @@ jobs:
       
       # Metriken als Artefakt speichern
       - name: 📤 Upload Metrics
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: documentation-metrics
           path: docs-metrics.json
