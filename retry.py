@@ -21,7 +21,7 @@ import logging
 from exceptions import RetryExhaustedError, CircuitBreakerOpenError
 
 # Initialisiert Modul-Logger für Retry/CB
-_logger = logging.getLogger(__name__)
+_logger = logging.getLogger("kei_agent.retry")
 
 
 class RetryStrategy(str, Enum):

@@ -261,8 +261,12 @@ class TestSecurityManager:
             with patch('asyncio.create_task', return_value=mock_task) as mock_create_task:
                 await manager.start_token_refresh()
 
-                mock_create_task.assert_called_once_with(manager._token_refresh_loop())
+                # Prüfe dass create_task aufgerufen wurde (ohne spezifische Coroutine zu vergleichen)
+                mock_create_task.assert_called_once()
+                # Prüfe dass der Task korrekt gesetzt wurde
                 assert manager._token_refresh_task == mock_task
+                # Prüfe dass _token_refresh_loop aufgerufen wurde
+                mock_loop.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_stop_token_refresh(self, oidc_config):
