@@ -331,7 +331,9 @@ class TestUnifiedKeiAgentClientRefactored:
             # Prüfe die Aufruf-Parameter
             call_args = mock_execute.call_args
             assert call_args[0][0] == "send_message"  # operation
-            assert "target_agent" in call_args[0][1]  # data
+            # Das data-Dictionary enthält 'target', nicht 'target_agent'
+            assert "target" in call_args[0][1]  # data
+            assert call_args[0][1]["target"] == "target-agent"
 
     @pytest.mark.asyncio
     async def test_discover_available_tools_high_level_api(self, unified_client):

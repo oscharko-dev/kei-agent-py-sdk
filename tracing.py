@@ -526,23 +526,25 @@ class TracingManager:
             else:
                 self._tracer_provider = TracerProvider()
 
-            # Span-Processor hinzufügen
-            if self.config.jaeger_endpoint:
-                jaeger_exporter = TracingExporter(
-                    "jaeger", collector_endpoint=self.config.jaeger_endpoint
-                )
-                self._tracer_provider.add_span_processor(
-                    jaeger_exporter.get_span_processor()
-                )
-            else:
-                # Fallback: Console-Exporter
-                console_exporter = TracingExporter("console")
-                self._tracer_provider.add_span_processor(
-                    console_exporter.get_span_processor()
-                )
+            # Span-Processor hinzufügen (nur wenn echte OpenTelemetry verfügbar)
+            if hasattr(self._tracer_provider, "add_span_processor"):
+                if self.config.jaeger_endpoint:
+                    jaeger_exporter = TracingExporter(
+                        "jaeger", collector_endpoint=self.config.jaeger_endpoint
+                    )
+                    self._tracer_provider.add_span_processor(
+                        jaeger_exporter.get_span_processor()
+                    )
+                else:
+                    # Fallback: Console-Exporter
+                    console_exporter = TracingExporter("console")
+                    self._tracer_provider.add_span_processor(
+                        console_exporter.get_span_processor()
+                    )
 
-            # Tracer Provider setzen
-            trace.set_tracer_provider(self._tracer_provider)
+            # Tracer Provider setzen (nur wenn verfügbar)
+            if hasattr(trace, "set_tracer_provider"):
+                trace.set_tracer_provider(self._tracer_provider)
 
             # Tracer erstellen
             self._tracer = trace.get_tracer(
@@ -558,7 +560,9 @@ class TracingManager:
                 resource=self._create_resource(), metric_readers=[metric_reader]
             )
 
-            metrics.set_meter_provider(self._meter_provider)
+            # Meter Provider setzen (nur wenn verfügbar)
+            if hasattr(metrics, "set_meter_provider"):
+                metrics.set_meter_provider(self._meter_provider)
 
             # Meter erstellen
             self._meter = metrics.get_meter(
