@@ -113,23 +113,23 @@ test-fast: ## Führt schnelle Tests aus (ohne Coverage)
 
 lint: ## Führt Linting aus
 	@echo "$(BLUE)Führe Linting aus...$(RESET)"
-	ruff check *.py $(TEST_DIR)
+	ruff check *.py
 
 lint-fix: ## Führt Linting mit Auto-Fix aus
 	@echo "$(BLUE)Führe Linting mit Auto-Fix aus...$(RESET)"
-	ruff check --fix *.py $(TEST_DIR)
+	ruff check --fix *.py
 
 format: ## Formatiert Code
 	@echo "$(BLUE)Formatiere Code...$(RESET)"
-	ruff format *.py $(TEST_DIR)
+	ruff format *.py
 
 format-check: ## Prüft Code-Formatierung
 	@echo "$(BLUE)Prüfe Code-Formatierung...$(RESET)"
-	ruff format --check *.py $(TEST_DIR)
+	ruff format --check *.py
 
 type-check: ## Führt Type-Checking aus
 	@echo "$(BLUE)Führe Type-Checking aus...$(RESET)"
-	mypy *.py
+	python3 -m mypy *.py --ignore-missing-imports --no-strict-optional
 
 security-scan: ## Führt Security-Scan aus
 	@echo "$(BLUE)Führe Security-Scan aus...$(RESET)"

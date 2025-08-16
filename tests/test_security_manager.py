@@ -10,11 +10,10 @@ import asyncio
 import pytest
 import time
 from unittest.mock import AsyncMock, MagicMock, patch
-from typing import Dict, Any
 
 from kei_agent.security_manager import SecurityManager
 from kei_agent.protocol_types import SecurityConfig, AuthType
-from kei_agent.exceptions import SecurityError, AuthenticationError
+from kei_agent.exceptions import SecurityError
 
 
 class TestSecurityManager:

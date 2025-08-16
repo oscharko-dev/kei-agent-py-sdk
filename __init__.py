@@ -10,6 +10,8 @@ Integriert alle KEI-Protokolle (RPC, Stream, Bus, MCP) in einer einheitlichen AP
 
 from __future__ import annotations
 
+import logging
+
 # Agent-to-Agent Communication
 from .a2a import (
     A2AClient,
@@ -30,7 +32,13 @@ from .capabilities import (
 )
 
 # Core SDK Components
-from .client import KeiAgentClient, AgentClientConfig, ConnectionConfig, RetryConfig, TracingConfig
+from .client import (
+    KeiAgentClient,
+    AgentClientConfig,
+    ConnectionConfig,
+    RetryConfig,
+    TracingConfig,
+)
 
 # Service Discovery
 from .discovery import (
@@ -121,7 +129,13 @@ from .retry import (
 from .security_manager import SecurityManager
 
 # Distributed Tracing
-from .tracing import TracingManager, TraceContext, SpanBuilder, TracingExporter, PerformanceMetrics
+from .tracing import (
+    TracingManager,
+    TraceContext,
+    SpanBuilder,
+    TracingExporter,
+    PerformanceMetrics,
+)
 
 # Unified Protocol Integration (Legacy)
 from .unified_client import (
@@ -297,7 +311,9 @@ def get_sdk_info() -> dict[str, str]:
     }
 
 
-def create_default_client(base_url: str, api_token: str, agent_id: str, **kwargs) -> KeiAgentClient:
+def create_default_client(
+    base_url: str, api_token: str, agent_id: str, **kwargs
+) -> KeiAgentClient:
     """Erstellt Standard-Client mit optimalen Einstellungen.
 
     Args:
@@ -309,7 +325,9 @@ def create_default_client(base_url: str, api_token: str, agent_id: str, **kwargs
     Returns:
         Konfigurierter KeiAgentClient
     """
-    config = AgentClientConfig(base_url=base_url, api_token=api_token, agent_id=agent_id, **kwargs)
+    config = AgentClientConfig(
+        base_url=base_url, api_token=api_token, agent_id=agent_id, **kwargs
+    )
 
     return KeiAgentClient(config)
 
@@ -351,8 +369,6 @@ def create_a2a_client(
 
 
 # Logging Configuration
-import logging
-
 # Erstelle SDK-Logger
 _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.INFO)
@@ -363,7 +379,9 @@ _logger.propagate = False
 # Füge Standard-Handler hinzu falls noch keiner existiert
 if not _logger.handlers:
     _handler = logging.StreamHandler()
-    _formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    _formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
     _handler.setFormatter(_formatter)
     _logger.addHandler(_handler)
 

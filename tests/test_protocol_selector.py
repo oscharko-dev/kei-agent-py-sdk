@@ -7,7 +7,6 @@ Operation-Analyse mit verschiedenen Konfigurationen.
 """
 
 import pytest
-from typing import List, Dict, Any
 
 from kei_agent.protocol_selector import ProtocolSelector
 from kei_agent.protocol_types import ProtocolType, ProtocolConfig

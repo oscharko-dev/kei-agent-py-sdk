@@ -12,10 +12,9 @@ import asyncio
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional, Callable, Awaitable
-import logging
+from typing import Any, Dict, List, Optional
 
 from .enterprise_logging import get_logger
 
@@ -25,13 +24,14 @@ _logger = get_logger(__name__)
 
 class HealthStatus(str, Enum):
     """Health-Status-Werte für Komponenten.
-    
+
     Attributes:
         HEALTHY: Komponente funktioniert normal
         DEGRADED: Komponente funktioniert mit Einschränkungen
         UNHEALTHY: Komponente funktioniert nicht
         UNKNOWN: Status kann nicht ermittelt werden
     """
+
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
@@ -41,7 +41,7 @@ class HealthStatus(str, Enum):
 @dataclass
 class HealthCheckResult:
     """Ergebnis eines Health-Checks.
-    
+
     Attributes:
         name: Name der geprüften Komponente
         status: Health-Status
@@ -51,6 +51,7 @@ class HealthCheckResult:
         duration_ms: Dauer der Prüfung in Millisekunden
         error: Fehler-Information bei Problemen
     """
+
     name: str
     status: HealthStatus
     message: str
@@ -61,7 +62,7 @@ class HealthCheckResult:
 
     def to_dict(self) -> Dict[str, Any]:
         """Konvertiert Health-Check-Result zu Dictionary.
-        
+
         Returns:
             Dictionary-Repräsentation des Results
         """
@@ -72,13 +73,13 @@ class HealthCheckResult:
             "details": self.details,
             "timestamp": self.timestamp.isoformat(),
             "duration_ms": self.duration_ms,
-            "error": self.error
+            "error": self.error,
         }
 
 
 class BaseHealthCheck(ABC):
     """Abstrakte Basisklasse für Health-Checks.
-    
+
     Definiert Interface für alle Health-Check-Implementierungen
     mit gemeinsamen Funktionalitäten wie Timeout und Retry-Logik.
     """
@@ -88,10 +89,10 @@ class BaseHealthCheck(ABC):
         name: str,
         timeout_seconds: float = 5.0,
         critical: bool = True,
-        tags: Optional[List[str]] = None
+        tags: Optional[List[str]] = None,
     ) -> None:
         """Initialisiert Base Health Check.
-        
+
         Args:
             name: Name der Komponente
             timeout_seconds: Timeout für Health-Check
@@ -106,7 +107,7 @@ class BaseHealthCheck(ABC):
     @abstractmethod
     async def check(self) -> HealthCheckResult:
         """Führt Health-Check aus.
-        
+
         Returns:
             Health-Check-Result
         """
@@ -114,25 +115,22 @@ class BaseHealthCheck(ABC):
 
     async def run_check(self) -> HealthCheckResult:
         """Führt Health-Check mit Timeout und Error-Handling aus.
-        
+
         Returns:
             Health-Check-Result mit Timing-Informationen
         """
         start_time = time.time()
-        
+
         try:
             # Führe Check mit Timeout aus
-            result = await asyncio.wait_for(
-                self.check(),
-                timeout=self.timeout_seconds
-            )
-            
+            result = await asyncio.wait_for(self.check(), timeout=self.timeout_seconds)
+
             # Füge Timing-Information hinzu
             duration_ms = (time.time() - start_time) * 1000
             result.duration_ms = duration_ms
-            
+
             return result
-            
+
         except asyncio.TimeoutError:
             duration_ms = (time.time() - start_time) * 1000
             return HealthCheckResult(
@@ -140,7 +138,7 @@ class BaseHealthCheck(ABC):
                 status=HealthStatus.UNHEALTHY,
                 message=f"Health-Check Timeout nach {self.timeout_seconds}s",
                 duration_ms=duration_ms,
-                error="timeout"
+                error="timeout",
             )
         except Exception as e:
             duration_ms = (time.time() - start_time) * 1000
@@ -149,7 +147,7 @@ class BaseHealthCheck(ABC):
                 status=HealthStatus.UNHEALTHY,
                 message=f"Health-Check Fehler: {str(e)}",
                 duration_ms=duration_ms,
-                error=str(e)
+                error=str(e),
             )
 
 
@@ -161,10 +159,10 @@ class DatabaseHealthCheck(BaseHealthCheck):
         name: str = "database",
         connection_string: Optional[str] = None,
         query: str = "SELECT 1",
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         """Initialisiert Database Health Check.
-        
+
         Args:
             name: Name des Checks
             connection_string: Datenbank-Verbindungsstring
@@ -181,14 +179,14 @@ class DatabaseHealthCheck(BaseHealthCheck):
             return HealthCheckResult(
                 name=self.name,
                 status=HealthStatus.UNKNOWN,
-                message="Keine Datenbankverbindung konfiguriert"
+                message="Keine Datenbankverbindung konfiguriert",
             )
 
         try:
             # TODO: Implementiere echte Datenbankverbindung
             # Hier würde eine echte DB-Verbindung getestet werden
             await asyncio.sleep(0.1)  # Simuliere DB-Query
-            
+
             return HealthCheckResult(
                 name=self.name,
                 status=HealthStatus.HEALTHY,
@@ -196,15 +194,15 @@ class DatabaseHealthCheck(BaseHealthCheck):
                 details={
                     "query": self.query,
                     "connection_pool_size": 10,  # Beispiel-Metrik
-                    "active_connections": 3
-                }
+                    "active_connections": 3,
+                },
             )
         except Exception as e:
             return HealthCheckResult(
                 name=self.name,
                 status=HealthStatus.UNHEALTHY,
                 message=f"Datenbankverbindung fehlgeschlagen: {str(e)}",
-                error=str(e)
+                error=str(e),
             )
 
 
@@ -217,10 +215,10 @@ class APIHealthCheck(BaseHealthCheck):
         url: str,
         expected_status: int = 200,
         headers: Optional[Dict[str, str]] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         """Initialisiert API Health Check.
-        
+
         Args:
             name: Name des Checks
             url: API-URL für Health-Check
@@ -237,14 +235,12 @@ class APIHealthCheck(BaseHealthCheck):
         """Prüft API-Verfügbarkeit."""
         try:
             import httpx
-            
+
             async with httpx.AsyncClient() as client:
                 response = await client.get(
-                    self.url,
-                    headers=self.headers,
-                    timeout=self.timeout_seconds
+                    self.url, headers=self.headers, timeout=self.timeout_seconds
                 )
-                
+
                 if response.status_code == self.expected_status:
                     return HealthCheckResult(
                         name=self.name,
@@ -253,8 +249,8 @@ class APIHealthCheck(BaseHealthCheck):
                         details={
                             "url": self.url,
                             "status_code": response.status_code,
-                            "response_time_ms": response.elapsed.total_seconds() * 1000
-                        }
+                            "response_time_ms": response.elapsed.total_seconds() * 1000,
+                        },
                     )
                 else:
                     return HealthCheckResult(
@@ -264,16 +260,16 @@ class APIHealthCheck(BaseHealthCheck):
                         details={
                             "url": self.url,
                             "status_code": response.status_code,
-                            "expected_status": self.expected_status
-                        }
+                            "expected_status": self.expected_status,
+                        },
                     )
-                    
+
         except Exception as e:
             return HealthCheckResult(
                 name=self.name,
                 status=HealthStatus.UNHEALTHY,
                 message=f"API nicht erreichbar: {str(e)}",
-                error=str(e)
+                error=str(e),
             )
 
 
@@ -285,10 +281,10 @@ class MemoryHealthCheck(BaseHealthCheck):
         name: str = "memory",
         warning_threshold: float = 0.8,
         critical_threshold: float = 0.95,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         """Initialisiert Memory Health Check.
-        
+
         Args:
             name: Name des Checks
             warning_threshold: Warnschwelle (0.0-1.0)
@@ -303,10 +299,10 @@ class MemoryHealthCheck(BaseHealthCheck):
         """Prüft Speicherverbrauch."""
         try:
             import psutil
-            
+
             memory = psutil.virtual_memory()
             usage_percent = memory.percent / 100.0
-            
+
             if usage_percent >= self.critical_threshold:
                 status = HealthStatus.UNHEALTHY
                 message = f"Kritischer Speicherverbrauch: {usage_percent:.1%}"
@@ -316,7 +312,7 @@ class MemoryHealthCheck(BaseHealthCheck):
             else:
                 status = HealthStatus.HEALTHY
                 message = f"Speicherverbrauch normal: {usage_percent:.1%}"
-            
+
             return HealthCheckResult(
                 name=self.name,
                 status=status,
@@ -327,29 +323,29 @@ class MemoryHealthCheck(BaseHealthCheck):
                     "available_mb": memory.available // (1024 * 1024),
                     "used_mb": memory.used // (1024 * 1024),
                     "warning_threshold": self.warning_threshold,
-                    "critical_threshold": self.critical_threshold
-                }
+                    "critical_threshold": self.critical_threshold,
+                },
             )
-            
+
         except ImportError:
             return HealthCheckResult(
                 name=self.name,
                 status=HealthStatus.UNKNOWN,
-                message="psutil nicht verfügbar für Speicher-Monitoring"
+                message="psutil nicht verfügbar für Speicher-Monitoring",
             )
         except Exception as e:
             return HealthCheckResult(
                 name=self.name,
                 status=HealthStatus.UNHEALTHY,
                 message=f"Speicher-Check fehlgeschlagen: {str(e)}",
-                error=str(e)
+                error=str(e),
             )
 
 
 @dataclass
 class HealthCheckSummary:
     """Zusammenfassung aller Health-Checks.
-    
+
     Attributes:
         overall_status: Gesamtstatus des Systems
         total_checks: Anzahl durchgeführter Checks
@@ -361,6 +357,7 @@ class HealthCheckSummary:
         timestamp: Zeitpunkt der Zusammenfassung
         duration_ms: Gesamtdauer aller Checks
     """
+
     overall_status: HealthStatus
     total_checks: int
     healthy_count: int
@@ -373,7 +370,7 @@ class HealthCheckSummary:
 
     def to_dict(self) -> Dict[str, Any]:
         """Konvertiert Summary zu Dictionary.
-        
+
         Returns:
             Dictionary-Repräsentation der Summary
         """
@@ -386,13 +383,13 @@ class HealthCheckSummary:
             "unknown_count": self.unknown_count,
             "timestamp": self.timestamp.isoformat(),
             "duration_ms": self.duration_ms,
-            "checks": [check.to_dict() for check in self.checks]
+            "checks": [check.to_dict() for check in self.checks],
         }
 
 
 class HealthCheckManager:
     """Manager für Health-Check-Orchestrierung.
-    
+
     Koordiniert mehrere Health-Checks, berechnet Gesamtstatus
     und bietet Monitoring-Integration für Enterprise-Deployments.
     """
@@ -404,7 +401,7 @@ class HealthCheckManager:
 
     def register_check(self, check: BaseHealthCheck) -> None:
         """Registriert Health-Check.
-        
+
         Args:
             check: Health-Check-Instanz
         """
@@ -414,12 +411,12 @@ class HealthCheckManager:
             check_name=check.name,
             critical=check.critical,
             timeout=check.timeout_seconds,
-            tags=check.tags
+            tags=check.tags,
         )
 
     def register_checks(self, checks: List[BaseHealthCheck]) -> None:
         """Registriert mehrere Health-Checks.
-        
+
         Args:
             checks: Liste von Health-Check-Instanzen
         """
@@ -428,15 +425,15 @@ class HealthCheckManager:
 
     async def run_all_checks(self) -> HealthCheckSummary:
         """Führt alle registrierten Health-Checks aus.
-        
+
         Returns:
             Zusammenfassung aller Check-Ergebnisse
         """
         start_time = time.time()
-        
+
         _logger.info(
             f"Starte Health-Checks für {len(self.checks)} Komponenten",
-            total_checks=len(self.checks)
+            total_checks=len(self.checks),
         )
 
         # Führe alle Checks parallel aus
@@ -448,12 +445,14 @@ class HealthCheckManager:
         for i, result in enumerate(results):
             if isinstance(result, Exception):
                 # Erstelle Fehler-Result für Exception
-                check_results.append(HealthCheckResult(
-                    name=self.checks[i].name,
-                    status=HealthStatus.UNHEALTHY,
-                    message=f"Health-Check Exception: {str(result)}",
-                    error=str(result)
-                ))
+                check_results.append(
+                    HealthCheckResult(
+                        name=self.checks[i].name,
+                        status=HealthStatus.UNHEALTHY,
+                        message=f"Health-Check Exception: {str(result)}",
+                        error=str(result),
+                    )
+                )
             else:
                 check_results.append(result)
 
@@ -462,7 +461,7 @@ class HealthCheckManager:
             HealthStatus.HEALTHY: 0,
             HealthStatus.DEGRADED: 0,
             HealthStatus.UNHEALTHY: 0,
-            HealthStatus.UNKNOWN: 0
+            HealthStatus.UNKNOWN: 0,
         }
 
         for result in check_results:
@@ -481,7 +480,7 @@ class HealthCheckManager:
             unhealthy_count=status_counts[HealthStatus.UNHEALTHY],
             unknown_count=status_counts[HealthStatus.UNKNOWN],
             checks=check_results,
-            duration_ms=duration_ms
+            duration_ms=duration_ms,
         )
 
         self.last_summary = summary
@@ -494,24 +493,25 @@ class HealthCheckManager:
             degraded=summary.degraded_count,
             unhealthy=summary.unhealthy_count,
             unknown=summary.unknown_count,
-            duration_ms=duration_ms
+            duration_ms=duration_ms,
         )
 
         return summary
 
-    def _calculate_overall_status(self, results: List[HealthCheckResult]) -> HealthStatus:
+    def _calculate_overall_status(
+        self, results: List[HealthCheckResult]
+    ) -> HealthStatus:
         """Berechnet Gesamtstatus basierend auf einzelnen Check-Ergebnissen.
-        
+
         Args:
             results: Liste aller Check-Ergebnisse
-            
+
         Returns:
             Gesamtstatus des Systems
         """
         # Prüfe kritische Checks
         critical_checks = [
-            result for result, check in zip(results, self.checks)
-            if check.critical
+            result for result, check in zip(results, self.checks) if check.critical
         ]
 
         # Wenn kritische Checks unhealthy sind, ist Gesamtstatus unhealthy
@@ -535,7 +535,7 @@ class HealthCheckManager:
 
     def get_last_summary(self) -> Optional[HealthCheckSummary]:
         """Gibt letzte Health-Check-Summary zurück.
-        
+
         Returns:
             Letzte Summary oder None
         """
@@ -548,15 +548,15 @@ _health_manager: Optional[HealthCheckManager] = None
 
 def get_health_manager() -> HealthCheckManager:
     """Gibt globalen Health Check Manager zurück.
-    
+
     Returns:
         Health Check Manager Instanz
     """
     global _health_manager
-    
+
     if _health_manager is None:
         _health_manager = HealthCheckManager()
-    
+
     return _health_manager
 
 
@@ -569,5 +569,5 @@ __all__ = [
     "MemoryHealthCheck",
     "HealthCheckSummary",
     "HealthCheckManager",
-    "get_health_manager"
+    "get_health_manager",
 ]
