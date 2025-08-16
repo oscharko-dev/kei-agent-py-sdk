@@ -12,13 +12,13 @@ Der SecurityManager verwaltet Authentifizierung, Autorisierung und Sicherheitsri
 class SecurityManager:
     def __init__(self, config: SecurityConfig):
         """Initialisiert den Security Manager."""
-        
+
     async def authenticate(self) -> bool:
         """Führt Authentifizierung durch."""
-        
+
     async def refresh_token(self) -> str:
         """Erneuert das Authentifizierungs-Token."""
-        
+
     def validate_permissions(self, operation: str) -> bool:
         """Validiert Berechtigungen für eine Operation."""
 ```

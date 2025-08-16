@@ -26,9 +26,12 @@ try:
         PeriodicExportingMetricReader,
     )
     from opentelemetry.propagate import inject, extract
-    from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
+    from opentelemetry.trace.propagation.tracecontext import (
+        TraceContextTextMapPropagator,
+    )
     from opentelemetry.baggage.propagation import W3CBaggagePropagator
     from opentelemetry.propagators.composite import CompositeHTTPPropagator
+
     OPENTELEMETRY_AVAILABLE = True
 except ImportError:
     # NoOp-Implementierungen für fehlende OpenTelemetry
@@ -36,52 +39,91 @@ except ImportError:
 
     class NoOpSpan:
         """NoOp Span-Implementierung."""
-        def __enter__(self): return self
-        def __exit__(self, *args): pass
-        def set_attribute(self, key, value): pass
-        def set_status(self, status): pass
-        def record_exception(self, exception): pass
-        def end(self): pass
-        def is_recording(self): return False
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+        def set_attribute(self, key, value):
+            pass
+
+        def set_status(self, status):
+            pass
+
+        def record_exception(self, exception):
+            pass
+
+        def end(self):
+            pass
+
+        def is_recording(self):
+            return False
 
     class NoOpTracer:
         """NoOp Tracer-Implementierung."""
-        def start_span(self, name, **kwargs): return NoOpSpan()
-        def start_as_current_span(self, name, **kwargs): return NoOpSpan()
+
+        def start_span(self, name, **kwargs):
+            return NoOpSpan()
+
+        def start_as_current_span(self, name, **kwargs):
+            return NoOpSpan()
 
     class NoOpTracerProvider:
         """NoOp TracerProvider-Implementierung."""
+
         def __init__(self, resource=None):
             pass
+
         def get_tracer(self, name, version=None):
             return NoOpTracer()
+
         def add_span_processor(self, processor):
             pass
+
         def shutdown(self):
             pass
 
     class NoOpMeter:
         """NoOp Meter-Implementierung."""
-        def create_counter(self, name, **kwargs): return lambda **kw: None
-        def create_histogram(self, name, **kwargs): return lambda **kw: None
+
+        def create_counter(self, name, **kwargs):
+            return lambda **kw: None
+
+        def create_histogram(self, name, **kwargs):
+            return lambda **kw: None
 
     class NoOpMeterProvider:
         """NoOp MeterProvider-Implementierung."""
-        def __init__(self, resource=None, metric_readers=None): pass
-        def get_meter(self, name, version=None): return NoOpMeter()
+
+        def __init__(self, resource=None, metric_readers=None):
+            pass
+
+        def get_meter(self, name, version=None):
+            return NoOpMeter()
 
     # Dummy-Klassen und Funktionen
     TracerProvider = NoOpTracerProvider
     MeterProvider = NoOpMeterProvider
     Span = NoOpSpan
-    trace = type('trace', (), {
-        'get_current_span': lambda: NoOpSpan(),
-        'set_tracer_provider': lambda provider: None
-    })()
-    metrics = type('metrics', (), {
-        'get_meter_provider': lambda: NoOpMeterProvider(),
-        'set_meter_provider': lambda provider: None
-    })()
+    trace = type(
+        "trace",
+        (),
+        {
+            "get_current_span": lambda: NoOpSpan(),
+            "set_tracer_provider": lambda provider: None,
+        },
+    )()
+    metrics = type(
+        "metrics",
+        (),
+        {
+            "get_meter_provider": lambda: NoOpMeterProvider(),
+            "set_meter_provider": lambda provider: None,
+        },
+    )()
+
     def inject(carrier, context=None):
         """NoOp inject function."""
         pass
@@ -92,18 +134,31 @@ except ImportError:
 
     # NoOp Propagator-Klassen
     class NoOpPropagator:
-        def inject(self, carrier, context=None): pass
-        def extract(self, carrier, context=None): return None
+        def inject(self, carrier, context=None):
+            pass
+
+        def extract(self, carrier, context=None):
+            return None
 
     class NoOpSpanExporter:
-        def export(self, spans): pass
-        def shutdown(self): pass
+        def export(self, spans):
+            pass
+
+        def shutdown(self):
+            pass
 
     class NoOpSpanProcessor:
-        def on_start(self, span, parent_context=None): pass
-        def on_end(self, span): pass
-        def shutdown(self): pass
-        def force_flush(self, timeout_millis=None): pass
+        def on_start(self, span, parent_context=None):
+            pass
+
+        def on_end(self, span):
+            pass
+
+        def shutdown(self):
+            pass
+
+        def force_flush(self, timeout_millis=None):
+            pass
 
     TraceContextTextMapPropagator = NoOpPropagator
     W3CBaggagePropagator = NoOpPropagator
@@ -125,6 +180,7 @@ except ImportError:
     def BatchSpanProcessor(exporter, **kwargs):
         """NoOp BatchSpanProcessor function."""
         return NoOpSpanProcessor()
+
 
 from exceptions import TracingError
 
@@ -470,23 +526,25 @@ class TracingManager:
             else:
                 self._tracer_provider = TracerProvider()
 
-            # Span-Processor hinzufügen
-            if self.config.jaeger_endpoint:
-                jaeger_exporter = TracingExporter(
-                    "jaeger", collector_endpoint=self.config.jaeger_endpoint
-                )
-                self._tracer_provider.add_span_processor(
-                    jaeger_exporter.get_span_processor()
-                )
-            else:
-                # Fallback: Console-Exporter
-                console_exporter = TracingExporter("console")
-                self._tracer_provider.add_span_processor(
-                    console_exporter.get_span_processor()
-                )
+            # Span-Processor hinzufügen (nur wenn echte OpenTelemetry verfügbar)
+            if hasattr(self._tracer_provider, "add_span_processor"):
+                if self.config.jaeger_endpoint:
+                    jaeger_exporter = TracingExporter(
+                        "jaeger", collector_endpoint=self.config.jaeger_endpoint
+                    )
+                    self._tracer_provider.add_span_processor(
+                        jaeger_exporter.get_span_processor()
+                    )
+                else:
+                    # Fallback: Console-Exporter
+                    console_exporter = TracingExporter("console")
+                    self._tracer_provider.add_span_processor(
+                        console_exporter.get_span_processor()
+                    )
 
-            # Tracer Provider setzen
-            trace.set_tracer_provider(self._tracer_provider)
+            # Tracer Provider setzen (nur wenn verfügbar)
+            if hasattr(trace, "set_tracer_provider"):
+                trace.set_tracer_provider(self._tracer_provider)
 
             # Tracer erstellen
             self._tracer = trace.get_tracer(
@@ -502,7 +560,9 @@ class TracingManager:
                 resource=self._create_resource(), metric_readers=[metric_reader]
             )
 
-            metrics.set_meter_provider(self._meter_provider)
+            # Meter Provider setzen (nur wenn verfügbar)
+            if hasattr(metrics, "set_meter_provider"):
+                metrics.set_meter_provider(self._meter_provider)
 
             # Meter erstellen
             self._meter = metrics.get_meter(
@@ -525,7 +585,11 @@ class TracingManager:
             return None
 
         try:
-            from opentelemetry.sdk.resources import Resource, SERVICE_NAME, SERVICE_VERSION
+            from opentelemetry.sdk.resources import (
+                Resource,
+                SERVICE_NAME,
+                SERVICE_VERSION,
+            )
 
             attributes = {
                 SERVICE_NAME: self.config.service_name,

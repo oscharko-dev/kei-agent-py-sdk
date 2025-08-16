@@ -22,33 +22,33 @@ graph TB
         subgraph "🌐 Client Layer"
             UC[UnifiedKeiAgentClient<br/>📱 Main API]
         end
-        
+
         subgraph "🔧 Core Components"
             PT[ProtocolTypes<br/>📋 Configurations]
             SM[SecurityManager<br/>🔐 Auth & Tokens]
             PS[ProtocolSelector<br/>🎯 Smart Selection]
         end
-        
+
         subgraph "🌐 Protocol Layer"
             RPC[KEIRPCClient<br/>⚡ Sync Operations]
             STREAM[KEIStreamClient<br/>🌊 Real-time]
             BUS[KEIBusClient<br/>📨 Async Messages]
             MCP[KEIMCPClient<br/>🛠️ Tool Integration]
         end
-        
+
         subgraph "🚀 Enterprise Layer"
             LOG[EnterpriseLogging<br/>📊 Structured JSON]
             HEALTH[HealthChecks<br/>💚 Monitoring]
             VALID[InputValidation<br/>🛡️ Security]
         end
-        
+
         subgraph "🔌 Transport Layer"
             HTTP[HTTP/HTTPS<br/>🌐 REST APIs]
             WS[WebSockets<br/>⚡ Real-time]
             MSG[Message Bus<br/>📨 Async]
         end
     end
-    
+
     UC --> PT
     UC --> SM
     UC --> PS
@@ -63,7 +63,7 @@ graph TB
     STREAM --> WS
     BUS --> MSG
     MCP --> HTTP
-    
+
     style UC fill:#e1f5fe
     style LOG fill:#f3e5f5
     style HEALTH fill:#e8f5e8
@@ -110,7 +110,7 @@ sequenceDiagram
     participant PS as ProtocolSelector
     participant PC as ProtocolClient
     participant API as KEI-API
-    
+
     App->>UC: plan_task("objective")
     UC->>PS: select_protocol("plan", context)
     PS->>UC: ProtocolType.RPC
@@ -129,7 +129,7 @@ sequenceDiagram
     participant PS as ProtocolSelector
     participant RPC as RPC Client
     participant BUS as Bus Client
-    
+
     UC->>PS: select_protocol("operation")
     PS->>UC: ProtocolType.RPC (primary)
     UC->>RPC: execute_operation()
@@ -192,10 +192,10 @@ def log_operation(func):
 class HealthCheckManager:
     def __init__(self):
         self.observers = []
-    
+
     def register_observer(self, observer):
         self.observers.append(observer)
-    
+
     def notify_health_change(self, status):
         for observer in self.observers:
             observer.on_health_change(status)
@@ -212,15 +212,15 @@ graph LR
         SM --> |Bearer| BEARER[Bearer Token Auth]
         SM --> |OIDC| OIDC[OIDC Flow]
         SM --> |mTLS| MTLS[Mutual TLS]
-        
+
         BEARER --> CACHE[Token Cache]
         OIDC --> CACHE
         CACHE --> REFRESH[Auto Refresh]
-        
+
         SM --> RBAC[RBAC Check]
         SM --> AUDIT[Audit Log]
     end
-    
+
     style SM fill:#ffebee
     style RBAC fill:#e8f5e8
     style AUDIT fill:#fff3e0
@@ -312,11 +312,11 @@ graph TB
         E2E[End-to-End Tests<br/>🔗 Full Integration]
         INT[Integration Tests<br/>🔌 Protocol Tests]
         UNIT[Unit Tests<br/>⚡ Component Tests]
-        
+
         E2E --> INT
         INT --> UNIT
     end
-    
+
     style UNIT fill:#e8f5e8
     style INT fill:#fff3e0
     style E2E fill:#ffebee
@@ -340,15 +340,15 @@ graph TB
         METRICS[Performance Metrics<br/>📊 Timing & Resources]
         TRACES[Distributed Tracing<br/>🔍 Request Flow]
         HEALTH[Health Checks<br/>💚 System Status]
-        
+
         LOGS --> COLLECT[Log Collector]
         METRICS --> COLLECT
         TRACES --> COLLECT
         HEALTH --> COLLECT
-        
+
         COLLECT --> MONITOR[Monitoring System]
     end
-    
+
     style LOGS fill:#e3f2fd
     style METRICS fill:#e8f5e8
     style TRACES fill:#fff3e0

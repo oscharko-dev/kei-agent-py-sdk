@@ -3,19 +3,19 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Code Copy Functionality Enhancement
     enhanceCodeBlocks();
-    
+
     // API Signature Highlighting
     highlightAPISignatures();
-    
+
     // Interactive Examples
     setupInteractiveExamples();
-    
+
     // Search Enhancement
     enhanceSearch();
-    
+
     // Navigation Enhancement
     enhanceNavigation();
-    
+
     // Performance Monitoring
     setupPerformanceMonitoring();
 });
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function enhanceCodeBlocks() {
     const codeBlocks = document.querySelectorAll('.highlight');
-    
+
     codeBlocks.forEach(block => {
         // Sprache-Label hinzufügen
         const code = block.querySelector('code');
@@ -51,7 +51,7 @@ function enhanceCodeBlocks() {
                 block.appendChild(label);
             }
         }
-        
+
         // Zeilen-Nummern für längere Code-Blöcke
         const lines = block.textContent.split('\n').length;
         if (lines > 10) {
@@ -66,10 +66,10 @@ function enhanceCodeBlocks() {
 function addLineNumbers(codeBlock) {
     const pre = codeBlock.querySelector('pre');
     if (!pre) return;
-    
+
     const code = pre.querySelector('code');
     if (!code) return;
-    
+
     const lines = code.textContent.split('\n');
     const lineNumbers = document.createElement('div');
     lineNumbers.className = 'line-numbers';
@@ -88,14 +88,14 @@ function addLineNumbers(codeBlock) {
         user-select: none;
         overflow: hidden;
     `;
-    
+
     for (let i = 1; i <= lines.length; i++) {
         const lineNumber = document.createElement('div');
         lineNumber.textContent = i;
         lineNumber.style.lineHeight = '1.5';
         lineNumbers.appendChild(lineNumber);
     }
-    
+
     codeBlock.style.position = 'relative';
     pre.style.paddingLeft = '4rem';
     codeBlock.insertBefore(lineNumbers, pre);
@@ -106,19 +106,19 @@ function addLineNumbers(codeBlock) {
  */
 function highlightAPISignatures() {
     const signatures = document.querySelectorAll('.api-signature');
-    
+
     signatures.forEach(sig => {
         const text = sig.textContent;
-        
+
         // Syntax-Highlighting für Python
         let highlighted = text
-            .replace(/\b(async|def|class|import|from|return|await|if|else|try|except|finally|with|as)\b/g, 
+            .replace(/\b(async|def|class|import|from|return|await|if|else|try|except|finally|with|as)\b/g,
                      '<span class="keyword">$1</span>')
-            .replace(/\b(str|int|float|bool|Dict|List|Optional|Union|Any|Callable|Awaitable)\b/g, 
+            .replace(/\b(str|int|float|bool|Dict|List|Optional|Union|Any|Callable|Awaitable)\b/g,
                      '<span class="type">$1</span>')
-            .replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\s*(?=:)/g, 
+            .replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\s*(?=:)/g,
                      '<span class="parameter">$1</span>');
-        
+
         sig.innerHTML = highlighted;
     });
 }
@@ -128,7 +128,7 @@ function highlightAPISignatures() {
  */
 function setupInteractiveExamples() {
     const examples = document.querySelectorAll('.code-example');
-    
+
     examples.forEach(example => {
         const runButton = document.createElement('button');
         runButton.textContent = '▶ Beispiel ausführen';
@@ -144,19 +144,19 @@ function setupInteractiveExamples() {
             margin-top: 0.5rem;
             transition: background 0.2s;
         `;
-        
+
         runButton.addEventListener('click', function() {
             showExampleOutput(example);
         });
-        
+
         runButton.addEventListener('mouseenter', function() {
             this.style.background = '#1565c0';
         });
-        
+
         runButton.addEventListener('mouseleave', function() {
             this.style.background = '#1976d2';
         });
-        
+
         example.appendChild(runButton);
     });
 }
@@ -166,7 +166,7 @@ function setupInteractiveExamples() {
  */
 function showExampleOutput(example) {
     let output = example.querySelector('.example-output');
-    
+
     if (!output) {
         output = document.createElement('div');
         output.className = 'example-output';
@@ -181,27 +181,27 @@ function showExampleOutput(example) {
         `;
         example.appendChild(output);
     }
-    
+
     // Simuliere Code-Ausführung
     output.innerHTML = '<div style="color: #28a745;">✅ Beispiel erfolgreich ausgeführt</div>';
-    
+
     // Simuliere realistische Ausgabe basierend auf Code-Inhalt
     const code = example.querySelector('code');
     if (code) {
         const codeText = code.textContent;
-        
+
         if (codeText.includes('plan_task')) {
             output.innerHTML += '<div>Plan erstellt: plan-abc123</div>';
         }
-        
+
         if (codeText.includes('execute_action')) {
             output.innerHTML += '<div>Aktion ausgeführt: action-def456</div>';
         }
-        
+
         if (codeText.includes('health_check')) {
             output.innerHTML += '<div>System Status: healthy</div>';
         }
-        
+
         if (codeText.includes('get_available_protocols')) {
             output.innerHTML += '<div>Verfügbare Protokolle: [RPC, STREAM, BUS, MCP]</div>';
         }
@@ -213,7 +213,7 @@ function showExampleOutput(example) {
  */
 function enhanceSearch() {
     const searchInput = document.querySelector('[data-md-component="search-query"]');
-    
+
     if (searchInput) {
         // Suchvorschläge hinzufügen
         const suggestions = [
@@ -227,15 +227,15 @@ function enhanceSearch() {
             'input validation',
             'multi-protocol'
         ];
-        
+
         searchInput.addEventListener('input', function() {
             const query = this.value.toLowerCase();
-            
+
             if (query.length > 2) {
-                const matches = suggestions.filter(s => 
+                const matches = suggestions.filter(s =>
                     s.toLowerCase().includes(query)
                 );
-                
+
                 showSearchSuggestions(matches, this);
             }
         });
@@ -247,7 +247,7 @@ function enhanceSearch() {
  */
 function showSearchSuggestions(suggestions, input) {
     let suggestionBox = document.querySelector('.search-suggestions');
-    
+
     if (!suggestionBox) {
         suggestionBox = document.createElement('div');
         suggestionBox.className = 'search-suggestions';
@@ -267,9 +267,9 @@ function showSearchSuggestions(suggestions, input) {
         input.parentElement.style.position = 'relative';
         input.parentElement.appendChild(suggestionBox);
     }
-    
+
     suggestionBox.innerHTML = '';
-    
+
     suggestions.forEach(suggestion => {
         const item = document.createElement('div');
         item.textContent = suggestion;
@@ -278,24 +278,24 @@ function showSearchSuggestions(suggestions, input) {
             cursor: pointer;
             border-bottom: 1px solid #f0f0f0;
         `;
-        
+
         item.addEventListener('click', function() {
             input.value = suggestion;
             suggestionBox.style.display = 'none';
             input.dispatchEvent(new Event('input'));
         });
-        
+
         item.addEventListener('mouseenter', function() {
             this.style.background = '#f5f5f5';
         });
-        
+
         item.addEventListener('mouseleave', function() {
             this.style.background = 'white';
         });
-        
+
         suggestionBox.appendChild(item);
     });
-    
+
     suggestionBox.style.display = suggestions.length > 0 ? 'block' : 'none';
 }
 
@@ -324,13 +324,13 @@ function enhanceNavigation() {
         transition: opacity 0.3s;
         z-index: 1000;
     `;
-    
+
     scrollButton.addEventListener('click', function() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
-    
+
     document.body.appendChild(scrollButton);
-    
+
     // Zeige Button bei Scroll
     window.addEventListener('scroll', function() {
         if (window.scrollY > 300) {
@@ -339,7 +339,7 @@ function enhanceNavigation() {
             scrollButton.style.opacity = '0';
         }
     });
-    
+
     // Aktuelle Sektion hervorheben
     highlightCurrentSection();
 }
@@ -350,17 +350,17 @@ function enhanceNavigation() {
 function highlightCurrentSection() {
     const sections = document.querySelectorAll('h2[id], h3[id]');
     const navLinks = document.querySelectorAll('.md-nav__link');
-    
+
     function updateActiveSection() {
         let current = '';
-        
+
         sections.forEach(section => {
             const rect = section.getBoundingClientRect();
             if (rect.top <= 100) {
                 current = section.id;
             }
         });
-        
+
         navLinks.forEach(link => {
             link.classList.remove('active-section');
             if (link.getAttribute('href') === `#${current}`) {
@@ -370,7 +370,7 @@ function highlightCurrentSection() {
             }
         });
     }
-    
+
     window.addEventListener('scroll', updateActiveSection);
     updateActiveSection();
 }
@@ -383,7 +383,7 @@ function setupPerformanceMonitoring() {
     window.addEventListener('load', function() {
         const loadTime = performance.now();
         console.log(`📊 Dokumentation geladen in ${loadTime.toFixed(2)}ms`);
-        
+
         // Zeige Performance-Info in der Konsole
         if (performance.getEntriesByType) {
             const navigation = performance.getEntriesByType('navigation')[0];
@@ -399,27 +399,27 @@ function setupPerformanceMonitoring() {
             }
         }
     });
-    
+
     // User Interaction Tracking
     let interactionCount = 0;
-    
+
     document.addEventListener('click', function(e) {
         interactionCount++;
-        
+
         // Track clicks on important elements
         if (e.target.matches('a[href^="#"]')) {
             console.log(`🔗 Interne Navigation: ${e.target.getAttribute('href')}`);
         }
-        
+
         if (e.target.matches('.md-nav__link')) {
             console.log(`📖 Dokumentations-Navigation: ${e.target.textContent.trim()}`);
         }
-        
+
         if (e.target.matches('code, .highlight')) {
             console.log('💻 Code-Block Interaktion');
         }
     });
-    
+
     // Session Summary
     window.addEventListener('beforeunload', function() {
         const sessionTime = performance.now();

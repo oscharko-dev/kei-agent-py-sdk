@@ -28,13 +28,13 @@ config = AgentClientConfig(
 async with UnifiedKeiAgentClient(config=config) as client:
     # Plan erstellen
     plan = await client.plan_task("Erstelle einen Quartalsbericht")
-    
+
     # Aktion ausführen
     result = await client.execute_action("generate_report", {
         "format": "pdf",
         "quarter": "Q4-2024"
     })
-    
+
     # Health Check
     health = await client.health_check()
     print(f"System Status: {health['status']}")
@@ -57,14 +57,14 @@ graph TB
     subgraph "KEI-Agent SDK"
         UC[UnifiedKeiAgentClient]
         PS[ProtocolSelector]
-        
+
         subgraph "Protocol Clients"
             RPC[KEI-RPC<br/>Sync Operations]
             STREAM[KEI-Stream<br/>Real-time]
             BUS[KEI-Bus<br/>Async Messages]
             MCP[KEI-MCP<br/>Tool Integration]
         end
-        
+
         subgraph "Enterprise Features"
             LOG[Structured Logging]
             HEALTH[Health Checks]
@@ -72,7 +72,7 @@ graph TB
             SEC[Security Manager]
         end
     end
-    
+
     UC --> PS
     PS --> RPC
     PS --> STREAM

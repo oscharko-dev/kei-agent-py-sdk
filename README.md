@@ -13,7 +13,7 @@ Das KEI-Agent Python SDK bietet eine einheitliche, typisierte API für die Entwi
 
 ### Multi-Protocol Support
 - **KEI-RPC**: Synchrone Request-Response Operationen
-- **KEI-Stream**: Bidirektionale Real-time Kommunikation  
+- **KEI-Stream**: Bidirektionale Real-time Kommunikation
 - **KEI-Bus**: Asynchrone Message-Bus Integration
 - **KEI-MCP**: Model Context Protocol für Tool-Integration
 
@@ -72,7 +72,7 @@ async def main():
         api_token="your-api-token",
         agent_id="my-agent"
     )
-    
+
     # Client verwenden
     async with UnifiedKeiAgentClient(config=config) as client:
         # Plan erstellen
@@ -81,14 +81,14 @@ async def main():
             context={"format": "pdf", "quarter": "Q4-2024"}
         )
         print(f"Plan erstellt: {plan['plan_id']}")
-        
+
         # Aktion ausführen
         result = await client.execute_action(
             action="generate_report",
             parameters={"template": "quarterly", "data_source": "financial_db"}
         )
         print(f"Report generiert: {result['action_id']}")
-        
+
         # Health Check
         health = await client.health_check()
         print(f"System Status: {health['status']}")
@@ -107,24 +107,24 @@ async def multi_protocol_example():
         api_token="your-api-token",
         agent_id="multi-protocol-agent"
     )
-    
+
     async with UnifiedKeiAgentClient(config=config) as client:
         # Automatische Protokoll-Auswahl
         plan = await client.plan_task("Synchrone Planung")  # → RPC
-        
+
         # Real-time Streaming
         await client.execute_agent_operation(
             "stream_data_processing",
             {"data": "real-time-feed"}  # → STREAM
         )
-        
+
         # Asynchrone Nachrichten
         await client.send_agent_message(
             target_agent="data-processor",
             message_type="task_request",
             payload={"task": "analyze_data"}  # → BUS
         )
-        
+
         # Tool-Integration
         tools = await client.discover_available_tools("math")  # → MCP
         result = await client.use_tool("calculator", expression="100 * 1.08")
@@ -136,8 +136,8 @@ asyncio.run(multi_protocol_example())
 
 ```python
 from kei_agent import (
-    get_logger, 
-    get_health_manager, 
+    get_logger,
+    get_health_manager,
     LogContext,
     APIHealthCheck,
     MemoryHealthCheck
@@ -168,21 +168,21 @@ async def enterprise_example():
         api_token="your-api-token",
         agent_id="enterprise-agent"
     )
-    
+
     async with UnifiedKeiAgentClient(config=config) as client:
         # Operation mit Logging
         operation_id = logger.log_operation_start("business_process")
-        
+
         try:
             result = await client.plan_task("Enterprise task")
             logger.log_operation_end("business_process", operation_id, time.time(), success=True)
-            
+
             # Health Check
             summary = await health_manager.run_all_checks()
-            logger.info("Health check completed", 
+            logger.info("Health check completed",
                        overall_status=summary.overall_status,
                        healthy_count=summary.healthy_count)
-            
+
         except Exception as e:
             logger.log_operation_end("business_process", operation_id, time.time(), success=False)
             logger.error("Business process failed", error=str(e))
@@ -198,7 +198,7 @@ Das SDK folgt einer modularen, Enterprise-Grade Architektur:
 ```
 kei_agent/
 ├── unified_client_refactored.py    # Haupt-API-Klasse
-├── protocol_types.py               # Typ-Definitionen und Konfigurationen  
+├── protocol_types.py               # Typ-Definitionen und Konfigurationen
 ├── security_manager.py             # Authentifizierung und Token-Management
 ├── protocol_clients.py             # KEI-RPC, Stream, Bus, MCP Clients
 ├── protocol_selector.py            # Intelligente Protokoll-Auswahl

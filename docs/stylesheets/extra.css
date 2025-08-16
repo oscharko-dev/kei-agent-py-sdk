@@ -277,11 +277,11 @@
   .feature-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .api-signature {
     font-size: 0.8rem;
   }
-  
+
   .param-table {
     font-size: 0.9rem;
   }
@@ -317,17 +317,17 @@
   .md-footer {
     display: none !important;
   }
-  
+
   .md-main__inner {
     margin: 0 !important;
   }
-  
+
   .feature-card {
     break-inside: avoid;
     box-shadow: none;
     border: 1px solid #ccc;
   }
-  
+
   .highlight {
     break-inside: avoid;
   }

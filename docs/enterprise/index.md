@@ -33,21 +33,21 @@ graph TB
             VALID[Input Validation<br/>& Sanitization]
             AUDIT[Audit Logging<br/>& Compliance]
         end
-        
+
         subgraph "📊 Observability Layer"
             LOGS[Structured Logging<br/>JSON + Correlation-IDs]
             METRICS[Performance Metrics<br/>Timing & Resources]
             HEALTH[Health Checks<br/>Proactive Monitoring]
             TRACE[Distributed Tracing<br/>Request Flow]
         end
-        
+
         subgraph "⚡ Performance Layer"
             ASYNC[Async-First<br/>Non-blocking I/O]
             POOL[Connection Pooling<br/>Resource Management]
             CACHE[Intelligent Caching<br/>Token & Protocol]
             RETRY[Retry Logic<br/>Circuit Breaker]
         end
-        
+
         subgraph "🔄 Resilience Layer"
             FALLBACK[Protocol Fallback<br/>Auto-Recovery]
             CIRCUIT[Circuit Breaker<br/>Failure Isolation]
@@ -55,7 +55,7 @@ graph TB
             GRACEFUL[Graceful Shutdown<br/>Clean Termination]
         end
     end
-    
+
     style AUTH fill:#ffebee
     style LOGS fill:#e3f2fd
     style ASYNC fill:#e8f5e8
@@ -169,7 +169,7 @@ health_manager.register_check(MemoryHealthCheck(
 async def continuous_monitoring():
     while True:
         summary = await health_manager.run_all_checks()
-        
+
         if summary.overall_status != "healthy":
             logger.error(
                 "System health degraded",
@@ -177,7 +177,7 @@ async def continuous_monitoring():
                 unhealthy_count=summary.unhealthy_count,
                 checks=[check.name for check in summary.checks if check.status != "healthy"]
             )
-        
+
         await asyncio.sleep(60)  # Check every minute
 
 # Background monitoring starten
@@ -223,10 +223,10 @@ validator = get_input_validator()
 # Enterprise-Grade Validierung
 def validate_enterprise_input(data: Dict[str, Any]) -> Dict[str, Any]:
     """Validiert Enterprise-Input mit Security-Hardening."""
-    
+
     # Agent-Operation validieren
     result = validator.validate_agent_operation("plan", data)
-    
+
     if not result.valid:
         # Security-Event loggen
         logger.log_security_event(
@@ -237,7 +237,7 @@ def validate_enterprise_input(data: Dict[str, Any]) -> Dict[str, Any]:
             input_data=data
         )
         raise SecurityError(f"Input validation failed: {result.errors}")
-    
+
     return result.sanitized_value
 ```
 
@@ -264,20 +264,20 @@ logger.set_context(LogContext(
 # Business-Logic mit Logging
 async def generate_quarterly_report():
     operation_id = logger.log_operation_start("quarterly_report")
-    
+
     try:
         # Performance-Tracking
         start_time = time.time()
-        
+
         # Business-Logic
         plan = await client.plan_task("Generate Q4 2024 report")
         logger.info("Report plan created", plan_id=plan['plan_id'])
-        
+
         result = await client.execute_action("generate_report", {
             "template": "quarterly_template",
             "quarter": "Q4-2024"
         })
-        
+
         # Performance-Metriken
         duration = (time.time() - start_time) * 1000
         logger.log_performance(
@@ -286,10 +286,10 @@ async def generate_quarterly_report():
             memory_usage=get_memory_usage(),
             report_size=result.get('file_size', 0)
         )
-        
+
         logger.log_operation_end("quarterly_report", operation_id, start_time, success=True)
         return result
-        
+
     except Exception as e:
         logger.log_operation_end("quarterly_report", operation_id, start_time, success=False)
         logger.error("Report generation failed", error=str(e), exception_type=type(e).__name__)
@@ -304,13 +304,13 @@ import time
 
 async def monitor_performance():
     """Kontinuierliches Performance-Monitoring."""
-    
+
     while True:
         # System-Metriken sammeln
         cpu_percent = psutil.cpu_percent(interval=1)
         memory = psutil.virtual_memory()
         disk = psutil.disk_usage('/')
-        
+
         # Performance-Metriken loggen
         logger.log_performance(
             operation="system_monitoring",
@@ -320,7 +320,7 @@ async def monitor_performance():
             disk_usage=disk.percent,
             memory_available_mb=memory.available // (1024 * 1024)
         )
-        
+
         # Alerts bei kritischen Werten
         if cpu_percent > 90:
             logger.log_security_event(
@@ -328,14 +328,14 @@ async def monitor_performance():
                 severity="critical",
                 description=f"CPU usage critical: {cpu_percent}%"
             )
-        
+
         if memory.percent > 95:
             logger.log_security_event(
                 event_type="high_memory_usage",
                 severity="critical",
                 description=f"Memory usage critical: {memory.percent}%"
             )
-        
+
         await asyncio.sleep(60)  # Monitor every minute
 ```
 
@@ -425,7 +425,7 @@ spec:
 # Automatisches Audit-Logging für alle Operationen
 async def audit_logged_operation(operation: str, data: Dict[str, Any]):
     """Führt Operation mit vollständigem Audit-Logging aus."""
-    
+
     # Pre-Operation Audit
     logger.log_security_event(
         event_type="operation_started",
@@ -436,10 +436,10 @@ async def audit_logged_operation(operation: str, data: Dict[str, Any]):
         timestamp=datetime.utcnow().isoformat(),
         input_data_hash=hash_sensitive_data(data)
     )
-    
+
     try:
         result = await client.execute_agent_operation(operation, data)
-        
+
         # Success Audit
         logger.log_security_event(
             event_type="operation_completed",
@@ -448,9 +448,9 @@ async def audit_logged_operation(operation: str, data: Dict[str, Any]):
             operation=operation,
             result_hash=hash_sensitive_data(result)
         )
-        
+
         return result
-        
+
     except Exception as e:
         # Failure Audit
         logger.log_security_event(
@@ -470,14 +470,14 @@ async def audit_logged_operation(operation: str, data: Dict[str, Any]):
 # Datenschutz-konforme Datenverarbeitung
 def sanitize_for_logging(data: Dict[str, Any]) -> Dict[str, Any]:
     """Entfernt PII-Daten für GDPR-Compliance."""
-    
+
     sensitive_fields = ['email', 'phone', 'ssn', 'credit_card']
     sanitized = data.copy()
-    
+
     for field in sensitive_fields:
         if field in sanitized:
             sanitized[field] = "[REDACTED]"
-    
+
     return sanitized
 ```
 

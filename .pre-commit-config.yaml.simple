@@ -79,11 +79,11 @@ repos:
 
   - repo: local
     hooks:
-      # Vollständige Ruff-Prüfung aller Python-Dateien (nur Warnung)
+      # Vollständige Ruff-Prüfung aller Python-Dateien
       - id: ruff-check-all
         name: 🔍 Ruff Check (ALLE Dateien)
         description: Führt Ruff-Check auf ALLEN Python-Dateien aus (inkl. Tests)
-        entry: bash -c 'ruff check . || echo "⚠️ Ruff fand Probleme in Tests - siehe oben"'
+        entry: ruff check --fix
         language: system
         files: '\.py$'
         pass_filenames: false
