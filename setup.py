@@ -57,7 +57,7 @@ setup(
         ],
         "dev": [
             "pytest>=7.4.0,<8.0.0",
-            "pytest-asyncio>=0.21.0,<1.0.0",
+            "pytest-asyncio>=0.21.0,<2.0.0",
             "pytest-cov>=4.1.0,<5.0.0",
             "pytest-mock>=3.11.0,<4.0.0",
             "black>=23.7.0,<24.0.0",
@@ -72,7 +72,7 @@ setup(
             "click>=8.0.0,<9.0.0",
             "rich>=13.0.0,<14.0.0",
             "pytest>=7.4.0,<8.0.0",
-            "pytest-asyncio>=0.21.0,<1.0.0",
+            "pytest-asyncio>=0.21.0,<2.0.0",
             "pytest-cov>=4.1.0,<5.0.0",
             "pytest-mock>=3.11.0,<4.0.0",
         ]
