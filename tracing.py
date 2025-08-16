@@ -21,10 +21,6 @@ try:
     from opentelemetry.sdk.trace import TracerProvider, Span
     from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
     from opentelemetry.sdk.metrics import MeterProvider
-    from opentelemetry.sdk.metrics.export import (
-        ConsoleMetricExporter,
-        PeriodicExportingMetricReader,
-    )
     from opentelemetry.propagate import inject, extract
     from opentelemetry.trace.propagation.tracecontext import (
         TraceContextTextMapPropagator,
@@ -553,14 +549,8 @@ class TracingManager:
                 self.config.service_name, self.config.service_version
             )
 
-            # Meter Provider
-            metric_reader = PeriodicExportingMetricReader(
-                ConsoleMetricExporter(), export_interval_millis=30000
-            )
-
-            self._meter_provider = MeterProvider(
-                resource=self._create_resource(), metric_readers=[metric_reader]
-            )
+            # Meter Provider (ohne Argumente für neue OpenTelemetry-Version)
+            self._meter_provider = MeterProvider()
 
             # Meter Provider setzen (nur wenn verfügbar)
             if hasattr(metrics, "set_meter_provider"):

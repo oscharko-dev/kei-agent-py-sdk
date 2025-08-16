@@ -273,17 +273,19 @@ class TestKEIStreamClient:
                 mock_disconnect.assert_called_once()
 
     @pytest.mark.asyncio
-    @patch('websockets.connect')
-    async def test_connect_success(self, mock_connect, stream_client):
+    async def test_connect_success(self, stream_client):
         """Testet erfolgreiche WebSocket-Verbindung."""
         mock_websocket = AsyncMock()
-        mock_connect.return_value = mock_websocket
 
-        await stream_client.connect()
+        # Mock websockets.connect direkt
+        with patch('protocol_clients.websockets.connect', new_callable=AsyncMock) as mock_connect:
+            mock_connect.return_value = mock_websocket
 
-        assert stream_client._connected is True
-        assert stream_client._websocket == mock_websocket
-        mock_connect.assert_called_once()
+            await stream_client.connect()
+
+            assert stream_client._connected is True
+            assert stream_client._websocket == mock_websocket
+            mock_connect.assert_called_once()
 
     @pytest.mark.asyncio
     @patch('websockets.connect')
