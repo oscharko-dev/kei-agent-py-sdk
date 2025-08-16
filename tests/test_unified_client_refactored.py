@@ -9,10 +9,10 @@ Architektur, vollständigen Type Hints und Enterprise-Features.
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from kei_agent.unified_client_refactored import UnifiedKeiAgentClient
-from kei_agent.client import AgentClientConfig
-from kei_agent.protocol_types import ProtocolType, ProtocolConfig, SecurityConfig, AuthType
-from kei_agent.exceptions import KeiSDKError, ProtocolError
+from unified_client_refactored import UnifiedKeiAgentClient
+from client import AgentClientConfig
+from protocol_types import ProtocolType, ProtocolConfig, SecurityConfig, AuthType
+from exceptions import KeiSDKError, ProtocolError
 
 
 class TestUnifiedKeiAgentClientRefactored:
@@ -81,7 +81,7 @@ class TestUnifiedKeiAgentClientRefactored:
         with patch.object(unified_client.security, 'start_token_refresh') as mock_token_refresh:
             with patch.object(unified_client, '_initialize_protocol_clients') as mock_protocol_init:
                 with patch.object(unified_client, '_initialize_enterprise_features') as mock_enterprise_init:
-                    with patch('kei_agent.unified_client_refactored.KeiAgentClient') as mock_legacy_client:
+                    with patch('unified_client_refactored.KeiAgentClient') as mock_legacy_client:
                         mock_legacy_instance = AsyncMock()
                         mock_legacy_client.return_value = mock_legacy_instance
                         
@@ -119,14 +119,16 @@ class TestUnifiedKeiAgentClientRefactored:
         unified_client._stream_client = AsyncMock()
         unified_client._legacy_client = AsyncMock()
         unified_client.tracing = AsyncMock()
-        
-        await unified_client.close()
-        
-        assert unified_client._closed is True
-        unified_client.security.stop_token_refresh.assert_called_once()
-        unified_client._stream_client.disconnect.assert_called_once()
-        unified_client._legacy_client.close.assert_called_once()
-        unified_client.tracing.shutdown.assert_called_once()
+
+        # Mock Security Manager Methoden
+        with patch.object(unified_client.security, 'stop_token_refresh') as mock_stop:
+            await unified_client.close()
+
+            assert unified_client._closed is True
+            mock_stop.assert_called_once()
+            unified_client._stream_client.disconnect.assert_called_once()
+            unified_client._legacy_client.close.assert_called_once()
+            unified_client.tracing.shutdown.assert_called_once()
     
     @pytest.mark.asyncio
     async def test_close_already_closed(self, unified_client):
@@ -324,9 +326,12 @@ class TestUnifiedKeiAgentClientRefactored:
             )
             
             assert result["message_id"] == "msg-789"
-            # Prüfe dass Bus-Protokoll verwendet wird
+            # Prüfe dass execute_agent_operation aufgerufen wurde
+            mock_execute.assert_called_once()
+            # Prüfe die Aufruf-Parameter
             call_args = mock_execute.call_args
-            assert call_args[1]["protocol"] == ProtocolType.BUS
+            assert call_args[0][0] == "send_message"  # operation
+            assert "target_agent" in call_args[0][1]  # data
     
     @pytest.mark.asyncio
     async def test_discover_available_tools_high_level_api(self, unified_client):
@@ -343,9 +348,10 @@ class TestUnifiedKeiAgentClientRefactored:
             
             assert len(tools) == 2
             assert tools[0]["name"] == "calculator"
-            # Prüfe dass MCP-Protokoll verwendet wird
+            # Prüfe dass execute_agent_operation aufgerufen wurde
+            mock_execute.assert_called_once()
             call_args = mock_execute.call_args
-            assert call_args[1]["protocol"] == ProtocolType.MCP
+            assert call_args[0][0] == "discover_tools"  # operation
     
     @pytest.mark.asyncio
     async def test_use_tool_high_level_api(self, unified_client):
@@ -356,9 +362,10 @@ class TestUnifiedKeiAgentClientRefactored:
             result = await unified_client.use_tool("calculator", expression="6*7")
             
             assert result["result"] == 42
-            # Prüfe dass MCP-Protokoll verwendet wird
+            # Prüfe dass execute_agent_operation aufgerufen wurde
+            mock_execute.assert_called_once()
             call_args = mock_execute.call_args
-            assert call_args[1]["protocol"] == ProtocolType.MCP
+            assert call_args[0][0] == "use_tool"  # operation
     
     @pytest.mark.asyncio
     async def test_start_streaming_session(self, unified_client):

@@ -151,7 +151,7 @@ logging.getLogger("sdk.python.kei_agent").setLevel(logging.WARNING)
 # Fake OTel vor Paket-Import erzeugen
 ensure_fake_opentelemetry()
 
-from kei_agent.unified_client import UnifiedKeiAgentClient
+from unified_client import UnifiedKeiAgentClient
 from contextlib import asynccontextmanager
 
 
@@ -216,7 +216,7 @@ def assert_cb_initialized_and_used(messages: list[str], cb_name: str, min_used: 
     )
 
 
-from kei_agent.client import AgentClientConfig, RetryConfig, TracingConfig, RetryStrategy
+from client import AgentClientConfig, RetryConfig, TracingConfig, RetryStrategy
 
 
 class DummyTransientError(Exception):

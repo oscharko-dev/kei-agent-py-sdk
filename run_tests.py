@@ -53,7 +53,7 @@ def run_unit_tests(verbose: bool = False, coverage: bool = True) -> int:
     Returns:
         Rückgabecode
     """
-    cmd = ["python", "-m", "pytest", "tests/", "-m", "unit"]
+    cmd = ["python3", "-m", "pytest", "tests/"]
 
     if verbose:
         cmd.append("-v")
@@ -73,7 +73,7 @@ def run_integration_tests(verbose: bool = False) -> int:
     Returns:
         Rückgabecode
     """
-    cmd = ["python", "-m", "pytest", "tests/", "-m", "integration"]
+    cmd = ["python3", "-m", "pytest", "tests/", "-m", "integration"]
 
     if verbose:
         cmd.append("-v")
@@ -98,7 +98,7 @@ def run_protocol_tests(protocol: Optional[str] = None, verbose: bool = False) ->
         marker = "protocol"
         description = "Alle Protokoll Tests"
 
-    cmd = ["python", "-m", "pytest", "tests/", "-m", marker]
+    cmd = ["python3", "-m", "pytest", "tests/", "-m", marker]
 
     if verbose:
         cmd.append("-v")
@@ -115,7 +115,7 @@ def run_refactored_tests(verbose: bool = False) -> int:
     Returns:
         Rückgabecode
     """
-    cmd = ["python", "-m", "pytest", "tests/", "-m", "refactored"]
+    cmd = ["python3", "-m", "pytest", "tests/", "-m", "refactored"]
 
     if verbose:
         cmd.append("-v")
@@ -132,7 +132,7 @@ def run_security_tests(verbose: bool = False) -> int:
     Returns:
         Rückgabecode
     """
-    cmd = ["python", "-m", "pytest", "tests/", "-m", "security"]
+    cmd = ["python3", "-m", "pytest", "tests/", "-m", "security"]
 
     if verbose:
         cmd.append("-v")
@@ -149,7 +149,7 @@ def run_performance_tests(verbose: bool = False) -> int:
     Returns:
         Rückgabecode
     """
-    cmd = ["python", "-m", "pytest", "tests/", "-m", "performance"]
+    cmd = ["python3", "-m", "pytest", "tests/", "-m", "performance"]
 
     if verbose:
         cmd.append("-v")
@@ -167,7 +167,7 @@ def run_all_tests(verbose: bool = False, coverage: bool = True) -> int:
     Returns:
         Rückgabecode
     """
-    cmd = ["python", "-m", "pytest", "tests/"]
+    cmd = ["python3", "-m", "pytest", "tests/"]
 
     if verbose:
         cmd.append("-v")
@@ -193,7 +193,7 @@ def run_coverage_report() -> int:
         print(f"📄 HTML-Report verfügbar: {html_report.absolute()}")
 
     # Terminal-Report anzeigen
-    cmd = ["python", "-m", "coverage", "report", "--show-missing"]
+    cmd = ["python3", "-m", "coverage", "report", "--show-missing"]
     return run_command(cmd, "Coverage Report")
 
 
@@ -204,9 +204,9 @@ def run_code_quality_checks() -> int:
         Rückgabecode
     """
     checks = [
-        (["python", "-m", "ruff", "check", "."], "Ruff Linting"),
-        (["python", "-m", "ruff", "format", "--check", "."], "Ruff Formatting Check"),
-        (["python", "-m", "mypy", "kei_agent/"], "MyPy Type Checking"),
+        (["python3", "-m", "ruff", "check", "."], "Ruff Linting"),
+        (["python3", "-m", "ruff", "format", "--check", "."], "Ruff Formatting Check"),
+        (["python3", "-m", "mypy", "kei_agent/"], "MyPy Type Checking"),
     ]
 
     total_errors = 0

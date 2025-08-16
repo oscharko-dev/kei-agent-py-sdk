@@ -10,16 +10,16 @@ import json
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from kei_agent.protocol_clients import (
+from protocol_clients import (
     BaseProtocolClient,
     KEIRPCClient,
     KEIStreamClient,
     KEIBusClient,
     KEIMCPClient
 )
-from kei_agent.security_manager import SecurityManager
-from kei_agent.protocol_types import SecurityConfig, AuthType
-from kei_agent.exceptions import ProtocolError, CommunicationError
+from security_manager import SecurityManager
+from protocol_types import SecurityConfig, AuthType
+from exceptions import ProtocolError, CommunicationError
 
 
 class TestBaseProtocolClient:
