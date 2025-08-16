@@ -15,8 +15,8 @@ import logging
 
 import httpx
 
-from .protocol_types import SecurityConfig, AuthType
-from .exceptions import SecurityError
+from protocol_types import SecurityConfig, AuthType
+from exceptions import SecurityError
 
 # Initialisiert Modul-Logger
 _logger = logging.getLogger(__name__)

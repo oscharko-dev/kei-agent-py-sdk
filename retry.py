@@ -18,7 +18,7 @@ from typing import Any, Dict, List, Optional, Callable, Awaitable
 from collections import deque
 import logging
 
-from .exceptions import RetryExhaustedError, CircuitBreakerOpenError
+from exceptions import RetryExhaustedError, CircuitBreakerOpenError
 
 # Initialisiert Modul-Logger für Retry/CB
 _logger = logging.getLogger(__name__)

@@ -12,11 +12,11 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List, Optional, TYPE_CHECKING
 
-from .models import Agent, AgentInstance, DiscoveryQuery, DiscoveryResult, HealthStatus
-from .exceptions import DiscoveryError
+from models import Agent, AgentInstance, DiscoveryQuery, DiscoveryResult, HealthStatus
+from exceptions import DiscoveryError
 
 if TYPE_CHECKING:
-    from .client import KeiAgentClient
+    from client import KeiAgentClient
 
 
 class DiscoveryStrategy(str, Enum):

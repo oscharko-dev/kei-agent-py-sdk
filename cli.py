@@ -19,9 +19,9 @@ from rich.table import Table
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from .unified_client import UnifiedKeiAgentClient
-from .client import AgentClientConfig
-from .exceptions import KeiSDKError
+from unified_client import UnifiedKeiAgentClient
+from client import AgentClientConfig
+from exceptions import KeiSDKError
 
 
 # Rich Console für schöne Ausgaben

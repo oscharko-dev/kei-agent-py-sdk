@@ -11,17 +11,17 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional, Callable, Awaitable
 import logging
 
-from .client import AgentClientConfig, KeiAgentClient
-from .protocol_types import ProtocolType, ProtocolConfig, SecurityConfig
-from .security_manager import SecurityManager
-from .protocol_clients import KEIRPCClient, KEIStreamClient, KEIBusClient, KEIMCPClient
-from .protocol_selector import ProtocolSelector
-from .exceptions import KeiSDKError, ProtocolError
-from .tracing import TracingManager
-from .retry import RetryManager
-from .capabilities import CapabilityManager
-from .discovery import ServiceDiscovery
-from .utils import create_correlation_id
+from client import AgentClientConfig, KeiAgentClient
+from protocol_types import ProtocolType, ProtocolConfig, SecurityConfig
+from security_manager import SecurityManager
+from protocol_clients import KEIRPCClient, KEIStreamClient, KEIBusClient, KEIMCPClient
+from protocol_selector import ProtocolSelector
+from exceptions import KeiSDKError, ProtocolError
+from tracing import TracingManager
+from retry import RetryManager
+from capabilities import CapabilityManager
+from discovery import ServiceDiscovery
+from utils import create_correlation_id
 
 # Initialisiert Modul-Logger
 _logger = logging.getLogger(__name__)

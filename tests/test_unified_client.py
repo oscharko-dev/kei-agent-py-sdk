@@ -9,7 +9,7 @@ import asyncio
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from kei_agent.unified_client import (
+from unified_client import (
     UnifiedKeiAgentClient,
     ProtocolConfig,
     SecurityConfig,
@@ -21,8 +21,8 @@ from kei_agent.unified_client import (
     KEIBusClient,
     KEIMCPClient
 )
-from kei_agent.client import AgentClientConfig
-from kei_agent.exceptions import (
+from client import AgentClientConfig
+from exceptions import (
     KeiSDKError,
     ProtocolError,
     SecurityError

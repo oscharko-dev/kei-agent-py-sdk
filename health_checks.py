@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from .enterprise_logging import get_logger
+from enterprise_logging import get_logger
 
 # Initialisiert Modul-Logger
 _logger = get_logger(__name__)

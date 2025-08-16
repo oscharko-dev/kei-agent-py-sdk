@@ -13,22 +13,97 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Union
 from contextlib import contextmanager
 
-from opentelemetry import trace, metrics
-from opentelemetry.exporter.jaeger.thrift import JaegerExporter
-from opentelemetry.exporter.zipkin.json import ZipkinExporter
-from opentelemetry.sdk.trace import TracerProvider, Span
-from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
-from opentelemetry.sdk.metrics import MeterProvider
-from opentelemetry.sdk.metrics.export import (
-    ConsoleMetricExporter,
-    PeriodicExportingMetricReader,
-)
-from opentelemetry.propagate import inject, extract
-from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
-from opentelemetry.baggage.propagation import W3CBaggagePropagator
-from opentelemetry.propagators.composite import CompositeHTTPPropagator
+# OpenTelemetry Imports mit Fallback
+try:
+    from opentelemetry import trace, metrics
+    from opentelemetry.exporter.jaeger.thrift import JaegerExporter
+    from opentelemetry.exporter.zipkin.json import ZipkinExporter
+    from opentelemetry.sdk.trace import TracerProvider, Span
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
+    from opentelemetry.sdk.metrics import MeterProvider
+    from opentelemetry.sdk.metrics.export import (
+        ConsoleMetricExporter,
+        PeriodicExportingMetricReader,
+    )
+    from opentelemetry.propagate import inject, extract
+    from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
+    from opentelemetry.baggage.propagation import W3CBaggagePropagator
+    from opentelemetry.propagators.composite import CompositeHTTPPropagator
+    OPENTELEMETRY_AVAILABLE = True
+except ImportError:
+    # NoOp-Implementierungen für fehlende OpenTelemetry
+    OPENTELEMETRY_AVAILABLE = False
 
-from .exceptions import TracingError
+    class NoOpSpan:
+        """NoOp Span-Implementierung."""
+        def __enter__(self): return self
+        def __exit__(self, *args): pass
+        def set_attribute(self, key, value): pass
+        def set_status(self, status): pass
+        def record_exception(self, exception): pass
+        def end(self): pass
+        def is_recording(self): return False
+
+    class NoOpTracer:
+        """NoOp Tracer-Implementierung."""
+        def start_span(self, name, **kwargs): return NoOpSpan()
+        def start_as_current_span(self, name, **kwargs): return NoOpSpan()
+
+    class NoOpTracerProvider:
+        """NoOp TracerProvider-Implementierung."""
+        def __init__(self, resource=None): pass
+        def get_tracer(self, name, version=None): return NoOpTracer()
+        def add_span_processor(self, processor): pass
+
+    class NoOpMeter:
+        """NoOp Meter-Implementierung."""
+        def create_counter(self, name, **kwargs): return lambda **kw: None
+        def create_histogram(self, name, **kwargs): return lambda **kw: None
+
+    class NoOpMeterProvider:
+        """NoOp MeterProvider-Implementierung."""
+        def __init__(self, resource=None, metric_readers=None): pass
+        def get_meter(self, name, version=None): return NoOpMeter()
+
+    # Dummy-Klassen und Funktionen
+    TracerProvider = NoOpTracerProvider
+    MeterProvider = NoOpMeterProvider
+    Span = NoOpSpan
+    trace = type('trace', (), {
+        'get_current_span': lambda: NoOpSpan(),
+        'set_tracer_provider': lambda provider: None
+    })()
+    metrics = type('metrics', (), {
+        'get_meter_provider': lambda: NoOpMeterProvider(),
+        'set_meter_provider': lambda provider: None
+    })()
+    inject = lambda carrier, context=None: None
+    extract = lambda carrier, context=None: None
+
+    # NoOp Propagator-Klassen
+    class NoOpPropagator:
+        def inject(self, carrier, context=None): pass
+        def extract(self, carrier, context=None): return None
+
+    class NoOpSpanExporter:
+        def export(self, spans): pass
+        def shutdown(self): pass
+
+    class NoOpSpanProcessor:
+        def on_start(self, span, parent_context=None): pass
+        def on_end(self, span): pass
+        def shutdown(self): pass
+        def force_flush(self, timeout_millis=None): pass
+
+    TraceContextTextMapPropagator = NoOpPropagator
+    W3CBaggagePropagator = NoOpPropagator
+    CompositeHTTPPropagator = lambda propagators: NoOpPropagator()
+    ConsoleSpanExporter = NoOpSpanExporter
+    JaegerExporter = lambda **kwargs: NoOpSpanExporter()
+    ZipkinExporter = lambda **kwargs: NoOpSpanExporter()
+    BatchSpanProcessor = lambda exporter, **kwargs: NoOpSpanProcessor()
+
+from exceptions import TracingError
 
 
 @dataclass
@@ -356,9 +431,21 @@ class TracingManager:
 
     def _initialize_tracing(self) -> None:
         """Initialisiert OpenTelemetry-Tracing."""
+        if not OPENTELEMETRY_AVAILABLE:
+            # Verwende NoOp-Implementierungen
+            self._tracer_provider = NoOpTracerProvider()
+            self._tracer = NoOpTracer()
+            self._meter_provider = NoOpMeterProvider()
+            self._meter = NoOpMeter()
+            return
+
         try:
             # Tracer Provider
-            self._tracer_provider = TracerProvider(resource=self._create_resource())
+            resource = self._create_resource()
+            if resource:
+                self._tracer_provider = TracerProvider(resource=resource)
+            else:
+                self._tracer_provider = TracerProvider()
 
             # Span-Processor hinzufügen
             if self.config.jaeger_endpoint:
@@ -409,19 +496,25 @@ class TracingManager:
         """Erstellt OpenTelemetry-Resource.
 
         Returns:
-            Resource-Objekt
+            Resource-Objekt oder None bei fehlender OpenTelemetry
         """
-        from opentelemetry.sdk.resources import Resource, SERVICE_NAME, SERVICE_VERSION
+        if not OPENTELEMETRY_AVAILABLE:
+            return None
 
-        attributes = {
-            SERVICE_NAME: self.config.service_name,
-            SERVICE_VERSION: self.config.service_version,
-        }
+        try:
+            from opentelemetry.sdk.resources import Resource, SERVICE_NAME, SERVICE_VERSION
 
-        # Custom Attributes hinzufügen
-        attributes.update(self.config.custom_attributes)
+            attributes = {
+                SERVICE_NAME: self.config.service_name,
+                SERVICE_VERSION: self.config.service_version,
+            }
 
-        return Resource.create(attributes)
+            # Custom Attributes hinzufügen
+            attributes.update(self.config.custom_attributes)
+
+            return Resource.create(attributes)
+        except ImportError:
+            return None
 
     def _create_metrics(self) -> None:
         """Erstellt Standard-Metriken."""

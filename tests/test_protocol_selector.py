@@ -8,9 +8,9 @@ Operation-Analyse mit verschiedenen Konfigurationen.
 
 import pytest
 
-from kei_agent.protocol_selector import ProtocolSelector
-from kei_agent.protocol_types import ProtocolType, ProtocolConfig
-from kei_agent.exceptions import ProtocolError
+from protocol_selector import ProtocolSelector
+from protocol_types import ProtocolType, ProtocolConfig
+from exceptions import ProtocolError
 
 
 class TestProtocolSelector:

@@ -8,7 +8,7 @@ mit vollständiger Validierung und Edge Cases.
 
 import pytest
 
-from kei_agent.protocol_types import (
+from protocol_types import (
     ProtocolType,
     AuthType,
     ProtocolConfig,
@@ -29,8 +29,8 @@ class TestProtocolType:
     
     def test_protocol_type_string_conversion(self):
         """Testet String-Konvertierung von ProtocolType."""
-        assert str(ProtocolType.RPC) == "rpc"
-        assert str(ProtocolType.STREAM) == "stream"
+        assert ProtocolType.RPC.value == "rpc"
+        assert ProtocolType.STREAM.value == "stream"
     
     def test_protocol_type_comparison(self):
         """Testet Vergleich von ProtocolType Werten."""
@@ -49,8 +49,8 @@ class TestAuthType:
     
     def test_auth_type_string_conversion(self):
         """Testet String-Konvertierung von AuthType."""
-        assert str(AuthType.BEARER) == "bearer"
-        assert str(AuthType.OIDC) == "oidc"
+        assert AuthType.BEARER.value == "bearer"
+        assert AuthType.OIDC.value == "oidc"
 
 
 class TestProtocolConfig:
