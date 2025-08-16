@@ -39,7 +39,6 @@ permissions:
 env:
   PYTHONUNBUFFERED: 1
   PYTHONDONTWRITEBYTECODE: 1
-  PIP_NO_CACHE_DIR: 1
   PIP_DISABLE_PIP_VERSION_CHECK: 1
 
 jobs:
@@ -96,17 +95,27 @@ jobs:
       # Version in pyproject.toml validieren
       - name: ✅ Validate Version
         run: |
-          PYPROJECT_VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          # Python 3.11+ hat tomllib, für ältere Versionen verwenden wir toml
+          PYPROJECT_VERSION=$(python -c "
+          try:
+              import tomllib
+              with open('pyproject.toml', 'rb') as f:
+                  data = tomllib.load(f)
+          except ImportError:
+              import toml
+              data = toml.load('pyproject.toml')
+          print(data['project']['version'])
+          ")
           TAG_VERSION="${{ steps.version.outputs.version }}"
-          
+
           echo "📋 pyproject.toml Version: $PYPROJECT_VERSION"
           echo "📋 Tag Version: $TAG_VERSION"
-          
+
           if [[ "$PYPROJECT_VERSION" != "$TAG_VERSION" ]]; then
             echo "❌ Version-Mismatch zwischen pyproject.toml ($PYPROJECT_VERSION) und Tag ($TAG_VERSION)"
             exit 1
           fi
-          
+
           echo "✅ Version validiert: $TAG_VERSION"
       
       # Qualitätsprüfungen
