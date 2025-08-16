@@ -9,7 +9,7 @@ mit umfassenden Mock-Szenarien und Edge Cases.
 import asyncio
 import pytest
 import time
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 from security_manager import SecurityManager
 from protocol_types import SecurityConfig, AuthType
@@ -269,14 +269,20 @@ class TestSecurityManager:
         """Testet Token-Refresh-Stop."""
         manager = SecurityManager(oidc_config)
 
-        # Simuliere aktiven Refresh-Task
-        mock_task = AsyncMock()
-        mock_task.done.return_value = False
-        manager._token_refresh_task = mock_task
+        # Erstelle einen echten Task und mocke ihn
+        async def dummy_task():
+            await asyncio.sleep(10)  # Lange laufender Task
+
+        real_task = asyncio.create_task(dummy_task())
+        manager._token_refresh_task = real_task
+
+        # Stelle sicher, dass der Task läuft
+        assert not real_task.done()
 
         await manager.stop_token_refresh()
 
-        mock_task.cancel.assert_called_once()
+        # Task sollte gecancelt sein
+        assert real_task.cancelled()
 
     def test_get_security_context(self, bearer_config):
         """Testet Security-Context-Abruf."""
