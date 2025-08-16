@@ -18,7 +18,7 @@ setup(
         # HTTP und WebSocket Clients
         "aiohttp>=3.8.0,<4.0.0",
         "httpx>=0.24.0,<1.0.0",
-        "websockets>=11.0.0,<12.0.0",
+        "websockets>=11.0.0,<16.0.0",
 
         # Async und Utilities
         "pydantic>=2.0.0,<3.0.0",
