@@ -1,0 +1,226 @@
+# Pre-Commit-Konfiguration für KEI-Agent Python SDK
+# Führt automatische Code-Quality-Checks vor jedem Git-Commit aus
+#
+# Installation: pip install pre-commit && pre-commit install
+# Manueller Lauf: pre-commit run --all-files
+
+# Alle Hooks ausführen, auch wenn einer fehlschlägt
+fail_fast: false
+
+# Standard-Ausschlüsse
+default_stages: [ commit ]
+exclude: |
+  (?x)^(
+    \.git/.*|
+    \.pytest_cache/.*|
+    __pycache__/.*|
+    \.mypy_cache/.*|
+    \.ruff_cache/.*|
+    site/.*|
+    htmlcov/.*|
+    \.coverage.*|
+    build/.*|
+    dist/.*|
+    \.venv/.*|
+    venv/.*
+  )$
+
+repos:
+  # ============================================================================
+  # ALLGEMEINE CODE-QUALITÄT
+  # ============================================================================
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      # Basis-Formatierung
+      - id: trailing-whitespace
+        name: 🧹 Entferne trailing whitespace
+        description: Entfernt überflüssige Leerzeichen am Zeilenende
+
+      - id: end-of-file-fixer
+        name: 📝 Korrigiere End-of-File
+        description: Stellt sicher, dass Dateien mit einer Newline enden
+
+      - id: check-merge-conflict
+        name: 🔀 Prüfe Merge-Konflikte
+        description: Verhindert Commits mit Merge-Konflikt-Markern
+
+      - id: check-case-conflict
+        name: 📁 Prüfe Dateinamen-Konflikte
+        description: Verhindert case-sensitive Dateinamen-Konflikte
+
+      # Dateigröße und -typ Kontrollen
+      - id: check-added-large-files
+        name: 📦 Prüfe große Dateien
+        description: Verhindert das Hinzufügen von Dateien > 500KB
+        args: [ '--maxkb=500' ]
+
+      - id: check-executables-have-shebangs
+        name: 🔧 Prüfe Shebang in ausführbaren Dateien
+        description: Stellt sicher, dass ausführbare Dateien Shebangs haben
+
+      # Syntax-Validierung
+      - id: check-yaml
+        name: 📋 Validiere YAML-Syntax
+        description: Prüft YAML-Dateien auf Syntax-Fehler
+        exclude: ^\.github/workflows/.*\.yml$  # Separate Validierung für Workflows
+
+      - id: check-json
+        name: 🔍 Validiere JSON-Syntax
+        description: Prüft JSON-Dateien auf Syntax-Fehler
+
+      - id: check-toml
+        name: ⚙️ Validiere TOML-Syntax
+        description: Prüft TOML-Dateien (pyproject.toml) auf Syntax-Fehler
+
+      - id: check-xml
+        name: 📄 Validiere XML-Syntax
+        description: Prüft XML-Dateien auf Syntax-Fehler
+
+  # ============================================================================
+  # PYTHON CODE-QUALITÄT
+  # ============================================================================
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      # Ruff Linting (ersetzt flake8, pylint)
+      - id: ruff
+        name: 🔍 Ruff Linting
+        description: Führt Linting mit Ruff aus (ersetzt flake8)
+        args:
+          - --fix
+          - --exit-non-zero-on-fix
+        files: '^[^/]*\.py$'  # Nur Python-Dateien im Root (flache Struktur)
+        exclude: ^tests/.*\.py$  # Tests ausschließen (haben Mock-Probleme)
+
+      # Ruff Formatierung (ersetzt black, isort)
+      - id: ruff-format
+        name: 🎨 Ruff Formatierung
+        description: Formatiert Python-Code mit Ruff (ersetzt black + isort)
+        files: '^[^/]*\.py$'  # Nur Python-Dateien im Root
+        exclude: ^tests/.*\.py$  # Tests ausschließen
+
+  # MyPy Typenprüfung
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.11.2
+    hooks:
+      - id: mypy
+        name: 🔬 MyPy Typenprüfung
+        description: Statische Typenprüfung mit MyPy
+        files: '^[^/]*\.py$'  # Nur Python-Dateien im Root
+        exclude: ^tests/.*\.py$  # Tests ausschließen
+        args:
+          - --ignore-missing-imports
+          - --no-strict-optional
+          - --python-version=3.9
+        additional_dependencies:
+          - types-requests
+          - types-PyYAML
+
+  # Bandit Sicherheits-Scan
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.10
+    hooks:
+      - id: bandit
+        name: 🛡️ Bandit Sicherheits-Scan
+        description: Scannt Python-Code auf Sicherheitsprobleme
+        files: '^[^/]*\.py$'  # Nur Python-Dateien im Root
+        exclude: ^tests/.*\.py$  # Tests ausschließen
+        args:
+          - --skip=B101,B601  # Skip assert und shell=True (in Tests üblich)
+          - --format=custom
+          - '--msg-template={abspath}:{line}: {test_id}[bandit]: {severity}: {msg}'
+
+  # ============================================================================
+  # DOKUMENTATION
+  # ============================================================================
+  
+  # Markdown-Linting
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.42.0
+    hooks:
+      - id: markdownlint
+        name: 📖 Markdown Linting
+        description: Prüft Markdown-Dateien auf Stil und Syntax
+        args:
+          - --fix
+          - --disable=MD013  # Zeilenlänge (oft zu strikt für Code-Blöcke)
+          - --disable=MD033  # HTML-Tags (in MkDocs üblich)
+          - --disable=MD041  # Erste Zeile muss H1 sein (nicht immer gewünscht)
+        files: \.md$
+        exclude: ^site/.*\.md$  # Generierte Dokumentation ausschließen
+
+  # MkDocs Konfiguration validieren
+  - repo: local
+    hooks:
+      - id: mkdocs-validate
+        name: 📚 MkDocs Konfiguration validieren
+        description: Validiert MkDocs-Konfiguration und Dokumentationsstruktur
+        entry: python3 -c "import mkdocs.config; mkdocs.config.load_config(); print('✅ MkDocs-Konfiguration ist gültig')"
+        language: system
+        files: ^(mkdocs\.yml|docs/.*)$
+        pass_filenames: false
+
+  # ============================================================================
+  # GITHUB ACTIONS / WORKFLOWS
+  # ============================================================================
+  
+  # GitHub Actions YAML-Validierung
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.3
+    hooks:
+      - id: actionlint
+        name: ⚡ GitHub Actions Linting
+        description: Validiert GitHub Actions Workflow-Dateien
+        files: ^\.github/workflows/.*\.ya?ml$
+        args:
+          - -color
+          - -verbose
+
+  # YAML-Syntax für Workflows (zusätzliche Validierung)
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        name: 📋 YAML Linting (Workflows)
+        description: Detaillierte YAML-Syntax-Prüfung für GitHub Actions
+        files: ^\.github/workflows/.*\.ya?ml$
+        args:
+          - --format=parsable
+          - '--config-data={extends: default, rules: {line-length: {max: 120}, indentation: {spaces: 2}}}'
+
+  # ============================================================================
+  # LOKALE CUSTOM HOOKS
+  # ============================================================================
+
+  - repo: local
+    hooks:
+      # Validiere Python-Imports (flache Struktur)
+      - id: validate-imports
+        name: 🔗 Validiere Python-Imports
+        description: Stellt sicher, dass keine Package-Imports verwendet werden
+        entry: grep -n "from kei_agent\."
+        language: system
+        files: '^[^/]*\.py$'
+        exclude: ^tests/.*\.py$
+        types: [ python ]
+
+      - id: check-todos
+        name: 📝 Prüfe TODO/FIXME-Kommentare
+        description: Warnt vor TODO/FIXME-Kommentaren in produktivem Code
+        entry: grep -n -i -E "(TODO|FIXME|XXX|HACK)"
+        language: system
+        files: '^[^/]*\.py$'
+        exclude: ^tests/.*\.py$
+        types: [ python ]
+
+      # Validiere pyproject.toml Konsistenz
+      - id: validate-pyproject
+        name: ⚙️ Validiere pyproject.toml
+        description: Prüft pyproject.toml auf Konsistenz
+        entry: python3 -c "import tomllib; f=open('pyproject.toml','rb'); config=tomllib.load(f); f.close(); print('✅ pyproject.toml ist gültig')"
+        language: system
+        files: ^pyproject\.toml$
+        pass_filenames: false
