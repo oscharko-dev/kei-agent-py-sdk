@@ -48,7 +48,7 @@ setup(
     extras_require={
         "security": [
             "authlib>=1.2.0,<2.0.0",
-            "cryptography>=41.0.0,<42.0.0",
+            "cryptography>=41.0.0,<46.0.0",
             "pyopenssl>=23.0.0,<24.0.0",
         ],
         "cli": [
@@ -67,7 +67,7 @@ setup(
         ],
         "all": [
             "authlib>=1.2.0,<2.0.0",
-            "cryptography>=41.0.0,<42.0.0",
+            "cryptography>=41.0.0,<46.0.0",
             "pyopenssl>=23.0.0,<24.0.0",
             "click>=8.0.0,<9.0.0",
             "rich>=13.0.0,<14.0.0",
