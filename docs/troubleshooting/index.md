@@ -24,7 +24,7 @@ ModuleNotFoundError: No module named 'kei_agent'
    # Virtuelle Umgebung aktivieren
    source venv/bin/activate  # Linux/macOS
    venv\Scripts\activate     # Windows
-   
+
    # SDK installieren
    pip install kei-agent-sdk
    ```
@@ -33,7 +33,7 @@ ModuleNotFoundError: No module named 'kei_agent'
    ```python
    import sys
    print(sys.path)  # Prüfe Python-Path
-   
+
    # Temporärer Fix
    sys.path.append('/path/to/kei-agent')
    ```
@@ -128,7 +128,7 @@ SecurityError: Authentifizierung fehlgeschlagen: 401 Unauthorized
    # Token-Format prüfen
    print(f"Token length: {len(api_token)}")
    print(f"Token starts with: {api_token[:10]}...")
-   
+
    # Token-Gültigkeit testen
    import httpx
    response = httpx.get(
@@ -233,14 +233,14 @@ ProtocolError: Stream-Verbindung fehlgeschlagen: Connection refused
 1. **WebSocket-Endpunkt prüfen**
    ```python
    import websockets
-   
+
    async def test_websocket():
        try:
            async with websockets.connect("wss://api.kei-framework.com/ws") as ws:
                print("WebSocket connection successful")
        except Exception as e:
            print(f"WebSocket connection failed: {e}")
-   
+
    asyncio.run(test_websocket())
    ```
 
@@ -309,10 +309,10 @@ def monitor_memory():
     process = psutil.Process()
     memory_mb = process.memory_info().rss / 1024 / 1024
     print(f"Memory usage: {memory_mb:.2f} MB")
-    
+
     # Garbage Collection forcieren
     gc.collect()
-    
+
     memory_after_gc = process.memory_info().rss / 1024 / 1024
     print(f"Memory after GC: {memory_after_gc:.2f} MB")
 
@@ -369,18 +369,18 @@ import httpx
 class DebugHTTPClient:
     def __init__(self):
         self.client = httpx.AsyncClient()
-    
+
     async def request(self, method, url, **kwargs):
         print(f"🔍 {method} {url}")
         if 'json' in kwargs:
             print(f"📤 Request: {kwargs['json']}")
-        
+
         response = await self.client.request(method, url, **kwargs)
-        
+
         print(f"📥 Response: {response.status_code}")
         if response.headers.get('content-type', '').startswith('application/json'):
             print(f"📄 Body: {response.json()}")
-        
+
         return response
 ```
 
@@ -391,22 +391,22 @@ from kei_agent import get_health_manager
 
 async def debug_health_checks():
     """Detailliertes Health Check Debugging."""
-    
+
     health_manager = get_health_manager()
     summary = await health_manager.run_all_checks()
-    
+
     print(f"Overall Status: {summary.overall_status}")
     print(f"Total Checks: {summary.total_checks}")
-    
+
     for check in summary.checks:
         print(f"\n--- {check.name} ---")
         print(f"Status: {check.status}")
         print(f"Message: {check.message}")
         print(f"Duration: {check.duration_ms}ms")
-        
+
         if check.error:
             print(f"Error: {check.error}")
-        
+
         if check.details:
             print(f"Details: {check.details}")
 
@@ -421,12 +421,12 @@ import ssl
 
 def debug_network_connectivity(host: str, port: int = 443):
     """Netzwerk-Konnektivität debuggen."""
-    
+
     try:
         # TCP-Verbindung testen
         sock = socket.create_connection((host, port), timeout=10)
         print(f"✅ TCP connection to {host}:{port} successful")
-        
+
         if port == 443:
             # SSL-Verbindung testen
             context = ssl.create_default_context()
@@ -436,7 +436,7 @@ def debug_network_connectivity(host: str, port: int = 443):
             ssl_sock.close()
         else:
             sock.close()
-            
+
     except socket.timeout:
         print(f"❌ Connection to {host}:{port} timed out")
     except socket.gaierror as e:
@@ -468,10 +468,10 @@ from kei_agent import (
 
 async def run_diagnostics():
     """Führt umfassende SDK-Diagnose aus."""
-    
+
     print("🔍 KEI-Agent SDK Diagnostics")
     print("=" * 50)
-    
+
     # 1. Import-Test
     try:
         import kei_agent
@@ -479,7 +479,7 @@ async def run_diagnostics():
     except Exception as e:
         print(f"❌ SDK Import failed: {e}")
         return False
-    
+
     # 2. Konfiguration-Test
     try:
         config = AgentClientConfig(
@@ -491,7 +491,7 @@ async def run_diagnostics():
     except Exception as e:
         print(f"❌ Configuration failed: {e}")
         return False
-    
+
     # 3. Client-Erstellung-Test
     try:
         client = UnifiedKeiAgentClient(config=config)
@@ -500,7 +500,7 @@ async def run_diagnostics():
     except Exception as e:
         print(f"❌ Client creation failed: {e}")
         return False
-    
+
     # 4. Health Manager Test
     try:
         health_manager = get_health_manager()
@@ -508,7 +508,7 @@ async def run_diagnostics():
     except Exception as e:
         print(f"❌ Health Manager failed: {e}")
         return False
-    
+
     # 5. Logger Test
     try:
         logger = get_logger("diagnostic")
@@ -517,7 +517,7 @@ async def run_diagnostics():
     except Exception as e:
         print(f"❌ Logger failed: {e}")
         return False
-    
+
     print("\n🎉 All diagnostics passed!")
     return True
 
@@ -540,26 +540,26 @@ import asyncio
 
 def profile_agent_operation():
     """Profiling für Agent-Operationen."""
-    
+
     async def operation():
         config = AgentClientConfig(
             base_url="https://api.kei-framework.com",
             api_token="your-token",
             agent_id="profile-agent"
         )
-        
+
         async with UnifiedKeiAgentClient(config=config) as client:
             return await client.plan_task("Profile test")
-    
+
     # Profiling ausführen
     profiler = cProfile.Profile()
     profiler.enable()
-    
+
     try:
         result = asyncio.run(operation())
     finally:
         profiler.disable()
-    
+
     # Ergebnisse anzeigen
     stats = pstats.Stats(profiler)
     stats.sort_stats('cumulative')

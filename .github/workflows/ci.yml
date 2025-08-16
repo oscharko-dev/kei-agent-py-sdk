@@ -13,7 +13,7 @@ on:
       - 'LICENSE'
       - '.gitignore'
       - 'mkdocs.yml'
-  
+
   # Trigger bei Pull Requests
   pull_request:
     branches: [ main, master, develop ]
@@ -22,7 +22,7 @@ on:
       - '*.md'
       - 'LICENSE'
       - '.gitignore'
-  
+
   # Manueller Trigger
   workflow_dispatch:
     inputs:
@@ -60,19 +60,19 @@ jobs:
   code-quality:
     name: 🔍 Code Quality
     runs-on: ubuntu-latest
-    
+
     steps:
       # Repository auschecken
       - name: 📥 Checkout Repository
         uses: actions/checkout@v5
-      
+
       # Python Setup
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
-      
+
       # Dependencies installieren
       - name: 📦 Install Dependencies
         run: |
@@ -89,33 +89,33 @@ jobs:
 
           # Test basic import
           python -c "import kei_agent; print(f'✅ KEI-Agent SDK importiert: {kei_agent.__version__ if hasattr(kei_agent, \"__version__\") else \"unknown\"}')" || echo "⚠️ Import-Test fehlgeschlagen"
-      
+
       # Ruff Linting
       - name: 🔍 Ruff Linting
         run: |
           echo "🔍 Führe Ruff Linting aus..."
           make lint
-      
+
       # Ruff Formatting Check
       - name: 🎨 Ruff Format Check
         run: |
           echo "🎨 Prüfe Code-Formatierung..."
           make format-check
-      
+
       # MyPy Type Checking
       - name: 🔬 MyPy Type Checking
         run: |
           echo "🔬 Führe Type-Checking aus..."
           timeout 60 make type-check || echo "⚠️ MyPy timeout - wird übersprungen"
         continue-on-error: true
-      
+
       # Bandit Security Scan
       - name: 🛡️ Security Scan
         run: |
           echo "🛡️ Führe Security-Scan aus..."
           make security-scan
         continue-on-error: true  # Security-Warnungen sollen Build nicht stoppen
-      
+
       # Upload Security Report
       - name: 📤 Upload Security Report
         if: always()
@@ -130,7 +130,7 @@ jobs:
     name: 🧪 Test Matrix
     runs-on: ${{ matrix.os }}
     # Läuft parallel zu code-quality
-    
+
     strategy:
       fail-fast: false
       matrix:
@@ -146,31 +146,31 @@ jobs:
             python-version: '3.9'
           - os: macos-latest
             python-version: '3.10'
-    
+
     steps:
       # Repository auschecken
       - name: 📥 Checkout Repository
         uses: actions/checkout@v5
-      
+
       # Python Setup
       - name: 🐍 Setup Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
-      
+
       # Dependencies installieren
       - name: 📦 Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
-      
+
       # Schnelle Tests (Unit Tests)
       - name: 🚀 Fast Tests
         run: |
           echo "🚀 Führe schnelle Unit Tests aus..."
           make test-fast
-      
+
       # Upload Test Results
       - name: 📤 Upload Test Results
         if: always()
@@ -188,55 +188,55 @@ jobs:
     name: 🔬 Comprehensive Tests
     runs-on: ubuntu-latest
     # Läuft parallel zu anderen Jobs
-    
+
     steps:
       # Repository auschecken
       - name: 📥 Checkout Repository
         uses: actions/checkout@v5
-      
+
       # Python Setup
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
-      
+
       # Dependencies installieren
       - name: 📦 Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev,security]"
-      
+
       # Unit Tests mit Coverage
       - name: 🧪 Unit Tests
         run: |
           echo "🧪 Führe Unit Tests mit Coverage aus..."
           make test-unit
-      
+
       # Integration Tests
       - name: 🔗 Integration Tests
         run: |
           echo "🔗 Führe Integration Tests aus..."
           make test-integration
-      
+
       # Protocol Tests
       - name: 📡 Protocol Tests
         run: |
           echo "📡 Führe Protocol Tests aus..."
           make test-protocol
-      
+
       # Refactored Component Tests
       - name: 🔄 Refactored Tests
         run: |
           echo "🔄 Führe Refactored Component Tests aus..."
           make test-refactored
-      
+
       # Security Tests
       - name: 🛡️ Security Tests
         run: |
           echo "🛡️ Führe Security Tests aus..."
           make test-security
-      
+
       # Performance Tests (optional)
       - name: ⚡ Performance Tests
         if: github.event.inputs.run_performance_tests == 'true' || github.event_name == 'push'
@@ -244,13 +244,13 @@ jobs:
           echo "⚡ Führe Performance Tests aus..."
           make test-performance
         continue-on-error: true
-      
+
       # Coverage Report generieren
       - name: 📊 Generate Coverage Report
         run: |
           echo "📊 Generiere Coverage Report..."
           make coverage-report
-      
+
       # Coverage zu Codecov hochladen
       - name: 📤 Upload Coverage to Codecov
         uses: codecov/codecov-action@v5
@@ -259,7 +259,7 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
-      
+
       # Coverage HTML Report hochladen
       - name: 📤 Upload Coverage HTML
         uses: actions/upload-artifact@v4
@@ -272,18 +272,18 @@ jobs:
   dependency-security:
     name: 🔒 Dependency Security
     runs-on: ubuntu-latest
-    
+
     steps:
       # Repository auschecken
       - name: 📥 Checkout Repository
         uses: actions/checkout@v5
-      
+
       # Python Setup
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+
       # Safety Check für Dependencies
       - name: 🔒 Safety Check
         run: |
@@ -291,7 +291,7 @@ jobs:
           echo "🔒 Prüfe Dependencies auf bekannte Sicherheitslücken..."
           safety check --json --output safety-report.json || true
           safety check || echo "⚠️ Sicherheitswarnungen gefunden"
-      
+
       # Upload Safety Report
       - name: 📤 Upload Safety Report
         if: always()
@@ -306,37 +306,37 @@ jobs:
     name: 🏗️ Build Test
     runs-on: ubuntu-latest
     # Läuft unabhängig von anderen Tests
-    
+
     steps:
       # Repository auschecken
       - name: 📥 Checkout Repository
         uses: actions/checkout@v5
-      
+
       # Python Setup
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
-      
+
       # Dependencies installieren
       - name: 📦 Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
-      
+
       # Package Build testen
       - name: 🏗️ Test Package Build
         run: |
           echo "🏗️ Teste Package Build..."
           make build
-      
+
       # Build-Artefakte validieren
       - name: ✅ Validate Build Artifacts
         run: |
           echo "✅ Validiere Build-Artefakte..."
           make check-build
-      
+
       # Upload Build Artifacts
       - name: 📤 Upload Build Artifacts
         uses: actions/upload-artifact@v4

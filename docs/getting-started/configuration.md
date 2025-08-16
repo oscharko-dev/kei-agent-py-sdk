@@ -47,13 +47,13 @@ protocol_config = ProtocolConfig(
     stream_enabled=True,
     bus_enabled=True,
     mcp_enabled=True,
-    
+
     # Endpunkt-Konfiguration
     rpc_endpoint="/api/v1/rpc",
     stream_endpoint="/api/v1/stream",
     bus_endpoint="/api/v1/bus",
     mcp_endpoint="/api/v1/mcp",
-    
+
     # Intelligente Features
     auto_protocol_selection=True,
     protocol_fallback_enabled=True
@@ -262,10 +262,10 @@ def load_config_from_yaml(file_path: str):
     """Lädt Konfiguration aus YAML-Datei."""
     with open(file_path, 'r') as f:
         config_data = yaml.safe_load(f)
-    
+
     # Umgebungsvariablen ersetzen
     api_token = os.getenv('KEI_API_TOKEN', config_data['agent']['api_token'])
-    
+
     agent_config = AgentClientConfig(
         base_url=config_data['agent']['base_url'],
         api_token=api_token,
@@ -273,16 +273,16 @@ def load_config_from_yaml(file_path: str):
         timeout=config_data['agent']['timeout'],
         max_retries=config_data['agent']['max_retries']
     )
-    
+
     protocol_config = ProtocolConfig(**config_data['protocols'])
-    
+
     security_config = SecurityConfig(
         auth_type=AuthType(config_data['security']['auth_type']),
         api_token=api_token,
         rbac_enabled=config_data['security']['rbac_enabled'],
         audit_enabled=config_data['security']['audit_enabled']
     )
-    
+
     return agent_config, protocol_config, security_config
 
 # Verwendung
@@ -359,21 +359,21 @@ def config_from_env():
         max_retries=int(os.getenv('KEI_MAX_RETRIES', '3')),
         retry_delay=float(os.getenv('KEI_RETRY_DELAY', '1.0'))
     )
-    
+
     protocol_config = ProtocolConfig(
         rpc_enabled=os.getenv('KEI_RPC_ENABLED', 'true').lower() == 'true',
         stream_enabled=os.getenv('KEI_STREAM_ENABLED', 'true').lower() == 'true',
         bus_enabled=os.getenv('KEI_BUS_ENABLED', 'true').lower() == 'true',
         mcp_enabled=os.getenv('KEI_MCP_ENABLED', 'true').lower() == 'true'
     )
-    
+
     security_config = SecurityConfig(
         auth_type=AuthType(os.getenv('KEI_AUTH_TYPE', 'bearer')),
         api_token=os.getenv('KEI_API_TOKEN'),
         rbac_enabled=os.getenv('KEI_RBAC_ENABLED', 'true').lower() == 'true',
         audit_enabled=os.getenv('KEI_AUDIT_ENABLED', 'true').lower() == 'true'
     )
-    
+
     return agent_config, protocol_config, security_config
 
 # Verwendung
@@ -390,7 +390,7 @@ from kei_agent import UnifiedKeiAgentClient, AgentClientConfig, ProtocolConfig, 
 
 class KEIAgentConfigFactory:
     """Factory für KEI-Agent-Konfigurationen."""
-    
+
     @staticmethod
     def create_development_client() -> UnifiedKeiAgentClient:
         """Erstellt Development-Client."""
@@ -401,7 +401,7 @@ class KEIAgentConfigFactory:
             timeout=10
         )
         return UnifiedKeiAgentClient(config=config)
-    
+
     @staticmethod
     def create_production_client(
         api_token: str,
@@ -416,19 +416,19 @@ class KEIAgentConfigFactory:
             timeout=30,
             max_retries=5
         )
-        
+
         protocol_config = ProtocolConfig(
             auto_protocol_selection=True,
             protocol_fallback_enabled=True
         )
-        
+
         security_config = SecurityConfig(
             auth_type=AuthType.BEARER,
             api_token=api_token,
             rbac_enabled=True,
             audit_enabled=True
         )
-        
+
         return UnifiedKeiAgentClient(
             config=agent_config,
             protocol_config=protocol_config,
@@ -454,20 +454,20 @@ async def validate_configuration():
             api_token="test-token",
             agent_id="validation-test"
         )
-        
+
         async with UnifiedKeiAgentClient(config=config) as client:
             # Basis-Validierung
             info = client.get_client_info()
             print(f"✅ Client konfiguriert: {info['agent_id']}")
-            
+
             # Protokoll-Validierung
             protocols = client.get_available_protocols()
             print(f"✅ Verfügbare Protokolle: {protocols}")
-            
+
             # Health Check
             health = await client.health_check()
             print(f"✅ Health Status: {health.get('status', 'unknown')}")
-            
+
     except Exception as e:
         print(f"❌ Konfigurationsfehler: {e}")
 

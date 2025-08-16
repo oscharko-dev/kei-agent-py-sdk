@@ -101,8 +101,8 @@ finally:
 
 ```python
 async def plan_task(
-    self, 
-    objective: str, 
+    self,
+    objective: str,
     context: Optional[Dict[str, Any]] = None,
     protocol: Optional[ProtocolType] = None
 ) -> Dict[str, Any]
@@ -132,8 +132,8 @@ print(f"Plan ID: {plan['plan_id']}")
 
 ```python
 async def execute_action(
-    self, 
-    action: str, 
+    self,
+    action: str,
     parameters: Optional[Dict[str, Any]] = None,
     protocol: Optional[ProtocolType] = None
 ) -> Dict[str, Any]
@@ -163,8 +163,8 @@ print(f"Action ID: {result['action_id']}")
 
 ```python
 async def observe_environment(
-    self, 
-    observation_type: str, 
+    self,
+    observation_type: str,
     data: Optional[Dict[str, Any]] = None,
     protocol: Optional[ProtocolType] = None
 ) -> Dict[str, Any]
@@ -193,8 +193,8 @@ print(f"Observation ID: {observation['observation_id']}")
 
 ```python
 async def explain_reasoning(
-    self, 
-    query: str, 
+    self,
+    query: str,
     context: Optional[Dict[str, Any]] = None,
     protocol: Optional[ProtocolType] = None
 ) -> Dict[str, Any]
@@ -222,9 +222,9 @@ print(f"Erklärung: {explanation['explanation']}")
 
 ```python
 async def send_agent_message(
-    self, 
-    target_agent: str, 
-    message_type: str, 
+    self,
+    target_agent: str,
+    message_type: str,
     payload: Dict[str, Any]
 ) -> Dict[str, Any]
 ```
@@ -249,7 +249,7 @@ print(f"Message ID: {response['message_id']}")
 
 ```python
 async def start_streaming_session(
-    self, 
+    self,
     callback: Optional[Callable[[Dict[str, Any]], Awaitable[None]]] = None
 ) -> None
 ```
@@ -270,7 +270,7 @@ await client.start_streaming_session(callback=message_handler)
 
 ```python
 async def discover_available_tools(
-    self, 
+    self,
     category: Optional[str] = None
 ) -> List[Dict[str, Any]]
 ```
@@ -288,8 +288,8 @@ for tool in tools:
 
 ```python
 async def use_tool(
-    self, 
-    tool_name: str, 
+    self,
+    tool_name: str,
     **parameters: Any
 ) -> Dict[str, Any]
 ```
@@ -326,10 +326,10 @@ print(f"Uptime: {health.get('uptime', 'unknown')}")
 
 ```python
 async def register_agent(
-    self, 
-    name: str, 
-    version: str, 
-    description: str = "", 
+    self,
+    name: str,
+    version: str,
+    description: str = "",
     capabilities: Optional[List[str]] = None
 ) -> Dict[str, Any]
 ```
@@ -435,19 +435,19 @@ from kei_agent.exceptions import KeiSDKError, ProtocolError, SecurityError
 try:
     async with UnifiedKeiAgentClient(config=config) as client:
         result = await client.plan_task("objective")
-        
+
 except SecurityError as e:
     # Authentifizierungs-/Autorisierungsfehler
     print(f"Security error: {e}")
-    
+
 except ProtocolError as e:
     # Protokoll-spezifische Fehler
     print(f"Protocol error: {e}")
-    
+
 except KeiSDKError as e:
     # Allgemeine SDK-Fehler
     print(f"SDK error: {e}")
-    
+
 except Exception as e:
     # Unerwartete Fehler
     print(f"Unexpected error: {e}")
@@ -502,8 +502,8 @@ try:
 except ProtocolError as e:
     # Fallback-Strategie
     result = await client.execute_agent_operation(
-        "plan", 
-        {"objective": "objective"}, 
+        "plan",
+        {"objective": "objective"},
         protocol=ProtocolType.RPC
     )
 ```

@@ -6,17 +6,16 @@ wie automatische Generierung von Inhalten, Makros und andere Dokumentations-Feat
 zu ermöglichen.
 """
 
-import os
 import re
 from pathlib import Path
 from typing import Dict, Any
 
 def on_config(config: Dict[str, Any]) -> Dict[str, Any]:
     """Hook wird beim Laden der Konfiguration aufgerufen.
-    
+
     Args:
         config: MkDocs-Konfiguration
-        
+
     Returns:
         Modifizierte Konfiguration
     """
@@ -25,7 +24,7 @@ def on_config(config: Dict[str, Any]) -> Dict[str, Any]:
 
 def on_pre_build(config: Dict[str, Any]) -> None:
     """Hook wird vor dem Build-Prozess aufgerufen.
-    
+
     Args:
         config: MkDocs-Konfiguration
     """
@@ -34,11 +33,11 @@ def on_pre_build(config: Dict[str, Any]) -> None:
 
 def on_files(files, config: Dict[str, Any]):
     """Hook wird beim Verarbeiten der Dateien aufgerufen.
-    
+
     Args:
         files: Liste der zu verarbeitenden Dateien
         config: MkDocs-Konfiguration
-        
+
     Returns:
         Modifizierte Dateiliste
     """
@@ -47,12 +46,12 @@ def on_files(files, config: Dict[str, Any]):
 
 def on_nav(nav, config: Dict[str, Any], files):
     """Hook wird beim Verarbeiten der Navigation aufgerufen.
-    
+
     Args:
         nav: Navigation-Struktur
         config: MkDocs-Konfiguration
         files: Dateiliste
-        
+
     Returns:
         Modifizierte Navigation
     """
@@ -61,15 +60,15 @@ def on_nav(nav, config: Dict[str, Any], files):
 
 def on_page_markdown(markdown: str, page, config: Dict[str, Any], files) -> str:
     """Hook wird beim Verarbeiten des Markdown-Inhalts aufgerufen.
-    
+
     Hier können Makros und automatische Inhalte eingefügt werden.
-    
+
     Args:
         markdown: Markdown-Inhalt der Seite
         page: Seiten-Objekt
         config: MkDocs-Konfiguration
         files: Dateiliste
-        
+
     Returns:
         Modifizierter Markdown-Inhalt
     """
@@ -88,25 +87,25 @@ def on_page_markdown(markdown: str, page, config: Dict[str, Any], files) -> str:
         except Exception:
             # Fallback-Version
             markdown = markdown.replace("{{SDK_VERSION}}", "0.1.0")
-    
+
     # Beispiel: Automatische Einfügung des aktuellen Datums
     if "{{BUILD_DATE}}" in markdown:
         from datetime import datetime
         build_date = datetime.now().strftime("%Y-%m-%d")
         markdown = markdown.replace("{{BUILD_DATE}}", build_date)
-    
+
     return markdown
 
 
 def on_page_content(html: str, page, config: Dict[str, Any], files) -> str:
     """Hook wird beim Verarbeiten des HTML-Inhalts aufgerufen.
-    
+
     Args:
         html: HTML-Inhalt der Seite
         page: Seiten-Objekt
         config: MkDocs-Konfiguration
         files: Dateiliste
-        
+
     Returns:
         Modifizierter HTML-Inhalt
     """
@@ -115,7 +114,7 @@ def on_page_content(html: str, page, config: Dict[str, Any], files) -> str:
 
 def on_post_build(config: Dict[str, Any]) -> None:
     """Hook wird nach dem Build-Prozess aufgerufen.
-    
+
     Args:
         config: MkDocs-Konfiguration
     """

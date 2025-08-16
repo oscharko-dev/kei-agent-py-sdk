@@ -48,24 +48,24 @@ dependencies = [
     "aiohttp>=3.8.0,<4.0.0",
     "httpx>=0.24.0,<1.0.0",
     "websockets>=11.0.0,<12.0.0",
-    
+
     # Async und Utilities
     "pydantic>=2.0.0,<3.0.0",
     "typing-extensions>=4.0.0",
-    
+
     # Tracing und Monitoring
     "opentelemetry-api>=1.20.0,<2.0.0",
     "opentelemetry-sdk>=1.20.0,<2.0.0",
     "opentelemetry-exporter-jaeger>=1.20.0,<2.0.0",
     "opentelemetry-exporter-zipkin-json>=1.20.0,<2.0.0",
     "opentelemetry-propagator-b3>=1.20.0,<2.0.0",
-    
+
     # Retry und Circuit Breaker
     "tenacity>=8.2.0,<9.0.0",
-    
+
     # Serialization
     "msgpack>=1.0.0,<2.0.0",
-    
+
     # Utilities
     "packaging>=21.0",
     "python-dateutil>=2.8.0",

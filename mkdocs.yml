@@ -93,9 +93,10 @@ plugins:
       minify_js: true
       htmlmin_opts:
         remove_comments: true
-  - redirects:
-      redirect_maps:
-        'index.md': 'getting-started/installation.md'
+  # redirects plugin entfernt - nicht installiert
+  # - redirects:
+  #     redirect_maps:
+  #       'index.md': 'getting-started/installation.md'
 
 # Markdown-Extensions
 markdown_extensions:

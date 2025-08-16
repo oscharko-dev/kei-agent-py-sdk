@@ -17,11 +17,11 @@ async def main():
         api_token="your-api-token",
         agent_id="my-first-agent"
     )
-    
+
     # Client verwenden
     async with UnifiedKeiAgentClient(config=config) as client:
         print("🎉 Client erfolgreich verbunden!")
-        
+
         # Client-Informationen anzeigen
         info = client.get_client_info()
         print(f"Agent ID: {info['agent_id']}")
@@ -40,7 +40,7 @@ async def agent_operations():
         api_token="your-api-token",
         agent_id="demo-agent"
     )
-    
+
     async with UnifiedKeiAgentClient(config=config) as client:
         # 📋 Plan erstellen
         plan = await client.plan_task(
@@ -52,7 +52,7 @@ async def agent_operations():
             }
         )
         print(f"Plan erstellt: {plan['plan_id']}")
-        
+
         # ⚡ Aktion ausführen
         result = await client.execute_action(
             action="generate_report",
@@ -63,14 +63,14 @@ async def agent_operations():
             }
         )
         print(f"Aktion ausgeführt: {result['action_id']}")
-        
+
         # 👁️ Umgebung beobachten
         observation = await client.observe_environment(
             observation_type="system_metrics",
             data={"interval": 60, "metrics": ["cpu", "memory", "disk"]}
         )
         print(f"Beobachtung: {observation['observation_id']}")
-        
+
         # 💡 Reasoning erklären
         explanation = await client.explain_reasoning(
             query="Warum wurde diese Vorlage gewählt?",
@@ -92,23 +92,23 @@ async def multi_protocol_demo():
         api_token="your-api-token",
         agent_id="multi-protocol-agent"
     )
-    
+
     async with UnifiedKeiAgentClient(config=config) as client:
         # 🔄 RPC für synchrone Operationen (automatisch gewählt)
         sync_result = await client.plan_task("Synchrone Planung")
-        
+
         # 🌊 Stream für Real-time (automatisch gewählt für "stream_" Prefix)
         await client.execute_agent_operation(
             "stream_data_processing",
             {"data": "real-time-feed"}
         )
-        
+
         # 📨 Bus für asynchrone Nachrichten (automatisch gewählt für "async_" Prefix)
         await client.execute_agent_operation(
             "async_background_task",
             {"task": "data_cleanup", "priority": "low"}
         )
-        
+
         # 🛠️ MCP für Tool-Integration (automatisch gewählt für "tool_" Prefix)
         tools = await client.discover_available_tools("utilities")
         print(f"Verfügbare Tools: {len(tools)}")
@@ -127,7 +127,7 @@ async def specific_protocol_demo():
         api_token="your-api-token",
         agent_id="protocol-specific-agent"
     )
-    
+
     async with UnifiedKeiAgentClient(config=config) as client:
         # Explizit RPC verwenden
         rpc_result = await client.execute_agent_operation(
@@ -135,7 +135,7 @@ async def specific_protocol_demo():
             {"data": "test"},
             protocol=ProtocolType.RPC
         )
-        
+
         # Explizit Stream verwenden
         stream_result = await client.execute_agent_operation(
             "real_time_operation",
@@ -156,7 +156,7 @@ from kei_agent import get_logger, LogContext
 async def logging_demo():
     # Logger konfigurieren
     logger = get_logger("my_agent")
-    
+
     # Kontext setzen
     correlation_id = logger.create_correlation_id()
     logger.set_context(LogContext(
@@ -164,22 +164,22 @@ async def logging_demo():
         user_id="user-123",
         agent_id="demo-agent"
     ))
-    
+
     config = AgentClientConfig(
         base_url="https://api.kei-framework.com",
         api_token="your-api-token",
         agent_id="logging-demo-agent"
     )
-    
+
     async with UnifiedKeiAgentClient(config=config) as client:
         # Operation mit Logging
         operation_id = logger.log_operation_start("plan_creation")
-        
+
         try:
             plan = await client.plan_task("Demo-Plan mit Logging")
             logger.log_operation_end("plan_creation", operation_id, time.time(), success=True)
             logger.info("Plan erfolgreich erstellt", plan_id=plan.get('plan_id'))
-            
+
         except Exception as e:
             logger.log_operation_end("plan_creation", operation_id, time.time(), success=False)
             logger.error("Plan-Erstellung fehlgeschlagen", error=str(e))
@@ -196,26 +196,26 @@ from kei_agent import get_health_manager, APIHealthCheck, MemoryHealthCheck
 async def health_check_demo():
     # Health Manager konfigurieren
     health_manager = get_health_manager()
-    
+
     # Health Checks registrieren
     health_manager.register_check(APIHealthCheck(
         name="kei_api",
         url="https://api.kei-framework.com/health"
     ))
-    
+
     health_manager.register_check(MemoryHealthCheck(
         name="system_memory",
         warning_threshold=0.8,
         critical_threshold=0.95
     ))
-    
+
     # Health Checks ausführen
     summary = await health_manager.run_all_checks()
-    
+
     print(f"Gesamtstatus: {summary.overall_status}")
     print(f"Gesunde Komponenten: {summary.healthy_count}")
     print(f"Problematische Komponenten: {summary.unhealthy_count}")
-    
+
     # Detaillierte Ergebnisse
     for check in summary.checks:
         status_emoji = "✅" if check.status == "healthy" else "❌"
@@ -231,7 +231,7 @@ from kei_agent import get_input_validator
 
 def validation_demo():
     validator = get_input_validator()
-    
+
     # Agent-Operation validieren
     operation_data = {
         "objective": "Erstelle einen Bericht",
@@ -240,9 +240,9 @@ def validation_demo():
             "deadline": "2024-12-31"
         }
     }
-    
+
     result = validator.validate_agent_operation("plan", operation_data)
-    
+
     if result.valid:
         print("✅ Input-Validierung erfolgreich")
         print(f"Bereinigte Daten: {result.sanitized_value}")
@@ -276,7 +276,7 @@ async def advanced_config_demo():
         timeout=30,
         max_retries=3
     )
-    
+
     # Protokoll-Konfiguration
     protocol_config = ProtocolConfig(
         rpc_enabled=True,
@@ -286,7 +286,7 @@ async def advanced_config_demo():
         auto_protocol_selection=True,
         protocol_fallback_enabled=True
     )
-    
+
     # Sicherheitskonfiguration
     security_config = SecurityConfig(
         auth_type=AuthType.BEARER,
@@ -295,7 +295,7 @@ async def advanced_config_demo():
         audit_enabled=True,
         token_refresh_enabled=True
     )
-    
+
     # Client mit vollständiger Konfiguration
     async with UnifiedKeiAgentClient(
         config=agent_config,
@@ -303,7 +303,7 @@ async def advanced_config_demo():
         security_config=security_config
     ) as client:
         print("🚀 Erweiterte Konfiguration aktiv")
-        
+
         # Client-Informationen
         info = client.get_client_info()
         print(f"Features: {info['features']}")
@@ -323,7 +323,7 @@ async def agent_communication_demo():
         api_token="your-api-token",
         agent_id="sender-agent"
     )
-    
+
     async with UnifiedKeiAgentClient(config=config) as client:
         # Nachricht an anderen Agent senden
         response = await client.send_agent_message(
@@ -349,12 +349,12 @@ async def tool_integration_demo():
         api_token="your-api-token",
         agent_id="tool-agent"
     )
-    
+
     async with UnifiedKeiAgentClient(config=config) as client:
         # Verfügbare Tools entdecken
         tools = await client.discover_available_tools("math")
         print(f"Verfügbare Math-Tools: {[tool['name'] for tool in tools]}")
-        
+
         # Tool verwenden
         if tools:
             result = await client.use_tool(
@@ -377,11 +377,11 @@ async def error_handling_demo():
         api_token="invalid-token",
         agent_id="error-demo-agent"
     )
-    
+
     try:
         async with UnifiedKeiAgentClient(config=config) as client:
             await client.plan_task("Test-Plan")
-            
+
     except SecurityError as e:
         print(f"🔒 Sicherheitsfehler: {e}")
     except ProtocolError as e:

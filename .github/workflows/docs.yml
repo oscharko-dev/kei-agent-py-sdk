@@ -13,7 +13,7 @@ on:
       - '*.py'
       - 'README.md'
       - '.github/workflows/docs.yml'
-  
+
   # Trigger bei Pull Requests
   pull_request:
     branches: [ main, master ]
@@ -23,7 +23,7 @@ on:
       - '*.py'
       - 'README.md'
       - '.github/workflows/docs.yml'
-  
+
   # Manueller Trigger
   workflow_dispatch:
     inputs:
@@ -49,41 +49,41 @@ jobs:
   build-docs:
     name: 🔨 Build Documentation
     runs-on: ubuntu-latest
-    
+
     steps:
       # Repository auschecken
       - name: 📥 Checkout Repository
         uses: actions/checkout@v5
         with:
           fetch-depth: 0  # Vollständige Historie für git-revision-date-localized
-      
+
       # Python Setup
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
-      
+
       # Dependencies installieren
       - name: 📦 Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[docs]"
-      
+
       # Dokumentation validieren
       - name: ✅ Validate Documentation
         run: |
           echo "🔍 Validiere MkDocs-Konfiguration..."
           mkdocs build --strict --verbose
-          
+
           echo "📊 Dokumentations-Statistiken:"
           find docs -name "*.md" | wc -l | xargs echo "Markdown-Dateien:"
           find site -name "*.html" | wc -l | xargs echo "Generierte HTML-Dateien:"
-          
+
           echo "🔗 Prüfe interne Links..."
           # Einfache Link-Validierung
           grep -r "\[.*\](.*\.md)" docs/ || echo "Keine internen Markdown-Links gefunden"
-      
+
       # API-Dokumentation generieren
       - name: 📖 Generate API Documentation
         run: |
@@ -92,29 +92,29 @@ jobs:
           import pkgutil
           import importlib
           import inspect
-          
+
           # Alle Module des Pakets finden
           modules = []
           for importer, modname, ispkg in pkgutil.iter_modules(['.'], ''):
               if modname.endswith('.py') or not modname.startswith('test_'):
                   modules.append(modname)
-          
+
           print(f'Gefundene Module: {len(modules)}')
           for module in modules[:5]:  # Erste 5 anzeigen
               print(f'  - {module}')
           "
-      
+
       # Dokumentation erstellen
       - name: 🏗️ Build Documentation
         run: |
           echo "🚀 Erstelle finale Dokumentation..."
           mkdocs build --clean --verbose
-          
+
           # Build-Informationen hinzufügen
           echo "Build-Zeit: $(date)" > site/build-info.txt
           echo "Git-Commit: ${{ github.sha }}" >> site/build-info.txt
           echo "Branch: ${{ github.ref_name }}" >> site/build-info.txt
-      
+
       # Build-Artefakte hochladen
       - name: 📤 Upload Documentation Artifact
         uses: actions/upload-artifact@v4
@@ -122,12 +122,12 @@ jobs:
           name: documentation-site
           path: site/
           retention-days: 30
-      
+
       # GitHub Pages Setup (nur bei main/master)
       - name: 🔧 Setup Pages
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         uses: actions/configure-pages@v5
-      
+
       # Pages-Artefakt hochladen
       - name: 📤 Upload Pages Artifact
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
@@ -141,11 +141,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-docs
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    
+
     steps:
       - name: 🌐 Deploy to GitHub Pages
         id: deployment
@@ -156,54 +156,54 @@ jobs:
     name: 🔍 Documentation Quality Check
     runs-on: ubuntu-latest
     needs: build-docs
-    
+
     steps:
       # Repository auschecken
       - name: 📥 Checkout Repository
         uses: actions/checkout@v5
-      
+
       # Python Setup
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+
       # Dokumentations-Artefakt herunterladen
       - name: 📥 Download Documentation
         uses: actions/download-artifact@v4
         with:
           name: documentation-site
           path: site/
-      
+
       # Qualitätsprüfungen
       - name: 🔍 Quality Checks
         run: |
           echo "📊 Dokumentations-Qualitätsprüfung..."
-          
+
           # Dateigröße prüfen
           site_size=$(du -sh site/ | cut -f1)
           echo "📏 Dokumentations-Größe: $site_size"
-          
+
           # HTML-Validierung (einfach)
           echo "🔍 HTML-Struktur prüfen..."
           find site -name "*.html" -exec grep -l "<html" {} \; | wc -l | xargs echo "Gültige HTML-Dateien:"
-          
+
           # Broken Links prüfen (einfach)
           echo "🔗 Interne Links prüfen..."
           find site -name "*.html" -exec grep -l "href.*404" {} \; | wc -l | xargs echo "Potentielle 404-Links:"
-          
+
           # CSS/JS Dateien prüfen
           echo "🎨 Asset-Dateien prüfen..."
           find site -name "*.css" | wc -l | xargs echo "CSS-Dateien:"
           find site -name "*.js" | wc -l | xargs echo "JavaScript-Dateien:"
-          
+
           # Suchindex prüfen
           if [ -f "site/search/search_index.json" ]; then
             echo "🔍 Suchindex gefunden und validiert"
           else
             echo "⚠️ Suchindex nicht gefunden"
           fi
-          
+
           echo "✅ Qualitätsprüfung abgeschlossen"
 
   # Job 4: Dokumentations-Metriken
@@ -211,45 +211,45 @@ jobs:
     name: 📈 Documentation Metrics
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-    
+
     steps:
       # Repository auschecken
       - name: 📥 Checkout Repository
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      
+
       # Python Setup
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+
       # Metriken sammeln
       - name: 📊 Collect Documentation Metrics
         run: |
           echo "📈 Sammle Dokumentations-Metriken..."
-          
+
           # Markdown-Dateien zählen
           md_files=$(find docs -name "*.md" | wc -l)
           echo "📄 Markdown-Dateien: $md_files"
-          
+
           # Wörter zählen
           word_count=$(find docs -name "*.md" -exec wc -w {} + | tail -1 | awk '{print $1}')
           echo "📝 Gesamte Wörter: $word_count"
-          
+
           # Zeilen zählen
           line_count=$(find docs -name "*.md" -exec wc -l {} + | tail -1 | awk '{print $1}')
           echo "📏 Gesamte Zeilen: $line_count"
-          
+
           # Python-Module mit Docstrings
           python_files=$(find . -name "*.py" -not -path "./tests/*" | wc -l)
           echo "🐍 Python-Module: $python_files"
-          
+
           # Git-Statistiken
           last_commit=$(git log -1 --format="%h - %s (%cr)")
           echo "📝 Letzter Commit: $last_commit"
-          
+
           # Metriken in Datei speichern
           cat > docs-metrics.json << EOF
           {
@@ -263,10 +263,10 @@ jobs:
             "last_commit": "$last_commit"
           }
           EOF
-          
+
           echo "📊 Metriken gespeichert in docs-metrics.json"
           cat docs-metrics.json
-      
+
       # Metriken als Artefakt speichern
       - name: 📤 Upload Metrics
         uses: actions/upload-artifact@v4

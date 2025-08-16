@@ -179,7 +179,7 @@ async def main():
     async with UnifiedKeiAgentClient(config) as client:
         # Alle Operationen sind async
         result = await client.plan_task("Task")
-        
+
         # Parallele Ausführung
         tasks = [
             client.plan_task("Task 1"),

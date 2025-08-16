@@ -34,11 +34,11 @@ from kei_agent import (
     AgentClientConfig,
     ProtocolConfig,
     SecurityConfig,
-    
+
     # Enums
     ProtocolType,
     AuthType,
-    
+
     # Enterprise
     get_logger,
     get_health_manager,
@@ -223,8 +223,8 @@ Alle öffentlichen APIs haben vollständige Type Hints:
 
 ```python
 async def plan_task(
-    self, 
-    objective: str, 
+    self,
+    objective: str,
     context: Optional[Dict[str, Any]] = None,
     protocol: Optional[ProtocolType] = None
 ) -> Dict[str, Any]:
@@ -236,15 +236,15 @@ Deutsche Docstrings im Google-Format:
 ```python
 def method(self, param: str) -> bool:
     """Kurze Beschreibung der Methode.
-    
+
     Längere Beschreibung falls nötig.
-    
+
     Args:
         param: Beschreibung des Parameters
-        
+
     Returns:
         Beschreibung des Rückgabewerts
-        
+
     Raises:
         ExceptionType: Beschreibung wann Exception auftritt
     """

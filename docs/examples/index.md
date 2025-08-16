@@ -23,14 +23,14 @@ from kei_agent import UnifiedKeiAgentClient, AgentClientConfig
 
 async def simple_agent_example():
     """Einfaches Beispiel für Agent-Operationen."""
-    
+
     # Konfiguration
     config = AgentClientConfig(
         base_url="https://api.kei-framework.com",
         api_token="your-api-token",
         agent_id="simple-example-agent"
     )
-    
+
     # Client verwenden
     async with UnifiedKeiAgentClient(config=config) as client:
         # Plan erstellen
@@ -43,7 +43,7 @@ async def simple_agent_example():
             }
         )
         print(f"Plan erstellt: {plan['plan_id']}")
-        
+
         # Aktion ausführen
         result = await client.execute_action(
             action="analyze_sales_data",
@@ -54,7 +54,7 @@ async def simple_agent_example():
             }
         )
         print(f"Analyse abgeschlossen: {result['action_id']}")
-        
+
         # Ergebnis erklären
         explanation = await client.explain_reasoning(
             query="Welche Trends wurden in den Verkaufsdaten identifiziert?",
@@ -71,13 +71,13 @@ asyncio.run(simple_agent_example())
 ```python
 async def multi_agent_example():
     """Beispiel für Agent-to-Agent Kommunikation."""
-    
+
     config = AgentClientConfig(
         base_url="https://api.kei-framework.com",
         api_token="your-api-token",
         agent_id="coordinator-agent"
     )
-    
+
     async with UnifiedKeiAgentClient(config=config) as client:
         # Aufgabe an Datenanalyse-Agent delegieren
         response = await client.send_agent_message(
@@ -91,7 +91,7 @@ async def multi_agent_example():
             }
         )
         print(f"Nachricht gesendet: {response['message_id']}")
-        
+
         # Aufgabe an Report-Generator delegieren
         report_response = await client.send_agent_message(
             target_agent="report-generator-agent",
@@ -113,21 +113,21 @@ asyncio.run(multi_agent_example())
 ```python
 async def tool_integration_example():
     """Beispiel für Tool-Integration über MCP."""
-    
+
     config = AgentClientConfig(
         base_url="https://api.kei-framework.com",
         api_token="your-api-token",
         agent_id="tool-integration-agent"
     )
-    
+
     async with UnifiedKeiAgentClient(config=config) as client:
         # Verfügbare Tools entdecken
         math_tools = await client.discover_available_tools("math")
         print(f"Verfügbare Math-Tools: {[tool['name'] for tool in math_tools]}")
-        
+
         data_tools = await client.discover_available_tools("data")
         print(f"Verfügbare Data-Tools: {[tool['name'] for tool in data_tools]}")
-        
+
         # Calculator-Tool verwenden
         if any(tool['name'] == 'calculator' for tool in math_tools):
             calc_result = await client.use_tool(
@@ -135,7 +135,7 @@ async def tool_integration_example():
                 expression="(1000 * 1.08) + (500 * 0.95) - 200"
             )
             print(f"Berechnungsergebnis: {calc_result['result']}")
-        
+
         # CSV-Analyzer-Tool verwenden
         if any(tool['name'] == 'csv_analyzer' for tool in data_tools):
             analysis_result = await client.use_tool(
@@ -157,7 +157,7 @@ from kei_agent import ProtocolConfig, SecurityConfig, AuthType
 
 def create_development_config():
     """Erstellt Development-Konfiguration."""
-    
+
     agent_config = AgentClientConfig(
         base_url="http://localhost:8000",
         api_token="dev-token",
@@ -165,7 +165,7 @@ def create_development_config():
         timeout=10,
         max_retries=1
     )
-    
+
     # Vereinfachte Protokoll-Konfiguration
     protocol_config = ProtocolConfig(
         rpc_enabled=True,
@@ -174,7 +174,7 @@ def create_development_config():
         mcp_enabled=True,
         auto_protocol_selection=False
     )
-    
+
     # Einfache Security für Development
     security_config = SecurityConfig(
         auth_type=AuthType.BEARER,
@@ -182,7 +182,7 @@ def create_development_config():
         rbac_enabled=False,
         audit_enabled=False
     )
-    
+
     return agent_config, protocol_config, security_config
 ```
 
@@ -191,7 +191,7 @@ def create_development_config():
 ```python
 def create_production_config():
     """Erstellt Production-Konfiguration."""
-    
+
     agent_config = AgentClientConfig(
         base_url="https://api.kei-framework.com",
         api_token=os.getenv("KEI_API_TOKEN"),
@@ -200,7 +200,7 @@ def create_production_config():
         max_retries=5,
         retry_delay=2.0
     )
-    
+
     # Vollständige Protokoll-Unterstützung
     protocol_config = ProtocolConfig(
         rpc_enabled=True,
@@ -210,7 +210,7 @@ def create_production_config():
         auto_protocol_selection=True,
         protocol_fallback_enabled=True
     )
-    
+
     # Enterprise Security
     security_config = SecurityConfig(
         auth_type=AuthType.OIDC,
@@ -221,7 +221,7 @@ def create_production_config():
         audit_enabled=True,
         token_refresh_enabled=True
     )
-    
+
     return agent_config, protocol_config, security_config
 ```
 
@@ -234,9 +234,9 @@ from kei_agent import get_health_manager, APIHealthCheck, MemoryHealthCheck
 
 async def setup_monitoring():
     """Richtet umfassendes Monitoring ein."""
-    
+
     health_manager = get_health_manager()
-    
+
     # API Health Checks
     health_manager.register_check(APIHealthCheck(
         name="kei_api",
@@ -244,14 +244,14 @@ async def setup_monitoring():
         timeout_seconds=10,
         critical=True
     ))
-    
+
     health_manager.register_check(APIHealthCheck(
         name="external_data_api",
         url="https://data-api.company.com/health",
         timeout_seconds=5,
         critical=False
     ))
-    
+
     # System Health Checks
     health_manager.register_check(MemoryHealthCheck(
         name="system_memory",
@@ -259,11 +259,11 @@ async def setup_monitoring():
         critical_threshold=0.95,
         critical=True
     ))
-    
+
     # Kontinuierliches Monitoring
     while True:
         summary = await health_manager.run_all_checks()
-        
+
         if summary.overall_status != "healthy":
             print(f"⚠️ System Status: {summary.overall_status}")
             for check in summary.checks:
@@ -271,7 +271,7 @@ async def setup_monitoring():
                     print(f"  - {check.name}: {check.status} - {check.message}")
         else:
             print("✅ All systems healthy")
-        
+
         await asyncio.sleep(60)  # Check every minute
 
 # Background monitoring starten
@@ -287,29 +287,29 @@ from kei_agent import get_logger
 
 async def performance_monitoring_example():
     """Beispiel für Performance-Monitoring."""
-    
+
     logger = get_logger("performance_monitor")
-    
+
     config = AgentClientConfig(
         base_url="https://api.kei-framework.com",
         api_token="your-api-token",
         agent_id="performance-monitored-agent"
     )
-    
+
     async with UnifiedKeiAgentClient(config=config) as client:
         # Performance-Tracking für Operation
         start_time = time.time()
         start_memory = psutil.Process().memory_info().rss
-        
+
         try:
             # Agent-Operation ausführen
             result = await client.plan_task("Performance-Test-Operation")
-            
+
             # Performance-Metriken berechnen
             duration = (time.time() - start_time) * 1000
             end_memory = psutil.Process().memory_info().rss
             memory_delta = (end_memory - start_memory) / 1024 / 1024  # MB
-            
+
             # Performance-Metriken loggen
             logger.log_performance(
                 operation="plan_task",
@@ -318,10 +318,10 @@ async def performance_monitoring_example():
                 cpu_usage=psutil.cpu_percent(),
                 success=True
             )
-            
+
             print(f"Operation completed in {duration:.2f}ms")
             print(f"Memory usage: {memory_delta:.2f}MB")
-            
+
         except Exception as e:
             duration = (time.time() - start_time) * 1000
             logger.log_performance(
@@ -344,9 +344,9 @@ from kei_agent import get_input_validator, ValidationSeverity
 
 def secure_input_handling_example():
     """Beispiel für sichere Input-Verarbeitung."""
-    
+
     validator = get_input_validator()
-    
+
     # Unsichere Eingaben testen
     test_inputs = [
         {
@@ -362,12 +362,12 @@ def secure_input_handling_example():
             "context": {"format": "pdf"}
         }
     ]
-    
+
     for i, input_data in enumerate(test_inputs):
         print(f"\n--- Test Input {i+1} ---")
-        
+
         result = validator.validate_agent_operation("plan", input_data)
-        
+
         if result.valid:
             print("✅ Input valid")
             print(f"Sanitized: {result.sanitized_value}")
@@ -388,9 +388,9 @@ from kei_agent import get_logger, LogContext
 
 async def audit_logging_example():
     """Beispiel für Audit-Logging."""
-    
+
     logger = get_logger("audit_example")
-    
+
     # Audit-Kontext setzen
     logger.set_context(LogContext(
         correlation_id=logger.create_correlation_id(),
@@ -398,13 +398,13 @@ async def audit_logging_example():
         agent_id="audit-agent",
         operation="sensitive_data_access"
     ))
-    
+
     config = AgentClientConfig(
         base_url="https://api.kei-framework.com",
         api_token="your-api-token",
         agent_id="audit-agent"
     )
-    
+
     async with UnifiedKeiAgentClient(config=config) as client:
         # Sensitive Operation mit Audit-Logging
         logger.log_security_event(
@@ -415,20 +415,20 @@ async def audit_logging_example():
             resource="financial_reports",
             action="read"
         )
-        
+
         try:
             result = await client.plan_task(
                 "Generate confidential financial report",
                 context={"classification": "confidential"}
             )
-            
+
             logger.log_security_event(
                 event_type="sensitive_operation_completed",
                 severity="info",
                 description="Sensitive operation completed successfully",
                 result_id=result.get('plan_id')
             )
-            
+
         except Exception as e:
             logger.log_security_event(
                 event_type="sensitive_operation_failed",
@@ -450,28 +450,28 @@ from kei_agent.exceptions import KeiSDKError, ProtocolError, SecurityError
 
 async def robust_error_handling_example():
     """Beispiel für robuste Fehlerbehandlung."""
-    
+
     config = AgentClientConfig(
         base_url="https://api.kei-framework.com",
         api_token="your-api-token",
         agent_id="error-handling-agent"
     )
-    
+
     async with UnifiedKeiAgentClient(config=config) as client:
         max_retries = 3
         retry_delay = 1.0
-        
+
         for attempt in range(max_retries):
             try:
                 result = await client.plan_task("Potentially failing operation")
                 print(f"✅ Operation successful: {result['plan_id']}")
                 break
-                
+
             except SecurityError as e:
                 print(f"🔒 Security error (attempt {attempt + 1}): {e}")
                 # Security errors sind nicht retry-bar
                 raise
-                
+
             except ProtocolError as e:
                 print(f"🔌 Protocol error (attempt {attempt + 1}): {e}")
                 if attempt < max_retries - 1:
@@ -481,14 +481,14 @@ async def robust_error_handling_example():
                 else:
                     print("❌ All retry attempts failed")
                     raise
-                    
+
             except KeiSDKError as e:
                 print(f"⚠️ SDK error (attempt {attempt + 1}): {e}")
                 if attempt < max_retries - 1:
                     await asyncio.sleep(retry_delay)
                 else:
                     raise
-                    
+
             except Exception as e:
                 print(f"❌ Unexpected error: {e}")
                 raise

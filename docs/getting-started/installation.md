@@ -162,21 +162,21 @@ async def test_installation():
             api_token="test-token",
             agent_id="installation-test"
         )
-        
+
         # Client erstellen (ohne Verbindung)
         client = UnifiedKeiAgentClient(config=config)
-        
+
         # Client-Info abrufen
         info = client.get_client_info()
         print(f"✅ Client erstellt: {info['agent_id']}")
-        
+
         # Verfügbare Protokolle
         protocols = client.get_available_protocols()
         print(f"✅ Verfügbare Protokolle: {len(protocols)}")
-        
+
         print("🎉 Installation erfolgreich!")
         return True
-        
+
     except Exception as e:
         print(f"❌ Installation-Test fehlgeschlagen: {e}")
         return False

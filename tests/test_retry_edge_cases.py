@@ -172,4 +172,3 @@ async def test_max_attempts_boundaries(monkeypatch):
     with pytest.raises(Exception):
         await c2._execute_rpc_operation("unknown", {"x": 1})
     assert len(delays) >= 3
-
