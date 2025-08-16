@@ -51,9 +51,14 @@ except ImportError:
 
     class NoOpTracerProvider:
         """NoOp TracerProvider-Implementierung."""
-        def __init__(self, resource=None): pass
-        def get_tracer(self, name, version=None): return NoOpTracer()
-        def add_span_processor(self, processor): pass
+        def __init__(self, resource=None):
+            pass
+        def get_tracer(self, name, version=None):
+            return NoOpTracer()
+        def add_span_processor(self, processor):
+            pass
+        def shutdown(self):
+            pass
 
     class NoOpMeter:
         """NoOp Meter-Implementierung."""
@@ -77,8 +82,13 @@ except ImportError:
         'get_meter_provider': lambda: NoOpMeterProvider(),
         'set_meter_provider': lambda provider: None
     })()
-    inject = lambda carrier, context=None: None
-    extract = lambda carrier, context=None: None
+    def inject(carrier, context=None):
+        """NoOp inject function."""
+        pass
+
+    def extract(carrier, context=None):
+        """NoOp extract function."""
+        return None
 
     # NoOp Propagator-Klassen
     class NoOpPropagator:
@@ -97,11 +107,24 @@ except ImportError:
 
     TraceContextTextMapPropagator = NoOpPropagator
     W3CBaggagePropagator = NoOpPropagator
-    CompositeHTTPPropagator = lambda propagators: NoOpPropagator()
+
+    def CompositeHTTPPropagator(propagators):
+        """NoOp CompositeHTTPPropagator function."""
+        return NoOpPropagator()
+
     ConsoleSpanExporter = NoOpSpanExporter
-    JaegerExporter = lambda **kwargs: NoOpSpanExporter()
-    ZipkinExporter = lambda **kwargs: NoOpSpanExporter()
-    BatchSpanProcessor = lambda exporter, **kwargs: NoOpSpanProcessor()
+
+    def JaegerExporter(**kwargs):
+        """NoOp JaegerExporter function."""
+        return NoOpSpanExporter()
+
+    def ZipkinExporter(**kwargs):
+        """NoOp ZipkinExporter function."""
+        return NoOpSpanExporter()
+
+    def BatchSpanProcessor(exporter, **kwargs):
+        """NoOp BatchSpanProcessor function."""
+        return NoOpSpanProcessor()
 
 from exceptions import TracingError
 
@@ -411,8 +434,8 @@ class TracingManager:
             config: Tracing-Konfiguration
         """
         self.config = config
-        self._tracer_provider: Optional[TracerProvider] = None
-        self._meter_provider: Optional[MeterProvider] = None
+        self._tracer_provider = None
+        self._meter_provider = None
         self._tracer: Optional[trace.Tracer] = None
         self._meter: Optional[metrics.Meter] = None
 

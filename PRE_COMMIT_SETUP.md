@@ -81,21 +81,30 @@ SKIP=mypy,bandit git commit -m "Commit ohne MyPy und Bandit"
 1. **Ruff Linting** (`ruff`)
    - Ersetzt flake8, pylint
    - Automatische Fixes für viele Probleme
+   - Prüft nur Root-Python-Dateien
    - Konfiguration: `pyproject.toml`
 
 2. **Ruff Formatierung** (`ruff-format`)
    - Ersetzt black + isort
    - Automatische Code-Formatierung
+   - Prüft nur Root-Python-Dateien
    - Konsistenter Stil
 
-3. **MyPy Typenprüfung** (`mypy`)
+3. **Ruff Check ALL** (`ruff-check-all`)
+   - **NEU**: Prüft ALLE Python-Dateien (inkl. Tests)
+   - Verhindert, dass Linting-Probleme übersehen werden
+   - Läuft zusätzlich zu den anderen Ruff-Hooks
+
+4. **MyPy Typenprüfung** (`mypy`)
    - Statische Typenanalyse
    - Findet Typ-Fehler vor der Laufzeit
+   - Nur Root-Dateien (Tests haben komplexe Mock-Typen)
    - Konfiguration: `pyproject.toml`
 
-4. **Bandit Sicherheits-Scan** (`bandit`)
+5. **Bandit Sicherheits-Scan** (`bandit`)
    - Scannt auf Sicherheitsprobleme
    - Findet potenzielle Vulnerabilities
+   - Nur Root-Dateien (Tests verwenden assert und Mock)
    - Konfiguration: `pyproject.toml`
 
 ### 🔧 Allgemeine Code-Qualität
@@ -122,9 +131,10 @@ SKIP=mypy,bandit git commit -m "Commit ohne MyPy und Bandit"
 
 ### 🔍 Custom Hooks
 
-14. **Import-Validierung** - Stellt sicher, dass flache Imports verwendet werden
-15. **TODO/FIXME Check** - Warnt vor TODO-Kommentaren
-16. **pyproject.toml Validierung** - Prüft Projekt-Konfiguration
+14. **Ruff Check ALL** - Prüft ALLE Python-Dateien (inkl. Tests) mit Ruff
+15. **Import-Validierung** - Stellt sicher, dass flache Imports verwendet werden
+16. **TODO/FIXME Check** - Warnt vor TODO-Kommentaren
+17. **pyproject.toml Validierung** - Prüft Projekt-Konfiguration
 
 ## 🛠️ Konfiguration anpassen
 

@@ -93,14 +93,14 @@ repos:
           - --fix
           - --exit-non-zero-on-fix
         files: '^[^/]*\.py$'  # Nur Python-Dateien im Root (flache Struktur)
-        exclude: ^tests/.*\.py$  # Tests ausschließen (haben Mock-Probleme)
+        # KEINE Tests ausschließen - alle Python-Dateien prüfen!
 
       # Ruff Formatierung (ersetzt black, isort)
       - id: ruff-format
         name: 🎨 Ruff Formatierung
         description: Formatiert Python-Code mit Ruff (ersetzt black + isort)
         files: '^[^/]*\.py$'  # Nur Python-Dateien im Root
-        exclude: ^tests/.*\.py$  # Tests ausschließen
+        # KEINE Tests ausschließen - alle Python-Dateien formatieren!
 
   # MyPy Typenprüfung
   - repo: https://github.com/pre-commit/mirrors-mypy
@@ -110,7 +110,7 @@ repos:
         name: 🔬 MyPy Typenprüfung
         description: Statische Typenprüfung mit MyPy
         files: '^[^/]*\.py$'  # Nur Python-Dateien im Root
-        exclude: ^tests/.*\.py$  # Tests ausschließen
+        exclude: ^tests/.*\.py$  # Tests ausschließen (haben komplexe Mock-Typen)
         args:
           - --ignore-missing-imports
           - --no-strict-optional
@@ -127,7 +127,7 @@ repos:
         name: 🛡️ Bandit Sicherheits-Scan
         description: Scannt Python-Code auf Sicherheitsprobleme
         files: '^[^/]*\.py$'  # Nur Python-Dateien im Root
-        exclude: ^tests/.*\.py$  # Tests ausschließen
+        exclude: ^tests/.*\.py$  # Tests ausschließen (verwenden assert und Mock)
         args:
           - --skip=B101,B601  # Skip assert und shell=True (in Tests üblich)
           - --format=custom
@@ -197,6 +197,15 @@ repos:
 
   - repo: local
     hooks:
+      # Vollständige Ruff-Prüfung aller Python-Dateien
+      - id: ruff-check-all
+        name: 🔍 Ruff Check (ALLE Dateien)
+        description: Führt Ruff-Check auf ALLEN Python-Dateien aus (inkl. Tests)
+        entry: ruff check
+        language: system
+        files: '\.py$'
+        pass_filenames: false
+
       # Validiere Python-Imports (flache Struktur)
       - id: validate-imports
         name: 🔗 Validiere Python-Imports
