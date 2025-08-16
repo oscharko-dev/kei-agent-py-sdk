@@ -32,7 +32,7 @@ setup(
         "opentelemetry-propagator-b3>=1.20.0,<2.0.0",
 
         # Retry und Circuit Breaker
-        "tenacity>=8.2.0,<9.0.0",
+        "tenacity>=8.2.0,<10.0.0",
 
         # Serialization
         "msgpack>=1.0.0,<2.0.0",
