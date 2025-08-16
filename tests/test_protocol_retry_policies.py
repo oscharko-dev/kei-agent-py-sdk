@@ -221,8 +221,8 @@ def assert_cb_initialized_and_used(messages: list[str], cb_name: str, min_used: 
         cb_name: Name des Circuit Breakers (z. B. "rpc.plan")
         min_used: Erwartete Mindestanzahl an "Circuit Breaker verwendet"-Logs
     """
-    # Prüfe Initialisierung
-    init_ok = any(("Circuit Breaker initialisiert:" in m) and (cb_name in m) for m in messages)
+    # Prüfe Initialisierung (korrigierte Log-Nachricht)
+    init_ok = any((f"Circuit Breaker initialisiert: {cb_name}" in m) for m in messages)
     assert init_ok, (
         f"Erwartete Initialisierungs-Logzeile nicht gefunden. CB='{cb_name}'. "
         f"Vorhandene Nachrichten: {messages}"
