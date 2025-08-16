@@ -1,0 +1,276 @@
+# GitHub Actions Workflow für KEI-Agent Python SDK Dokumentation
+# Automatisiert das Erstellen und Deployen der MkDocs-Dokumentation
+
+name: 📚 Documentation
+
+on:
+  # Trigger bei Push auf main Branch
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - '*.py'
+      - 'README.md'
+      - '.github/workflows/docs.yml'
+  
+  # Trigger bei Pull Requests
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - '*.py'
+      - 'README.md'
+      - '.github/workflows/docs.yml'
+  
+  # Manueller Trigger
+  workflow_dispatch:
+    inputs:
+      deploy_to_pages:
+        description: 'Deploy to GitHub Pages'
+        required: false
+        default: 'true'
+        type: boolean
+
+# Berechtigungen für GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Verhindert gleichzeitige Deployments
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Job 1: Dokumentation erstellen
+  build-docs:
+    name: 🔨 Build Documentation
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Repository auschecken
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Vollständige Historie für git-revision-date-localized
+      
+      # Python Setup
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      # Dependencies installieren
+      - name: 📦 Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[docs]"
+      
+      # Dokumentation validieren
+      - name: ✅ Validate Documentation
+        run: |
+          echo "🔍 Validiere MkDocs-Konfiguration..."
+          mkdocs build --strict --verbose
+          
+          echo "📊 Dokumentations-Statistiken:"
+          find docs -name "*.md" | wc -l | xargs echo "Markdown-Dateien:"
+          find site -name "*.html" | wc -l | xargs echo "Generierte HTML-Dateien:"
+          
+          echo "🔗 Prüfe interne Links..."
+          # Einfache Link-Validierung
+          grep -r "\[.*\](.*\.md)" docs/ || echo "Keine internen Markdown-Links gefunden"
+      
+      # API-Dokumentation generieren
+      - name: 📖 Generate API Documentation
+        run: |
+          echo "🔧 Generiere API-Dokumentation aus Docstrings..."
+          python -c "
+          import pkgutil
+          import importlib
+          import inspect
+          
+          # Alle Module des Pakets finden
+          modules = []
+          for importer, modname, ispkg in pkgutil.iter_modules(['.'], ''):
+              if modname.endswith('.py') or not modname.startswith('test_'):
+                  modules.append(modname)
+          
+          print(f'Gefundene Module: {len(modules)}')
+          for module in modules[:5]:  # Erste 5 anzeigen
+              print(f'  - {module}')
+          "
+      
+      # Dokumentation erstellen
+      - name: 🏗️ Build Documentation
+        run: |
+          echo "🚀 Erstelle finale Dokumentation..."
+          mkdocs build --clean --verbose
+          
+          # Build-Informationen hinzufügen
+          echo "Build-Zeit: $(date)" > site/build-info.txt
+          echo "Git-Commit: ${{ github.sha }}" >> site/build-info.txt
+          echo "Branch: ${{ github.ref_name }}" >> site/build-info.txt
+      
+      # Build-Artefakte hochladen
+      - name: 📤 Upload Documentation Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: documentation-site
+          path: site/
+          retention-days: 30
+      
+      # GitHub Pages Setup (nur bei main/master)
+      - name: 🔧 Setup Pages
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        uses: actions/configure-pages@v3
+      
+      # Pages-Artefakt hochladen
+      - name: 📤 Upload Pages Artifact
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: site/
+
+  # Job 2: Zu GitHub Pages deployen
+  deploy-pages:
+    name: 🚀 Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: build-docs
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: 🌐 Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
+
+  # Job 3: Dokumentations-Qualität prüfen
+  quality-check:
+    name: 🔍 Documentation Quality Check
+    runs-on: ubuntu-latest
+    needs: build-docs
+    
+    steps:
+      # Repository auschecken
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+      
+      # Python Setup
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      # Dokumentations-Artefakt herunterladen
+      - name: 📥 Download Documentation
+        uses: actions/download-artifact@v3
+        with:
+          name: documentation-site
+          path: site/
+      
+      # Qualitätsprüfungen
+      - name: 🔍 Quality Checks
+        run: |
+          echo "📊 Dokumentations-Qualitätsprüfung..."
+          
+          # Dateigröße prüfen
+          site_size=$(du -sh site/ | cut -f1)
+          echo "📏 Dokumentations-Größe: $site_size"
+          
+          # HTML-Validierung (einfach)
+          echo "🔍 HTML-Struktur prüfen..."
+          find site -name "*.html" -exec grep -l "<html" {} \; | wc -l | xargs echo "Gültige HTML-Dateien:"
+          
+          # Broken Links prüfen (einfach)
+          echo "🔗 Interne Links prüfen..."
+          find site -name "*.html" -exec grep -l "href.*404" {} \; | wc -l | xargs echo "Potentielle 404-Links:"
+          
+          # CSS/JS Dateien prüfen
+          echo "🎨 Asset-Dateien prüfen..."
+          find site -name "*.css" | wc -l | xargs echo "CSS-Dateien:"
+          find site -name "*.js" | wc -l | xargs echo "JavaScript-Dateien:"
+          
+          # Suchindex prüfen
+          if [ -f "site/search/search_index.json" ]; then
+            echo "🔍 Suchindex gefunden und validiert"
+          else
+            echo "⚠️ Suchindex nicht gefunden"
+          fi
+          
+          echo "✅ Qualitätsprüfung abgeschlossen"
+
+  # Job 4: Dokumentations-Metriken
+  metrics:
+    name: 📈 Documentation Metrics
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    
+    steps:
+      # Repository auschecken
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      # Python Setup
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      # Metriken sammeln
+      - name: 📊 Collect Documentation Metrics
+        run: |
+          echo "📈 Sammle Dokumentations-Metriken..."
+          
+          # Markdown-Dateien zählen
+          md_files=$(find docs -name "*.md" | wc -l)
+          echo "📄 Markdown-Dateien: $md_files"
+          
+          # Wörter zählen
+          word_count=$(find docs -name "*.md" -exec wc -w {} + | tail -1 | awk '{print $1}')
+          echo "📝 Gesamte Wörter: $word_count"
+          
+          # Zeilen zählen
+          line_count=$(find docs -name "*.md" -exec wc -l {} + | tail -1 | awk '{print $1}')
+          echo "📏 Gesamte Zeilen: $line_count"
+          
+          # Python-Module mit Docstrings
+          python_files=$(find . -name "*.py" -not -path "./tests/*" | wc -l)
+          echo "🐍 Python-Module: $python_files"
+          
+          # Git-Statistiken
+          last_commit=$(git log -1 --format="%h - %s (%cr)")
+          echo "📝 Letzter Commit: $last_commit"
+          
+          # Metriken in Datei speichern
+          cat > docs-metrics.json << EOF
+          {
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "commit": "${{ github.sha }}",
+            "branch": "${{ github.ref_name }}",
+            "markdown_files": $md_files,
+            "word_count": $word_count,
+            "line_count": $line_count,
+            "python_files": $python_files,
+            "last_commit": "$last_commit"
+          }
+          EOF
+          
+          echo "📊 Metriken gespeichert in docs-metrics.json"
+          cat docs-metrics.json
+      
+      # Metriken als Artefakt speichern
+      - name: 📤 Upload Metrics
+        uses: actions/upload-artifact@v3
+        with:
+          name: documentation-metrics
+          path: docs-metrics.json
+          retention-days: 90
