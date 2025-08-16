@@ -12,10 +12,9 @@ import re
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union, Callable, Pattern
+from typing import Any, Dict, List, Optional, Union, Pattern
 from enum import Enum
 import html
-import urllib.parse
 
 from .exceptions import ValidationError
 from .enterprise_logging import get_logger
@@ -26,13 +25,14 @@ _logger = get_logger(__name__)
 
 class ValidationSeverity(str, Enum):
     """Schweregrad von Validierungsfehlern.
-    
+
     Attributes:
         INFO: Informative Warnung
         WARNING: Warnung, aber verarbeitbar
         ERROR: Fehler, Verarbeitung gestoppt
         CRITICAL: Kritischer Sicherheitsfehler
     """
+
     INFO = "info"
     WARNING = "warning"
     ERROR = "error"
@@ -42,7 +42,7 @@ class ValidationSeverity(str, Enum):
 @dataclass
 class ValidationResult:
     """Ergebnis einer Input-Validierung.
-    
+
     Attributes:
         valid: Ob Input gültig ist
         sanitized_value: Bereinigte Version des Inputs
@@ -50,6 +50,7 @@ class ValidationResult:
         warnings: Liste von Warnungen
         metadata: Zusätzliche Metadaten zur Validierung
     """
+
     valid: bool
     sanitized_value: Any
     errors: List[str] = None
@@ -65,28 +66,30 @@ class ValidationResult:
         if self.metadata is None:
             self.metadata = {}
 
-    def add_error(self, message: str, severity: ValidationSeverity = ValidationSeverity.ERROR) -> None:
+    def add_error(
+        self, message: str, severity: ValidationSeverity = ValidationSeverity.ERROR
+    ) -> None:
         """Fügt Validierungsfehler hinzu.
-        
+
         Args:
             message: Fehlermeldung
             severity: Schweregrad des Fehlers
         """
         self.errors.append(message)
         self.valid = False
-        
+
         # Logge Sicherheitsereignis bei kritischen Fehlern
         if severity == ValidationSeverity.CRITICAL:
             _logger.log_security_event(
                 event_type="input_validation_critical",
                 severity="high",
                 description=message,
-                validation_error=message
+                validation_error=message,
             )
 
     def add_warning(self, message: str) -> None:
         """Fügt Validierungswarnung hinzu.
-        
+
         Args:
             message: Warnmeldung
         """
@@ -95,14 +98,14 @@ class ValidationResult:
 
 class BaseValidator(ABC):
     """Abstrakte Basisklasse für Input-Validatoren.
-    
+
     Definiert Interface für alle Validator-Implementierungen
     mit gemeinsamen Funktionalitäten.
     """
 
     def __init__(self, name: str, required: bool = True) -> None:
         """Initialisiert Base Validator.
-        
+
         Args:
             name: Name des Validators
             required: Ob Input erforderlich ist
@@ -113,10 +116,10 @@ class BaseValidator(ABC):
     @abstractmethod
     def validate(self, value: Any) -> ValidationResult:
         """Validiert Input-Wert.
-        
+
         Args:
             value: Zu validierender Wert
-            
+
         Returns:
             Validierungsergebnis
         """
@@ -124,10 +127,10 @@ class BaseValidator(ABC):
 
     def _check_required(self, value: Any) -> Optional[ValidationResult]:
         """Prüft ob erforderlicher Wert vorhanden ist.
-        
+
         Args:
             value: Zu prüfender Wert
-            
+
         Returns:
             ValidationResult bei Fehler, None bei Erfolg
         """
@@ -151,10 +154,10 @@ class StringValidator(BaseValidator):
         forbidden_patterns: Optional[List[Union[str, Pattern]]] = None,
         sanitize_html: bool = True,
         sanitize_sql: bool = True,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         """Initialisiert String Validator.
-        
+
         Args:
             name: Name des Validators
             min_length: Minimale String-Länge
@@ -202,7 +205,9 @@ class StringValidator(BaseValidator):
 
         # Pattern-Validierung
         if self.pattern and not self.pattern.match(str_value):
-            result.add_error(f"String entspricht nicht dem Pattern: {self.pattern.pattern}")
+            result.add_error(
+                f"String entspricht nicht dem Pattern: {self.pattern.pattern}"
+            )
 
         # Erlaubte Zeichen
         if self.allowed_chars:
@@ -215,12 +220,12 @@ class StringValidator(BaseValidator):
             if forbidden_pattern.search(str_value):
                 result.add_error(
                     f"Verbotenes Pattern gefunden: {forbidden_pattern.pattern}",
-                    ValidationSeverity.CRITICAL
+                    ValidationSeverity.CRITICAL,
                 )
 
         # Sanitization
         sanitized = str_value
-        
+
         if self.sanitize_html:
             sanitized = html.escape(sanitized)
             if sanitized != str_value:
@@ -232,14 +237,13 @@ class StringValidator(BaseValidator):
                 r"(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|UNION)\b)",
                 r"(--|#|/\*|\*/)",
                 r"(\b(OR|AND)\s+\d+\s*=\s*\d+)",
-                r"(\'\s*(OR|AND)\s+\'\w+\'\s*=\s*\'\w+\')"
+                r"(\'\s*(OR|AND)\s+\'\w+\'\s*=\s*\'\w+\')",
             ]
-            
+
             for pattern in sql_patterns:
                 if re.search(pattern, sanitized, re.IGNORECASE):
                     result.add_error(
-                        "Potenzielle SQL-Injection erkannt",
-                        ValidationSeverity.CRITICAL
+                        "Potenzielle SQL-Injection erkannt", ValidationSeverity.CRITICAL
                     )
                     break
 
@@ -257,10 +261,10 @@ class NumberValidator(BaseValidator):
         max_value: Optional[Union[int, float]] = None,
         integer_only: bool = False,
         positive_only: bool = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         """Initialisiert Number Validator.
-        
+
         Args:
             name: Name des Validators
             min_value: Minimaler Wert
@@ -319,10 +323,10 @@ class JSONValidator(BaseValidator):
         max_depth: int = 10,
         max_size: int = 1024 * 1024,  # 1MB
         allowed_types: Optional[List[type]] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         """Initialisiert JSON Validator.
-        
+
         Args:
             name: Name des Validators
             max_depth: Maximale Verschachtelungstiefe
@@ -333,7 +337,15 @@ class JSONValidator(BaseValidator):
         super().__init__(name, **kwargs)
         self.max_depth = max_depth
         self.max_size = max_size
-        self.allowed_types = allowed_types or [dict, list, str, int, float, bool, type(None)]
+        self.allowed_types = allowed_types or [
+            dict,
+            list,
+            str,
+            int,
+            float,
+            bool,
+            type(None),
+        ]
 
     def validate(self, value: Any) -> ValidationResult:
         """Validiert JSON-Input."""
@@ -347,7 +359,7 @@ class JSONValidator(BaseValidator):
         # Konvertiere String zu JSON
         if isinstance(value, str):
             # Größen-Check
-            if len(value.encode('utf-8')) > self.max_size:
+            if len(value.encode("utf-8")) > self.max_size:
                 result.add_error(f"JSON zu groß: {len(value)} > {self.max_size} Bytes")
                 return result
 
@@ -376,7 +388,9 @@ class JSONValidator(BaseValidator):
         if isinstance(obj, dict):
             if not obj:
                 return current_depth
-            return max(self._calculate_depth(v, current_depth + 1) for v in obj.values())
+            return max(
+                self._calculate_depth(v, current_depth + 1) for v in obj.values()
+            )
         elif isinstance(obj, list):
             if not obj:
                 return current_depth
@@ -405,7 +419,7 @@ class CompositeValidator:
 
     def __init__(self, name: str) -> None:
         """Initialisiert Composite Validator.
-        
+
         Args:
             name: Name des Validators
         """
@@ -414,7 +428,7 @@ class CompositeValidator:
 
     def add_field(self, field_name: str, validator: BaseValidator) -> None:
         """Fügt Feld-Validator hinzu.
-        
+
         Args:
             field_name: Name des Feldes
             validator: Validator für das Feld
@@ -464,7 +478,7 @@ class InputValidator:
 
     def register_validator(self, name: str, validator: BaseValidator) -> None:
         """Registriert Validator.
-        
+
         Args:
             name: Name des Validators
             validator: Validator-Instanz
@@ -473,14 +487,14 @@ class InputValidator:
 
     def validate(self, validator_name: str, value: Any) -> ValidationResult:
         """Validiert Wert mit spezifischem Validator.
-        
+
         Args:
             validator_name: Name des Validators
             value: Zu validierender Wert
-            
+
         Returns:
             Validierungsergebnis
-            
+
         Raises:
             ValidationError: Wenn Validator nicht gefunden
         """
@@ -496,57 +510,59 @@ class InputValidator:
             validator=validator_name,
             valid=result.valid,
             errors=len(result.errors),
-            warnings=len(result.warnings)
+            warnings=len(result.warnings),
         )
 
         return result
 
-    def validate_agent_operation(self, operation: str, data: Dict[str, Any]) -> ValidationResult:
+    def validate_agent_operation(
+        self, operation: str, data: Dict[str, Any]
+    ) -> ValidationResult:
         """Validiert Agent-Operation-Input.
-        
+
         Args:
             operation: Name der Operation
             data: Operation-Daten
-            
+
         Returns:
             Validierungsergebnis
         """
         # Standard-Validierung für Agent-Operationen
         composite = CompositeValidator(f"agent_operation_{operation}")
-        
+
         # Basis-Felder
-        composite.add_field("operation", StringValidator(
+        composite.add_field(
             "operation",
-            min_length=1,
-            max_length=100,
-            pattern=r"^[a-zA-Z_][a-zA-Z0-9_]*$"
-        ))
-        
+            StringValidator(
+                "operation",
+                min_length=1,
+                max_length=100,
+                pattern=r"^[a-zA-Z_][a-zA-Z0-9_]*$",
+            ),
+        )
+
         # Operation-spezifische Validierung
         if operation == "plan":
-            composite.add_field("objective", StringValidator(
+            composite.add_field(
                 "objective",
-                min_length=1,
-                max_length=1000,
-                sanitize_html=True,
-                sanitize_sql=True
-            ))
-            composite.add_field("context", JSONValidator(
-                "context",
-                required=False,
-                max_depth=5
-            ))
+                StringValidator(
+                    "objective",
+                    min_length=1,
+                    max_length=1000,
+                    sanitize_html=True,
+                    sanitize_sql=True,
+                ),
+            )
+            composite.add_field(
+                "context", JSONValidator("context", required=False, max_depth=5)
+            )
         elif operation == "act":
-            composite.add_field("action", StringValidator(
-                "action",
-                min_length=1,
-                max_length=100
-            ))
-            composite.add_field("parameters", JSONValidator(
-                "parameters",
-                required=False,
-                max_depth=5
-            ))
+            composite.add_field(
+                "action", StringValidator("action", min_length=1, max_length=100)
+            )
+            composite.add_field(
+                "parameters", JSONValidator("parameters", required=False, max_depth=5)
+            )
 
         return composite.validate(data)
 
@@ -557,20 +573,20 @@ _input_validator: Optional[InputValidator] = None
 
 def get_input_validator() -> InputValidator:
     """Gibt globalen Input Validator zurück.
-    
+
     Returns:
         Input Validator Instanz
     """
     global _input_validator
-    
+
     if _input_validator is None:
         _input_validator = InputValidator()
-        
+
         # Registriere Standard-Validatoren
         _input_validator.register_validator("string", StringValidator("string"))
         _input_validator.register_validator("number", NumberValidator("number"))
         _input_validator.register_validator("json", JSONValidator("json"))
-    
+
     return _input_validator
 
 
@@ -583,5 +599,5 @@ __all__ = [
     "JSONValidator",
     "CompositeValidator",
     "InputValidator",
-    "get_input_validator"
+    "get_input_validator",
 ]

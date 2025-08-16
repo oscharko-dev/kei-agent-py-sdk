@@ -7,7 +7,6 @@ mit vollständiger Validierung und Edge Cases.
 """
 
 import pytest
-from typing import List
 
 from kei_agent.protocol_types import (
     ProtocolType,

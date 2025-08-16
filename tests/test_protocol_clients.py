@@ -6,11 +6,9 @@ Testet KEI-RPC, KEI-Stream, KEI-Bus und KEI-MCP Clients
 mit umfassenden Mock-Szenarien und Error Handling.
 """
 
-import asyncio
 import json
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from typing import Dict, Any
 
 from kei_agent.protocol_clients import (
     BaseProtocolClient,

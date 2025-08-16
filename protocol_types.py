@@ -15,7 +15,7 @@ from typing import Optional
 
 class ProtocolType(str, Enum):
     """Unterstützte KEI-Protokolle für Agent-Kommunikation.
-    
+
     Attributes:
         RPC: Synchrone Request-Response Kommunikation
         STREAM: Bidirektionale Streaming-Kommunikation
@@ -23,6 +23,7 @@ class ProtocolType(str, Enum):
         MCP: Model Context Protocol für Tool-Integration
         AUTO: Automatische Protokoll-Auswahl basierend auf Operation
     """
+
     RPC = "rpc"
     STREAM = "stream"
     BUS = "bus"
@@ -32,12 +33,13 @@ class ProtocolType(str, Enum):
 
 class AuthType(str, Enum):
     """Unterstützte Authentifizierungstypen für KEI-Agent.
-    
+
     Attributes:
         BEARER: Bearer Token Authentifizierung
         OIDC: OpenID Connect Authentifizierung
         MTLS: Mutual TLS Authentifizierung
     """
+
     BEARER = "bearer"
     OIDC = "oidc"
     MTLS = "mtls"
@@ -46,10 +48,10 @@ class AuthType(str, Enum):
 @dataclass
 class ProtocolConfig:
     """Konfiguration für KEI-Protokoll-Integration.
-    
+
     Definiert welche Protokolle aktiviert sind und deren spezifische Endpunkte.
     Ermöglicht automatische Protokoll-Auswahl und Fallback-Mechanismen.
-    
+
     Attributes:
         rpc_enabled: Aktiviert KEI-RPC Protokoll
         stream_enabled: Aktiviert KEI-Stream Protokoll
@@ -62,6 +64,7 @@ class ProtocolConfig:
         auto_protocol_selection: Automatische Protokoll-Auswahl aktivieren
         protocol_fallback_enabled: Fallback auf andere Protokolle bei Fehlern
     """
+
     rpc_enabled: bool = True
     stream_enabled: bool = True
     bus_enabled: bool = True
@@ -79,7 +82,7 @@ class ProtocolConfig:
 
     def get_enabled_protocols(self) -> list[ProtocolType]:
         """Gibt Liste der aktivierten Protokolle zurück.
-        
+
         Returns:
             Liste der aktivierten ProtocolType Enums
         """
@@ -96,10 +99,10 @@ class ProtocolConfig:
 
     def is_protocol_enabled(self, protocol: ProtocolType) -> bool:
         """Prüft ob ein spezifisches Protokoll aktiviert ist.
-        
+
         Args:
             protocol: Zu prüfendes Protokoll
-            
+
         Returns:
             True wenn Protokoll aktiviert ist
         """
@@ -113,13 +116,13 @@ class ProtocolConfig:
 
     def get_endpoint(self, protocol: ProtocolType) -> str:
         """Gibt Endpunkt für spezifisches Protokoll zurück.
-        
+
         Args:
             protocol: Protokoll für das der Endpunkt benötigt wird
-            
+
         Returns:
             API-Endpunkt für das Protokoll
-            
+
         Raises:
             ValueError: Wenn Protokoll nicht unterstützt wird
         """
@@ -129,20 +132,20 @@ class ProtocolConfig:
             ProtocolType.BUS: self.bus_endpoint,
             ProtocolType.MCP: self.mcp_endpoint,
         }
-        
+
         if protocol not in endpoint_map:
             raise ValueError(f"Unbekanntes Protokoll: {protocol}")
-            
+
         return endpoint_map[protocol]
 
 
 @dataclass
 class SecurityConfig:
     """Sicherheitskonfiguration für KEI-Agent.
-    
+
     Definiert Authentifizierung, Autorisierung und Sicherheits-Features
     für die KEI-Agent SDK.
-    
+
     Attributes:
         auth_type: Typ der Authentifizierung
         api_token: Bearer Token für API-Authentifizierung
@@ -158,6 +161,7 @@ class SecurityConfig:
         token_refresh_enabled: Automatische Token-Erneuerung aktivieren
         token_cache_ttl: Token-Cache Time-To-Live in Sekunden
     """
+
     auth_type: AuthType = AuthType.BEARER
     api_token: Optional[str] = None
 
@@ -180,24 +184,26 @@ class SecurityConfig:
 
     def validate(self) -> None:
         """Validiert die Sicherheitskonfiguration.
-        
+
         Raises:
             ValueError: Bei ungültiger Konfiguration
         """
         if self.auth_type == AuthType.BEARER and not self.api_token:
             raise ValueError("API Token ist erforderlich für Bearer-Authentifizierung")
-            
+
         if self.auth_type == AuthType.OIDC:
-            if not all([self.oidc_issuer, self.oidc_client_id, self.oidc_client_secret]):
+            if not all(
+                [self.oidc_issuer, self.oidc_client_id, self.oidc_client_secret]
+            ):
                 raise ValueError("OIDC-Konfiguration unvollständig")
-                
+
         if self.auth_type == AuthType.MTLS:
             if not all([self.mtls_cert_path, self.mtls_key_path]):
                 raise ValueError("mTLS-Konfiguration unvollständig")
 
     def is_token_based(self) -> bool:
         """Prüft ob Token-basierte Authentifizierung verwendet wird.
-        
+
         Returns:
             True wenn Bearer oder OIDC verwendet wird
         """
@@ -205,16 +211,11 @@ class SecurityConfig:
 
     def requires_refresh(self) -> bool:
         """Prüft ob Token-Refresh erforderlich ist.
-        
+
         Returns:
             True wenn Token-Refresh aktiviert und erforderlich ist
         """
         return self.token_refresh_enabled and self.is_token_based()
 
 
-__all__ = [
-    "ProtocolType",
-    "AuthType", 
-    "ProtocolConfig",
-    "SecurityConfig"
-]
+__all__ = ["ProtocolType", "AuthType", "ProtocolConfig", "SecurityConfig"]

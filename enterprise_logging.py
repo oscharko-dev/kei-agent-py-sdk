@@ -17,16 +17,38 @@ from contextvars import ContextVar
 from dataclasses import dataclass, field, asdict
 import uuid
 
+# Package-Metadaten für Version
+try:
+    from importlib.metadata import version, PackageNotFoundError
+except ImportError:
+    # Fallback für Python < 3.8
+    from importlib_metadata import version, PackageNotFoundError
+
 # Context Variables für Request-Tracking
-correlation_id_var: ContextVar[Optional[str]] = ContextVar('correlation_id', default=None)
-trace_id_var: ContextVar[Optional[str]] = ContextVar('trace_id', default=None)
-user_id_var: ContextVar[Optional[str]] = ContextVar('user_id', default=None)
+correlation_id_var: ContextVar[Optional[str]] = ContextVar(
+    "correlation_id", default=None
+)
+trace_id_var: ContextVar[Optional[str]] = ContextVar("trace_id", default=None)
+user_id_var: ContextVar[Optional[str]] = ContextVar("user_id", default=None)
+
+
+def _get_package_version() -> str:
+    """Lädt die Package-Version aus den Metadaten.
+
+    Returns:
+        Package-Version oder Fallback-Version
+    """
+    try:
+        return version("kei-agent-sdk")
+    except PackageNotFoundError:
+        # Fallback wenn Package nicht installiert ist (z.B. Development)
+        return "0.1.0-dev"
 
 
 @dataclass
 class LogContext:
     """Kontext-Informationen für strukturiertes Logging.
-    
+
     Attributes:
         correlation_id: Eindeutige ID für Request-Tracking
         trace_id: Distributed Tracing ID
@@ -38,6 +60,7 @@ class LogContext:
         environment: Deployment-Umgebung
         custom_fields: Zusätzliche benutzerdefinierte Felder
     """
+
     correlation_id: Optional[str] = None
     trace_id: Optional[str] = None
     user_id: Optional[str] = None
@@ -50,7 +73,7 @@ class LogContext:
 
     def to_dict(self) -> Dict[str, Any]:
         """Konvertiert LogContext zu Dictionary für JSON-Serialisierung.
-        
+
         Returns:
             Dictionary-Repräsentation des Kontexts
         """
@@ -61,7 +84,7 @@ class LogContext:
 
 class StructuredFormatter(logging.Formatter):
     """JSON-Formatter für strukturiertes Logging.
-    
+
     Erstellt JSON-formatierte Log-Nachrichten mit Kontext-Informationen,
     Timestamps und strukturierten Daten für Enterprise-Monitoring.
     """
@@ -70,10 +93,10 @@ class StructuredFormatter(logging.Formatter):
         self,
         include_context: bool = True,
         include_performance: bool = True,
-        extra_fields: Optional[Dict[str, Any]] = None
+        extra_fields: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Initialisiert Structured Formatter.
-        
+
         Args:
             include_context: Kontext-Informationen einschließen
             include_performance: Performance-Metriken einschließen
@@ -86,16 +109,18 @@ class StructuredFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         """Formatiert LogRecord als JSON.
-        
+
         Args:
             record: Python LogRecord
-            
+
         Returns:
             JSON-formatierte Log-Nachricht
         """
         # Basis-Log-Daten
         log_data = {
-            "timestamp": datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat(),
+            "timestamp": datetime.fromtimestamp(
+                record.created, tz=timezone.utc
+            ).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
@@ -105,12 +130,12 @@ class StructuredFormatter(logging.Formatter):
         }
 
         # Thread-Informationen
-        if hasattr(record, 'thread') and record.thread:
+        if hasattr(record, "thread") and record.thread:
             log_data["thread_id"] = record.thread
-            log_data["thread_name"] = getattr(record, 'threadName', None)
+            log_data["thread_name"] = getattr(record, "threadName", None)
 
         # Process-Informationen
-        if hasattr(record, 'process') and record.process:
+        if hasattr(record, "process") and record.process:
             log_data["process_id"] = record.process
 
         # Exception-Informationen
@@ -118,7 +143,9 @@ class StructuredFormatter(logging.Formatter):
             log_data["exception"] = {
                 "type": record.exc_info[0].__name__ if record.exc_info[0] else None,
                 "message": str(record.exc_info[1]) if record.exc_info[1] else None,
-                "traceback": self.formatException(record.exc_info) if record.exc_info else None
+                "traceback": self.formatException(record.exc_info)
+                if record.exc_info
+                else None,
             }
 
         # Kontext-Informationen aus ContextVars
@@ -137,10 +164,28 @@ class StructuredFormatter(logging.Formatter):
         extra_data = {}
         for key, value in record.__dict__.items():
             if key not in {
-                'name', 'msg', 'args', 'levelname', 'levelno', 'pathname', 'filename',
-                'module', 'lineno', 'funcName', 'created', 'msecs', 'relativeCreated',
-                'thread', 'threadName', 'processName', 'process', 'getMessage', 'exc_info',
-                'exc_text', 'stack_info', 'message'
+                "name",
+                "msg",
+                "args",
+                "levelname",
+                "levelno",
+                "pathname",
+                "filename",
+                "module",
+                "lineno",
+                "funcName",
+                "created",
+                "msecs",
+                "relativeCreated",
+                "thread",
+                "threadName",
+                "processName",
+                "process",
+                "getMessage",
+                "exc_info",
+                "exc_text",
+                "stack_info",
+                "message",
             }:
                 extra_data[key] = value
 
@@ -148,11 +193,11 @@ class StructuredFormatter(logging.Formatter):
             log_data["extra"] = extra_data
 
         # Performance-Metriken
-        if self.include_performance and hasattr(record, 'duration'):
+        if self.include_performance and hasattr(record, "duration"):
             log_data["performance"] = {
-                "duration_ms": getattr(record, 'duration', None),
-                "memory_usage": getattr(record, 'memory_usage', None),
-                "cpu_usage": getattr(record, 'cpu_usage', None),
+                "duration_ms": getattr(record, "duration", None),
+                "memory_usage": getattr(record, "memory_usage", None),
+                "cpu_usage": getattr(record, "cpu_usage", None),
             }
 
         # Statische Extra-Felder
@@ -164,7 +209,7 @@ class StructuredFormatter(logging.Formatter):
 
 class EnterpriseLogger:
     """Enterprise-Grade Logger für KEI-Agent SDK.
-    
+
     Bietet strukturiertes Logging mit Kontext-Management, Performance-Tracking
     und Enterprise-Features für Production-Deployments.
     """
@@ -177,10 +222,10 @@ class EnterpriseLogger:
         enable_console: bool = True,
         enable_file: bool = False,
         file_path: Optional[str] = None,
-        extra_fields: Optional[Dict[str, Any]] = None
+        extra_fields: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Initialisiert Enterprise Logger.
-        
+
         Args:
             name: Logger-Name
             level: Log-Level
@@ -192,24 +237,24 @@ class EnterpriseLogger:
         """
         self.logger = logging.getLogger(name)
         self.logger.setLevel(level)
-        
+
         # Entferne existierende Handler
         self.logger.handlers.clear()
-        
+
         # Structured Formatter
         if enable_structured:
             formatter = StructuredFormatter(extra_fields=extra_fields)
         else:
             formatter = logging.Formatter(
-                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
             )
-        
+
         # Console Handler
         if enable_console:
             console_handler = logging.StreamHandler()
             console_handler.setFormatter(formatter)
             self.logger.addHandler(console_handler)
-        
+
         # File Handler
         if enable_file and file_path:
             file_handler = logging.FileHandler(file_path)
@@ -218,7 +263,7 @@ class EnterpriseLogger:
 
     def set_context(self, context: LogContext) -> None:
         """Setzt Logging-Kontext für aktuellen Request.
-        
+
         Args:
             context: Log-Kontext mit Tracking-Informationen
         """
@@ -237,7 +282,7 @@ class EnterpriseLogger:
 
     def create_correlation_id(self) -> str:
         """Erstellt neue Correlation-ID und setzt sie im Kontext.
-        
+
         Returns:
             Neue Correlation-ID
         """
@@ -267,25 +312,25 @@ class EnterpriseLogger:
 
     def log_operation_start(self, operation: str, **kwargs: Any) -> str:
         """Loggt Start einer Operation mit Performance-Tracking.
-        
+
         Args:
             operation: Name der Operation
             **kwargs: Zusätzliche Kontext-Informationen
-            
+
         Returns:
             Operation-ID für Tracking
         """
         operation_id = str(uuid.uuid4())
         start_time = time.time()
-        
+
         self.info(
             f"Operation gestartet: {operation}",
             operation=operation,
             operation_id=operation_id,
             operation_start_time=start_time,
-            **kwargs
+            **kwargs,
         )
-        
+
         return operation_id
 
     def log_operation_end(
@@ -294,10 +339,10 @@ class EnterpriseLogger:
         operation_id: str,
         start_time: float,
         success: bool = True,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         """Loggt Ende einer Operation mit Performance-Metriken.
-        
+
         Args:
             operation: Name der Operation
             operation_id: Operation-ID vom Start
@@ -307,10 +352,10 @@ class EnterpriseLogger:
         """
         end_time = time.time()
         duration = (end_time - start_time) * 1000  # Millisekunden
-        
+
         level_method = self.info if success else self.error
         status = "erfolgreich" if success else "fehlgeschlagen"
-        
+
         level_method(
             f"Operation {status}: {operation}",
             operation=operation,
@@ -318,7 +363,7 @@ class EnterpriseLogger:
             operation_end_time=end_time,
             duration=duration,
             success=success,
-            **kwargs
+            **kwargs,
         )
 
     def log_performance(
@@ -327,10 +372,10 @@ class EnterpriseLogger:
         duration_ms: float,
         memory_usage: Optional[float] = None,
         cpu_usage: Optional[float] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         """Loggt Performance-Metriken.
-        
+
         Args:
             operation: Name der Operation
             duration_ms: Dauer in Millisekunden
@@ -344,18 +389,14 @@ class EnterpriseLogger:
             duration=duration_ms,
             memory_usage=memory_usage,
             cpu_usage=cpu_usage,
-            **kwargs
+            **kwargs,
         )
 
     def log_security_event(
-        self,
-        event_type: str,
-        severity: str,
-        description: str,
-        **kwargs: Any
+        self, event_type: str, severity: str, description: str, **kwargs: Any
     ) -> None:
         """Loggt Sicherheitsereignis für Audit-Zwecke.
-        
+
         Args:
             event_type: Typ des Sicherheitsereignisses
             severity: Schweregrad (low, medium, high, critical)
@@ -363,20 +404,20 @@ class EnterpriseLogger:
             **kwargs: Zusätzliche Sicherheitskontext-Informationen
         """
         level_map = {
-            'low': self.info,
-            'medium': self.warning,
-            'high': self.error,
-            'critical': self.critical
+            "low": self.info,
+            "medium": self.warning,
+            "high": self.error,
+            "critical": self.critical,
         }
-        
+
         log_method = level_map.get(severity.lower(), self.warning)
-        
+
         log_method(
             f"Sicherheitsereignis: {description}",
             security_event_type=event_type,
             security_severity=severity,
             security_description=description,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -386,15 +427,15 @@ _sdk_logger: Optional[EnterpriseLogger] = None
 
 def get_logger(name: str = "kei_agent") -> EnterpriseLogger:
     """Gibt Enterprise Logger für KEI-Agent SDK zurück.
-    
+
     Args:
         name: Logger-Name
-        
+
     Returns:
         Konfigurierter Enterprise Logger
     """
     global _sdk_logger
-    
+
     if _sdk_logger is None:
         _sdk_logger = EnterpriseLogger(
             name=name,
@@ -403,10 +444,10 @@ def get_logger(name: str = "kei_agent") -> EnterpriseLogger:
             enable_console=True,
             extra_fields={
                 "service": "kei-agent-sdk",
-                "version": "1.0.0"  # TODO: Aus Package-Metadaten laden
-            }
+                "version": _get_package_version(),
+            },
         )
-    
+
     return _sdk_logger
 
 
@@ -415,22 +456,22 @@ def configure_logging(
     enable_structured: bool = True,
     enable_file: bool = False,
     file_path: Optional[str] = None,
-    extra_fields: Optional[Dict[str, Any]] = None
+    extra_fields: Optional[Dict[str, Any]] = None,
 ) -> EnterpriseLogger:
     """Konfiguriert globalen SDK-Logger.
-    
+
     Args:
         level: Log-Level
         enable_structured: Strukturiertes JSON-Logging aktivieren
         enable_file: File-Output aktivieren
         file_path: Pfad für Log-Datei
         extra_fields: Zusätzliche statische Felder
-        
+
     Returns:
         Konfigurierter Enterprise Logger
     """
     global _sdk_logger
-    
+
     _sdk_logger = EnterpriseLogger(
         name="kei_agent",
         level=level,
@@ -438,9 +479,9 @@ def configure_logging(
         enable_console=True,
         enable_file=enable_file,
         file_path=file_path,
-        extra_fields=extra_fields
+        extra_fields=extra_fields,
     )
-    
+
     return _sdk_logger
 
 
@@ -452,5 +493,5 @@ __all__ = [
     "configure_logging",
     "correlation_id_var",
     "trace_id_var",
-    "user_id_var"
+    "user_id_var",
 ]

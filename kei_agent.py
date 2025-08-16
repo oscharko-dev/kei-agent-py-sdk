@@ -45,7 +45,9 @@ class AgentSkeleton:
             self._session = aiohttp.ClientSession()
         return self._session
 
-    async def _request(self, method: str, path: str, body: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def _request(
+        self, method: str, path: str, body: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """Führt HTTP-Request mit Bearer-Auth aus."""
         sess = await self._ensure_session()
         url = f"{self.cfg.base_url}{path}"
@@ -56,7 +58,9 @@ class AgentSkeleton:
         }
         if self.cfg.tenant_id:
             headers["X-Tenant-Id"] = self.cfg.tenant_id
-        async with sess.request(method, url, headers=headers, data=json.dumps(body or {})) as resp:
+        async with sess.request(
+            method, url, headers=headers, data=json.dumps(body or {})
+        ) as resp:
             if resp.status >= 300:
                 text = await resp.text()
                 raise RuntimeError(f"HTTP {resp.status}: {text}")
@@ -65,46 +69,80 @@ class AgentSkeleton:
 
     async def register(self) -> None:
         """Registriert Agent in Management-API."""
-        await self._request("POST", "/api/v1/agents-mgmt/register", {
-            "agent_id": self.cfg.agent_id,
-            "name": self.cfg.name,
-            "description": self.cfg.description,
-            "capabilities": self.cfg.capabilities,
-            "category": self.cfg.category,
-        })
+        await self._request(
+            "POST",
+            "/api/v1/agents-mgmt/register",
+            {
+                "agent_id": self.cfg.agent_id,
+                "name": self.cfg.name,
+                "description": self.cfg.description,
+                "capabilities": self.cfg.capabilities,
+                "category": self.cfg.category,
+            },
+        )
 
-    async def advertise_capabilities(self, capabilities: List[str], *, endpoints: Optional[Dict[str, Any]] = None, versions: Optional[Dict[str, Any]] = None) -> None:
+    async def advertise_capabilities(
+        self,
+        capabilities: List[str],
+        *,
+        endpoints: Optional[Dict[str, Any]] = None,
+        versions: Optional[Dict[str, Any]] = None,
+    ) -> None:
         """Aktualisiert Capabilities in Management-API und erlaubt Endpoints/Versionsangaben."""
         # Wenn detaillierte Advertisement-Route vorhanden, nutzen
         try:
             items = [
-                {"id": cap, "name": cap, "endpoints": endpoints or {}, "versions": versions or {}}
+                {
+                    "id": cap,
+                    "name": cap,
+                    "endpoints": endpoints or {},
+                    "versions": versions or {},
+                }
                 for cap in list(capabilities)
             ]
-            await self._request("POST", f"/api/v1/agents-mgmt/{self.cfg.agent_id}/capabilities/advertise", {
-                "capabilities": items,
-                "replace": False
-            })
+            await self._request(
+                "POST",
+                f"/api/v1/agents-mgmt/{self.cfg.agent_id}/capabilities/advertise",
+                {"capabilities": items, "replace": False},
+            )
         except Exception:
             # Fallback auf einfache Liste
-            await self._request("PUT", f"/api/v1/agents-mgmt/{self.cfg.agent_id}/capabilities", {
-                "capabilities": list(capabilities),
-            })
+            await self._request(
+                "PUT",
+                f"/api/v1/agents-mgmt/{self.cfg.agent_id}/capabilities",
+                {
+                    "capabilities": list(capabilities),
+                },
+            )
 
-    async def heartbeat(self, *, health: str = "ok", readiness: Optional[str] = None,
-                        queue_length: Optional[int] = None, desired_concurrency: Optional[int] = None,
-                        current_concurrency: Optional[int] = None, hints: Optional[Dict[str, Any]] = None) -> None:
+    async def heartbeat(
+        self,
+        *,
+        health: str = "ok",
+        readiness: Optional[str] = None,
+        queue_length: Optional[int] = None,
+        desired_concurrency: Optional[int] = None,
+        current_concurrency: Optional[int] = None,
+        hints: Optional[Dict[str, Any]] = None,
+    ) -> None:
         """Sendet Heartbeat/Readiness."""
-        await self._request("POST", f"/api/v1/agents-mgmt/{self.cfg.agent_id}/heartbeat", {
-            "health": health,
-            "readiness": readiness or ("ready" if self._initialized else "starting"),
-            "queue_length": queue_length,
-            "desired_concurrency": desired_concurrency,
-            "current_concurrency": current_concurrency,
-            "hints": hints or {},
-        })
+        await self._request(
+            "POST",
+            f"/api/v1/agents-mgmt/{self.cfg.agent_id}/heartbeat",
+            {
+                "health": health,
+                "readiness": readiness
+                or ("ready" if self._initialized else "starting"),
+                "queue_length": queue_length,
+                "desired_concurrency": desired_concurrency,
+                "current_concurrency": current_concurrency,
+                "hints": hints or {},
+            },
+        )
 
-    async def initialize(self, warmup: Optional[Callable[[], Awaitable[None]]] = None) -> None:
+    async def initialize(
+        self, warmup: Optional[Callable[[], Awaitable[None]]] = None
+    ) -> None:
         """Führt Warmup aus, registriert, advertised und startet Heartbeat-Loop."""
         if warmup:
             await warmup()

@@ -6,10 +6,8 @@ Testet die refactored Version des Unified Clients mit verbesserter
 Architektur, vollständigen Type Hints und Enterprise-Features.
 """
 
-import asyncio
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from typing import Dict, Any
 
 from kei_agent.unified_client_refactored import UnifiedKeiAgentClient
 from kei_agent.client import AgentClientConfig

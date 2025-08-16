@@ -11,38 +11,30 @@ from __future__ import annotations
 import asyncio
 import json
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union, Callable, Awaitable
-from contextlib import asynccontextmanager
+from typing import Any, Dict, List, Optional, Callable, Awaitable
 
-import aiohttp
 import httpx
 import logging
-from opentelemetry import trace
 
 from .client import AgentClientConfig, KeiAgentClient
-from .models import Agent, AgentMetadata, AgentHealth
-from .exceptions import (
-    KeiSDKError,
-    CommunicationError,
-    ProtocolError,
-    SecurityError
-)
-from .tracing import TracingManager, TraceContext
-from .retry import RetryManager, RetryPolicy
-from .capabilities import CapabilityManager, CapabilityProfile
+from .models import Agent
+from .exceptions import KeiSDKError, ProtocolError, SecurityError
+from .tracing import TracingManager
+from .retry import RetryManager
+from .capabilities import CapabilityManager
 from .discovery import ServiceDiscovery
+from .utils import create_correlation_id
 
 # Initialisiert Modul-Logger
 _logger = logging.getLogger(__name__)
 
-from .utils import create_correlation_id, format_trace_id
-
 
 class ProtocolType(str, Enum):
     """Unterstützte KEI-Protokolle."""
+
     RPC = "rpc"
     STREAM = "stream"
     BUS = "bus"
@@ -52,6 +44,7 @@ class ProtocolType(str, Enum):
 
 class AuthType(str, Enum):
     """Unterstützte Authentifizierungstypen."""
+
     BEARER = "bearer"
     OIDC = "oidc"
     MTLS = "mtls"
@@ -60,6 +53,7 @@ class AuthType(str, Enum):
 @dataclass
 class ProtocolConfig:
     """Konfiguration für Protokoll-Integration."""
+
     rpc_enabled: bool = True
     stream_enabled: bool = True
     bus_enabled: bool = True
@@ -79,6 +73,7 @@ class ProtocolConfig:
 @dataclass
 class SecurityConfig:
     """Sicherheitskonfiguration für KEI-Agent."""
+
     auth_type: AuthType = AuthType.BEARER
     api_token: Optional[str] = None
 
@@ -127,7 +122,9 @@ class SecurityManager:
                 return {}
             else:
                 if not self.config.api_token:
-                    raise SecurityError("API Token ist erforderlich für Bearer-Authentifizierung")
+                    raise SecurityError(
+                        "API Token ist erforderlich für Bearer-Authentifizierung"
+                    )
                 return {"Authorization": f"Bearer {self.config.api_token}"}
         except Exception as e:
             raise SecurityError(f"Fehler bei Authentifizierung: {e}")
@@ -142,24 +139,35 @@ class SecurityManager:
             SecurityError: Bei OIDC-Fehlern
         """
         # Prüfe Cache
-        if (self._token_cache and self._token_expires and
-            datetime.now(timezone.utc) < self._token_expires):
+        if (
+            self._token_cache
+            and self._token_expires
+            and datetime.now(timezone.utc) < self._token_expires
+        ):
             return self._token_cache
 
         # Hole neuen Token
-        if not all([self.config.oidc_issuer, self.config.oidc_client_id,
-                   self.config.oidc_client_secret]):
+        if not all(
+            [
+                self.config.oidc_issuer,
+                self.config.oidc_client_id,
+                self.config.oidc_client_secret,
+            ]
+        ):
             raise SecurityError("OIDC-Konfiguration unvollständig")
 
         try:
             async with httpx.AsyncClient() as client:
                 token_url = f"{self.config.oidc_issuer}/token"
-                response = await client.post(token_url, data={
-                    "grant_type": "client_credentials",
-                    "client_id": self.config.oidc_client_id,
-                    "client_secret": self.config.oidc_client_secret,
-                    "scope": self.config.oidc_scope
-                })
+                response = await client.post(
+                    token_url,
+                    data={
+                        "grant_type": "client_credentials",
+                        "client_id": self.config.oidc_client_id,
+                        "client_secret": self.config.oidc_client_secret,
+                        "scope": self.config.oidc_scope,
+                    },
+                )
                 response.raise_for_status()
 
                 token_data = response.json()
@@ -195,7 +203,9 @@ class SecurityManager:
                 if self._token_expires:
                     # Erneuere Token 5 Minuten vor Ablauf
                     refresh_time = self._token_expires - timedelta(minutes=5)
-                    sleep_duration = (refresh_time - datetime.now(timezone.utc)).total_seconds()
+                    sleep_duration = (
+                        refresh_time - datetime.now(timezone.utc)
+                    ).total_seconds()
 
                     if sleep_duration > 0:
                         await asyncio.sleep(sleep_duration)
@@ -215,11 +225,12 @@ class SecurityManager:
 
 # Protokoll-Client-Implementierungen (Embedded für Autonomie)
 
+
 class KEIRPCClient:
     """Embedded KEI-RPC Client für synchrone Agent-Operationen."""
 
     def __init__(self, base_url: str, security_manager: SecurityManager):
-        self.base_url = base_url.rstrip('/')
+        self.base_url = base_url.rstrip("/")
         self.security = security_manager
         self._client: Optional[httpx.AsyncClient] = None
 
@@ -231,33 +242,37 @@ class KEIRPCClient:
         if self._client:
             await self._client.aclose()
 
-    async def plan(self, objective: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def plan(
+        self, objective: str, context: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """Führt Plan-Operation über KEI-RPC aus."""
-        return await self._rpc_call("plan", {
-            "objective": objective,
-            "context": context or {}
-        })
+        return await self._rpc_call(
+            "plan", {"objective": objective, "context": context or {}}
+        )
 
-    async def act(self, action: str, parameters: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def act(
+        self, action: str, parameters: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """Führt Act-Operation über KEI-RPC aus."""
-        return await self._rpc_call("act", {
-            "action": action,
-            "parameters": parameters or {}
-        })
+        return await self._rpc_call(
+            "act", {"action": action, "parameters": parameters or {}}
+        )
 
-    async def observe(self, observation_type: str, data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def observe(
+        self, observation_type: str, data: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """Führt Observe-Operation über KEI-RPC aus."""
-        return await self._rpc_call("observe", {
-            "observation_type": observation_type,
-            "data": data or {}
-        })
+        return await self._rpc_call(
+            "observe", {"observation_type": observation_type, "data": data or {}}
+        )
 
-    async def explain(self, query: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def explain(
+        self, query: str, context: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """Führt Explain-Operation über KEI-RPC aus."""
-        return await self._rpc_call("explain", {
-            "query": query,
-            "context": context or {}
-        })
+        return await self._rpc_call(
+            "explain", {"query": query, "context": context or {}}
+        )
 
     async def _rpc_call(self, method: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         """Führt RPC-Call aus."""
@@ -265,20 +280,18 @@ class KEIRPCClient:
             raise ProtocolError("RPC Client nicht initialisiert")
 
         headers = await self.security.get_auth_headers()
-        headers.update({
-            "Content-Type": "application/json",
-            "X-Correlation-ID": create_correlation_id()
-        })
+        headers.update(
+            {
+                "Content-Type": "application/json",
+                "X-Correlation-ID": create_correlation_id(),
+            }
+        )
 
         try:
             response = await self._client.post(
                 "/api/v1/rpc/invoke",
-                json={
-                    "service": "agent",
-                    "method": method,
-                    "payload": payload
-                },
-                headers=headers
+                json={"service": "agent", "method": method, "payload": payload},
+                headers=headers,
             )
             response.raise_for_status()
             return response.json()
@@ -290,7 +303,7 @@ class KEIStreamClient:
     """Embedded KEI-Stream Client für Realtime-Events."""
 
     def __init__(self, base_url: str, security_manager: SecurityManager):
-        self.base_url = base_url.replace('http', 'ws')
+        self.base_url = base_url.replace("http", "ws")
         self.security = security_manager
         self._websocket: Optional[Any] = None
         self._connected = False
@@ -314,28 +327,36 @@ class KEIStreamClient:
             await self._websocket.close()
             self._connected = False
 
-    async def subscribe(self, stream_id: str, callback: Callable[[Dict[str, Any]], Awaitable[None]]) -> None:
+    async def subscribe(
+        self, stream_id: str, callback: Callable[[Dict[str, Any]], Awaitable[None]]
+    ) -> None:
         """Abonniert Stream für Realtime-Events."""
         if not self._connected:
             await self.connect()
 
         # Sende Subscribe-Message
-        await self._websocket.send(json.dumps({
-            "type": "subscribe",
-            "stream_id": stream_id,
-            "correlation_id": create_correlation_id()
-        }))
+        await self._websocket.send(
+            json.dumps(
+                {
+                    "type": "subscribe",
+                    "stream_id": stream_id,
+                    "correlation_id": create_correlation_id(),
+                }
+            )
+        )
 
         # Höre auf eingehende Messages
         async for message in self._websocket:
             try:
                 data = json.loads(message)
                 await callback(data)
-            except Exception as e:
+            except Exception:
                 # Log error but continue listening
                 pass
 
-    async def send_frame(self, stream_id: str, frame_type: str, payload: Dict[str, Any]) -> None:
+    async def send_frame(
+        self, stream_id: str, frame_type: str, payload: Dict[str, Any]
+    ) -> None:
         """Sendet Frame über Stream."""
         if not self._connected:
             await self.connect()
@@ -345,7 +366,7 @@ class KEIStreamClient:
             "stream_id": stream_id,
             "payload": payload,
             "correlation_id": create_correlation_id(),
-            "timestamp": time.time()
+            "timestamp": time.time(),
         }
 
         await self._websocket.send(json.dumps(frame))
@@ -355,7 +376,7 @@ class KEIBusClient:
     """Embedded KEI-Bus Client für Event-driven Kommunikation."""
 
     def __init__(self, base_url: str, security_manager: SecurityManager):
-        self.base_url = base_url.rstrip('/')
+        self.base_url = base_url.rstrip("/")
         self.security = security_manager
         self._client: Optional[httpx.AsyncClient] = None
 
@@ -373,33 +394,40 @@ class KEIBusClient:
             raise ProtocolError("Bus Client nicht initialisiert")
 
         headers = await self.security.get_auth_headers()
-        headers.update({
-            "Content-Type": "application/json",
-            "X-Correlation-ID": create_correlation_id()
-        })
+        headers.update(
+            {
+                "Content-Type": "application/json",
+                "X-Correlation-ID": create_correlation_id(),
+            }
+        )
 
         try:
             response = await self._client.post(
-                "/api/v1/bus/publish",
-                json=envelope,
-                headers=headers
+                "/api/v1/bus/publish", json=envelope, headers=headers
             )
             response.raise_for_status()
             return response.json()
         except httpx.HTTPError as e:
             raise ProtocolError(f"Bus-Publish fehlgeschlagen: {e}")
 
-    async def rpc_invoke(self, service: str, method: str, payload: Dict[str, Any],
-                        timeout_seconds: float = 5.0) -> Dict[str, Any]:
+    async def rpc_invoke(
+        self,
+        service: str,
+        method: str,
+        payload: Dict[str, Any],
+        timeout_seconds: float = 5.0,
+    ) -> Dict[str, Any]:
         """Führt RPC über Bus aus."""
         if not self._client:
             raise ProtocolError("Bus Client nicht initialisiert")
 
         headers = await self.security.get_auth_headers()
-        headers.update({
-            "Content-Type": "application/json",
-            "X-Correlation-ID": create_correlation_id()
-        })
+        headers.update(
+            {
+                "Content-Type": "application/json",
+                "X-Correlation-ID": create_correlation_id(),
+            }
+        )
 
         try:
             response = await self._client.post(
@@ -408,10 +436,10 @@ class KEIBusClient:
                     "service": service,
                     "method": method,
                     "payload": payload,
-                    "timeout_seconds": timeout_seconds
+                    "timeout_seconds": timeout_seconds,
                 },
                 headers=headers,
-                timeout=timeout_seconds + 1.0
+                timeout=timeout_seconds + 1.0,
             )
             response.raise_for_status()
             return response.json()
@@ -423,7 +451,7 @@ class KEIMCPClient:
     """Embedded KEI-MCP Client für Tool/Resource/Prompt Discovery."""
 
     def __init__(self, base_url: str, security_manager: SecurityManager):
-        self.base_url = base_url.rstrip('/')
+        self.base_url = base_url.rstrip("/")
         self.security = security_manager
         self._client: Optional[httpx.AsyncClient] = None
 
@@ -435,7 +463,9 @@ class KEIMCPClient:
         if self._client:
             await self._client.aclose()
 
-    async def discover_tools(self, category: Optional[str] = None) -> List[Dict[str, Any]]:
+    async def discover_tools(
+        self, category: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
         """Entdeckt verfügbare MCP-Tools."""
         if not self._client:
             raise ProtocolError("MCP Client nicht initialisiert")
@@ -445,38 +475,42 @@ class KEIMCPClient:
 
         try:
             response = await self._client.get(
-                "/api/v1/mcp/tools",
-                params=params,
-                headers=headers
+                "/api/v1/mcp/tools", params=params, headers=headers
             )
             response.raise_for_status()
             return response.json()
         except httpx.HTTPError as e:
             raise ProtocolError(f"MCP Tool-Discovery fehlgeschlagen: {e}")
 
-    async def invoke_tool(self, tool_name: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def invoke_tool(
+        self, tool_name: str, parameters: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Führt MCP-Tool aus."""
         if not self._client:
             raise ProtocolError("MCP Client nicht initialisiert")
 
         headers = await self.security.get_auth_headers()
-        headers.update({
-            "Content-Type": "application/json",
-            "X-Correlation-ID": create_correlation_id()
-        })
+        headers.update(
+            {
+                "Content-Type": "application/json",
+                "X-Correlation-ID": create_correlation_id(),
+            }
+        )
 
         try:
             response = await self._client.post(
                 f"/api/v1/mcp/tools/{tool_name}/invoke",
                 json={"parameters": parameters},
-                headers=headers
+                headers=headers,
             )
             response.raise_for_status()
             return response.json()
         except httpx.HTTPError as e:
             raise ProtocolError(f"MCP Tool-Ausführung fehlgeschlagen: {e}")
 
-    async def discover_resources(self, resource_type: Optional[str] = None) -> List[Dict[str, Any]]:
+    async def discover_resources(
+        self, resource_type: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
         """Entdeckt verfügbare MCP-Resources."""
         if not self._client:
             raise ProtocolError("MCP Client nicht initialisiert")
@@ -486,16 +520,16 @@ class KEIMCPClient:
 
         try:
             response = await self._client.get(
-                "/api/v1/mcp/resources",
-                params=params,
-                headers=headers
+                "/api/v1/mcp/resources", params=params, headers=headers
             )
             response.raise_for_status()
             return response.json()
         except httpx.HTTPError as e:
             raise ProtocolError(f"MCP Resource-Discovery fehlgeschlagen: {e}")
 
-    async def discover_prompts(self, category: Optional[str] = None) -> List[Dict[str, Any]]:
+    async def discover_prompts(
+        self, category: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
         """Entdeckt verfügbare MCP-Prompts."""
         if not self._client:
             raise ProtocolError("MCP Client nicht initialisiert")
@@ -505,9 +539,7 @@ class KEIMCPClient:
 
         try:
             response = await self._client.get(
-                "/api/v1/mcp/prompts",
-                params=params,
-                headers=headers
+                "/api/v1/mcp/prompts", params=params, headers=headers
             )
             response.raise_for_status()
             return response.json()
@@ -527,7 +559,7 @@ class UnifiedKeiAgentClient:
         self,
         config: AgentClientConfig,
         protocol_config: Optional[ProtocolConfig] = None,
-        security_config: Optional[SecurityConfig] = None
+        security_config: Optional[SecurityConfig] = None,
     ):
         """
         Initialisiert Unified KEI-Agent Client.
@@ -540,16 +572,19 @@ class UnifiedKeiAgentClient:
         self.config = config
         self.protocol_config = protocol_config or ProtocolConfig()
         self.security_config = security_config or SecurityConfig(
-            auth_type=AuthType.BEARER,
-            api_token=config.api_token
+            auth_type=AuthType.BEARER, api_token=config.api_token
         )
 
         # Initialisiere Komponenten
         self.security = SecurityManager(self.security_config)
-        self.tracing = TracingManager(config.tracing) if config.tracing.enabled else None
+        self.tracing = (
+            TracingManager(config.tracing) if config.tracing.enabled else None
+        )
         self.retry = RetryManager(config.retry)
         self.capabilities = CapabilityManager(config)
-        self.discovery = ServiceDiscovery(config) if config.enable_service_discovery else None
+        self.discovery = (
+            ServiceDiscovery(config) if config.enable_service_discovery else None
+        )
 
         # Erstelle Retry-Manager je Protokoll auf Basis protokollspezifischer Policies
         self._retry_managers: Dict[str, RetryManager] = {}
@@ -559,17 +594,20 @@ class UnifiedKeiAgentClient:
 
             # Protokoll-spezifische Manager anlegen, falls konfiguriert
             for proto_key in ("rpc", "stream", "bus", "mcp"):
-                policy_cfg = getattr(config, "protocol_retry_policies", {}).get(proto_key)
+                policy_cfg = getattr(config, "protocol_retry_policies", {}).get(
+                    proto_key
+                )
                 if policy_cfg:
                     self._retry_managers[proto_key] = RetryManager(policy_cfg)
                     _logger.info(
                         "RetryPolicy konfiguriert für Protokoll '%s': max_attempts=%s base_delay=%s",
-                        proto_key, policy_cfg.max_attempts, policy_cfg.base_delay
+                        proto_key,
+                        policy_cfg.max_attempts,
+                        policy_cfg.base_delay,
                     )
         except Exception:
             # Defensive: Fällt auf Standard zurück, falls etwas schief geht
             self._retry_managers["default"] = RetryManager(config.retry)
-
 
         # Protokoll-Clients (werden lazy initialisiert)
         self._rpc_client: Optional[KEIRPCClient] = None
@@ -611,7 +649,9 @@ class UnifiedKeiAgentClient:
                 self._rpc_client = KEIRPCClient(self.config.base_url, self.security)
 
             if self.protocol_config.stream_enabled:
-                self._stream_client = KEIStreamClient(self.config.base_url, self.security)
+                self._stream_client = KEIStreamClient(
+                    self.config.base_url, self.security
+                )
 
             if self.protocol_config.bus_enabled:
                 self._bus_client = KEIBusClient(self.config.base_url, self.security)
@@ -643,7 +683,7 @@ class UnifiedKeiAgentClient:
 
             self._closed = True
 
-        except Exception as e:
+        except Exception:
             # Log error but don't raise
             pass
 
@@ -654,7 +694,7 @@ class UnifiedKeiAgentClient:
         operation: str,
         payload: Dict[str, Any],
         protocol: ProtocolType = ProtocolType.AUTO,
-        timeout: Optional[float] = None
+        timeout: Optional[float] = None,
     ) -> Dict[str, Any]:
         """
         Führt Agent-Operation mit intelligenter Protokoll-Auswahl aus.
@@ -688,12 +728,16 @@ class UnifiedKeiAgentClient:
                 span.set_attribute("operation", operation)
 
                 try:
-                    return await self._execute_with_protocol(protocol, operation, payload, timeout)
+                    return await self._execute_with_protocol(
+                        protocol, operation, payload, timeout
+                    )
                 except Exception as e:
                     span.record_exception(e)
                     raise
         else:
-            return await self._execute_with_protocol(protocol, operation, payload, timeout)
+            return await self._execute_with_protocol(
+                protocol, operation, payload, timeout
+            )
 
     def _select_optimal_protocol(self, operation: str) -> ProtocolType:
         """
@@ -707,20 +751,29 @@ class UnifiedKeiAgentClient:
         """
         # Streaming-Operationen
         streaming_ops = {
-            "stream_response", "voice_synthesis", "real_time_data",
-            "partial_results", "live_updates"
+            "stream_response",
+            "voice_synthesis",
+            "real_time_data",
+            "partial_results",
+            "live_updates",
         }
 
         # Asynchrone Event-Operationen
         async_ops = {
-            "background_task", "notification", "event_processing",
-            "agent_communication", "workflow_trigger"
+            "background_task",
+            "notification",
+            "event_processing",
+            "agent_communication",
+            "workflow_trigger",
         }
 
         # MCP-Tool-Operationen
         mcp_ops = {
-            "tool_discovery", "tool_invoke", "resource_access",
-            "prompt_discovery", "capability_query"
+            "tool_discovery",
+            "tool_invoke",
+            "resource_access",
+            "prompt_discovery",
+            "capability_query",
         }
 
         if operation in streaming_ops and self.protocol_config.stream_enabled:
@@ -750,14 +803,18 @@ class UnifiedKeiAgentClient:
             RetryManager-Instanz; fällt auf Standard zurück, wenn nicht vorhanden
         """
         proto = (protocol or "").lower()
-        return self._retry_managers.get(proto) or self._retry_managers.get("default") or self.retry
+        return (
+            self._retry_managers.get(proto)
+            or self._retry_managers.get("default")
+            or self.retry
+        )
 
     async def _execute_with_protocol(
         self,
         protocol: ProtocolType,
         operation: str,
         payload: Dict[str, Any],
-        timeout: Optional[float] = None
+        timeout: Optional[float] = None,
     ) -> Dict[str, Any]:
         """
         Führt Operation mit spezifischem Protokoll aus.
@@ -783,19 +840,18 @@ class UnifiedKeiAgentClient:
             else:
                 raise ProtocolError(f"Unbekanntes Protokoll: {protocol}")
 
-        except Exception as e:
+        except Exception:
             # Fallback-Mechanismus wenn aktiviert
-            if (self.protocol_config.protocol_fallback_enabled and
-                protocol != ProtocolType.RPC and
-                self.protocol_config.rpc_enabled):
+            if (
+                self.protocol_config.protocol_fallback_enabled
+                and protocol != ProtocolType.RPC
+                and self.protocol_config.rpc_enabled
+            ):
                 return await self._execute_rpc_operation(operation, payload, timeout)
             raise
 
     async def _execute_rpc_operation(
-        self,
-        operation: str,
-        payload: Dict[str, Any],
-        timeout: Optional[float] = None
+        self, operation: str, payload: Dict[str, Any], timeout: Optional[float] = None
     ) -> Dict[str, Any]:
         """Führt Operation über KEI-RPC aus."""
         if not self._rpc_client:
@@ -807,44 +863,39 @@ class UnifiedKeiAgentClient:
             async with self._rpc_client:
                 if operation == "plan":
                     return await self._rpc_client.plan(
-                        payload.get("objective", ""),
-                        payload.get("context")
+                        payload.get("objective", ""), payload.get("context")
                     )
                 elif operation == "act":
                     return await self._rpc_client.act(
-                        payload.get("action", ""),
-                        payload.get("parameters")
+                        payload.get("action", ""), payload.get("parameters")
                     )
                 elif operation == "observe":
                     return await self._rpc_client.observe(
-                        payload.get("observation_type", ""),
-                        payload.get("data")
+                        payload.get("observation_type", ""), payload.get("data")
                     )
                 elif operation == "explain":
                     return await self._rpc_client.explain(
-                        payload.get("query", ""),
-                        payload.get("context")
+                        payload.get("query", ""), payload.get("context")
                     )
                 else:
                     # Generischer RPC-Call
                     return await self._rpc_client._rpc_call(operation, payload)
 
         cb_name = f"rpc.{operation}"
-        retry_manager = self._retry_managers.get("rpc") or self._retry_managers.get("default") or self.retry
+        retry_manager = (
+            self._retry_managers.get("rpc")
+            or self._retry_managers.get("default")
+            or self.retry
+        )
         _logger.debug(
-            "Retry-Call vorbereitet (Policy via '%s'): operation='%s'",
-            "rpc", operation
+            "Retry-Call vorbereitet (Policy via '%s'): operation='%s'", "rpc", operation
         )
         return await retry_manager.execute_with_retry(
-            operation_call,
-            circuit_breaker_name=cb_name
+            operation_call, circuit_breaker_name=cb_name
         )
 
     async def _execute_stream_operation(
-        self,
-        operation: str,
-        payload: Dict[str, Any],
-        timeout: Optional[float] = None
+        self, operation: str, payload: Dict[str, Any], timeout: Optional[float] = None
     ) -> Dict[str, Any]:
         """Führt Operation über KEI-Stream aus."""
         if not self._stream_client:
@@ -867,21 +918,27 @@ class UnifiedKeiAgentClient:
                 # Sende Frame
                 frame_type = payload.get("frame_type", operation)
                 frame_payload = payload.get("frame_payload", {})
-                await self._stream_client.send_frame(stream_id, frame_type, frame_payload)
-                return {"status": "sent", "stream_id": stream_id, "frame_type": frame_type}
+                await self._stream_client.send_frame(
+                    stream_id, frame_type, frame_payload
+                )
+                return {
+                    "status": "sent",
+                    "stream_id": stream_id,
+                    "frame_type": frame_type,
+                }
 
         cb_name = f"stream.{operation}"
-        retry_manager = self._retry_managers.get("stream") or self._retry_managers.get("default") or self.retry
+        retry_manager = (
+            self._retry_managers.get("stream")
+            or self._retry_managers.get("default")
+            or self.retry
+        )
         return await retry_manager.execute_with_retry(
-            operation_call,
-            circuit_breaker_name=cb_name
+            operation_call, circuit_breaker_name=cb_name
         )
 
     async def _execute_bus_operation(
-        self,
-        operation: str,
-        payload: Dict[str, Any],
-        timeout: Optional[float] = None
+        self, operation: str, payload: Dict[str, Any], timeout: Optional[float] = None
     ) -> Dict[str, Any]:
         """Führt Operation über KEI-Bus aus."""
         if not self._bus_client:
@@ -899,34 +956,29 @@ class UnifiedKeiAgentClient:
                         payload.get("service", "agent"),
                         payload.get("method", operation),
                         payload.get("payload", {}),
-                        timeout or 5.0
+                        timeout or 5.0,
                     )
                 else:
                     # Generischer Bus-RPC-Call
                     return await self._bus_client.rpc_invoke(
-                        "agent",
-                        operation,
-                        payload,
-                        timeout or 5.0
+                        "agent", operation, payload, timeout or 5.0
                     )
 
         cb_name = f"bus.{operation}"
-        retry_manager = self._retry_managers.get("bus") or self._retry_managers.get("default") or self.retry
+        retry_manager = (
+            self._retry_managers.get("bus")
+            or self._retry_managers.get("default")
+            or self.retry
+        )
         _logger.debug(
-            "Retry-Call vorbereitet (Policy via '%s'): operation='%s'",
-            "bus", operation
+            "Retry-Call vorbereitet (Policy via '%s'): operation='%s'", "bus", operation
         )
         return await retry_manager.execute_with_retry(
-            operation_call,
-            circuit_breaker_name=cb_name
+            operation_call, circuit_breaker_name=cb_name
         )
 
-
     async def _execute_mcp_operation(
-        self,
-        operation: str,
-        payload: Dict[str, Any],
-        timeout: Optional[float] = None
+        self, operation: str, payload: Dict[str, Any], timeout: Optional[float] = None
     ) -> Dict[str, Any]:
         """Führt Operation über KEI-MCP aus."""
         if not self._mcp_client:
@@ -937,59 +989,76 @@ class UnifiedKeiAgentClient:
             """Führt die eigentliche MCP-Operation aus (einzelner Versuch)."""
             async with self._mcp_client:
                 if operation == "discover_tools":
-                    return {"tools": await self._mcp_client.discover_tools(payload.get("category"))}
+                    return {
+                        "tools": await self._mcp_client.discover_tools(
+                            payload.get("category")
+                        )
+                    }
                 elif operation == "invoke_tool":
                     return await self._mcp_client.invoke_tool(
-                        payload.get("tool_name", ""),
-                        payload.get("parameters", {})
+                        payload.get("tool_name", ""), payload.get("parameters", {})
                     )
                 elif operation == "discover_resources":
-                    return {"resources": await self._mcp_client.discover_resources(payload.get("type"))}
+                    return {
+                        "resources": await self._mcp_client.discover_resources(
+                            payload.get("type")
+                        )
+                    }
                 elif operation == "discover_prompts":
-                    return {"prompts": await self._mcp_client.discover_prompts(payload.get("category"))}
+                    return {
+                        "prompts": await self._mcp_client.discover_prompts(
+                            payload.get("category")
+                        )
+                    }
                 else:
                     raise ProtocolError(f"Unbekannte MCP-Operation: {operation}")
 
         cb_name = f"mcp.{operation}"
-        retry_manager = self._retry_managers.get("mcp") or self._retry_managers.get("default") or self.retry
+        retry_manager = (
+            self._retry_managers.get("mcp")
+            or self._retry_managers.get("default")
+            or self.retry
+        )
         _logger.debug(
-            "Retry-Call vorbereitet (Policy via '%s'): operation='%s'",
-            "mcp", operation
+            "Retry-Call vorbereitet (Policy via '%s'): operation='%s'", "mcp", operation
         )
         return await retry_manager.execute_with_retry(
-            operation_call,
-            circuit_breaker_name=cb_name
+            operation_call, circuit_breaker_name=cb_name
         )
 
     # High-Level API-Methoden für häufige Anwendungsfälle
 
-    async def plan_task(self, objective: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def plan_task(
+        self, objective: str, context: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """Erstellt Plan für gegebenes Ziel."""
-        return await self.execute_agent_operation("plan", {
-            "objective": objective,
-            "context": context or {}
-        })
+        return await self.execute_agent_operation(
+            "plan", {"objective": objective, "context": context or {}}
+        )
 
-    async def execute_action(self, action: str, parameters: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def execute_action(
+        self, action: str, parameters: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """Führt Aktion aus."""
-        return await self.execute_agent_operation("act", {
-            "action": action,
-            "parameters": parameters or {}
-        })
+        return await self.execute_agent_operation(
+            "act", {"action": action, "parameters": parameters or {}}
+        )
 
-    async def observe_environment(self, observation_type: str, data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def observe_environment(
+        self, observation_type: str, data: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """Führt Umgebungsbeobachtung durch."""
-        return await self.execute_agent_operation("observe", {
-            "observation_type": observation_type,
-            "data": data or {}
-        })
+        return await self.execute_agent_operation(
+            "observe", {"observation_type": observation_type, "data": data or {}}
+        )
 
-    async def explain_reasoning(self, query: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def explain_reasoning(
+        self, query: str, context: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """Erklärt Reasoning für gegebene Anfrage."""
-        return await self.execute_agent_operation("explain", {
-            "query": query,
-            "context": context or {}
-        })
+        return await self.execute_agent_operation(
+            "explain", {"query": query, "context": context or {}}
+        )
 
     # Agent-to-Agent Kommunikation
 
@@ -998,7 +1067,7 @@ class UnifiedKeiAgentClient:
         target_agent: str,
         message_type: str,
         payload: Dict[str, Any],
-        protocol: ProtocolType = ProtocolType.AUTO
+        protocol: ProtocolType = ProtocolType.AUTO,
     ) -> Dict[str, Any]:
         """
         Sendet Nachricht an anderen Agent.
@@ -1021,19 +1090,21 @@ class UnifiedKeiAgentClient:
                 "message_type": message_type,
                 "payload": payload,
                 "correlation_id": create_correlation_id(),
-                "timestamp": time.time()
-            }
+                "timestamp": time.time(),
+            },
         }
 
         if protocol == ProtocolType.AUTO:
             protocol = ProtocolType.BUS  # Bus ist optimal für A2A
 
-        return await self.execute_agent_operation("publish", {"envelope": envelope}, protocol)
+        return await self.execute_agent_operation(
+            "publish", {"envelope": envelope}, protocol
+        )
 
     async def subscribe_to_agent_messages(
         self,
         callback: Callable[[Dict[str, Any]], Awaitable[None]],
-        message_types: Optional[List[str]] = None
+        message_types: Optional[List[str]] = None,
     ) -> None:
         """
         Abonniert Agent-Nachrichten.
@@ -1053,39 +1124,47 @@ class UnifiedKeiAgentClient:
                 if msg_type in message_types:
                     await callback(message)
 
-        await self.execute_agent_operation("subscribe", {
-            "stream_id": stream_id,
-            "callback": filtered_callback
-        }, ProtocolType.STREAM)
+        await self.execute_agent_operation(
+            "subscribe",
+            {"stream_id": stream_id, "callback": filtered_callback},
+            ProtocolType.STREAM,
+        )
 
     # MCP-Integration High-Level API
 
-    async def discover_available_tools(self, category: Optional[str] = None) -> List[Dict[str, Any]]:
+    async def discover_available_tools(
+        self, category: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
         """Entdeckt verfügbare MCP-Tools."""
-        result = await self.execute_agent_operation("discover_tools", {
-            "category": category
-        }, ProtocolType.MCP)
+        result = await self.execute_agent_operation(
+            "discover_tools", {"category": category}, ProtocolType.MCP
+        )
         return result.get("tools", [])
 
     async def use_tool(self, tool_name: str, **parameters) -> Dict[str, Any]:
         """Verwendet MCP-Tool mit gegebenen Parametern."""
-        return await self.execute_agent_operation("invoke_tool", {
-            "tool_name": tool_name,
-            "parameters": parameters
-        }, ProtocolType.MCP)
+        return await self.execute_agent_operation(
+            "invoke_tool",
+            {"tool_name": tool_name, "parameters": parameters},
+            ProtocolType.MCP,
+        )
 
-    async def discover_available_resources(self, resource_type: Optional[str] = None) -> List[Dict[str, Any]]:
+    async def discover_available_resources(
+        self, resource_type: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
         """Entdeckt verfügbare MCP-Resources."""
-        result = await self.execute_agent_operation("discover_resources", {
-            "type": resource_type
-        }, ProtocolType.MCP)
+        result = await self.execute_agent_operation(
+            "discover_resources", {"type": resource_type}, ProtocolType.MCP
+        )
         return result.get("resources", [])
 
-    async def discover_available_prompts(self, category: Optional[str] = None) -> List[Dict[str, Any]]:
+    async def discover_available_prompts(
+        self, category: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
         """Entdeckt verfügbare MCP-Prompts."""
-        result = await self.execute_agent_operation("discover_prompts", {
-            "category": category
-        }, ProtocolType.MCP)
+        result = await self.execute_agent_operation(
+            "discover_prompts", {"category": category}, ProtocolType.MCP
+        )
         return result.get("prompts", [])
 
     # Streaming und Realtime-Features
@@ -1093,7 +1172,7 @@ class UnifiedKeiAgentClient:
     async def start_streaming_session(
         self,
         session_id: Optional[str] = None,
-        callback: Optional[Callable[[Dict[str, Any]], Awaitable[None]]] = None
+        callback: Optional[Callable[[Dict[str, Any]], Awaitable[None]]] = None,
     ) -> str:
         """
         Startet Streaming-Session für Realtime-Kommunikation.
@@ -1108,25 +1187,23 @@ class UnifiedKeiAgentClient:
         session_id = session_id or create_correlation_id()
 
         if callback:
-            await self.execute_agent_operation("subscribe", {
-                "stream_id": session_id,
-                "callback": callback
-            }, ProtocolType.STREAM)
+            await self.execute_agent_operation(
+                "subscribe",
+                {"stream_id": session_id, "callback": callback},
+                ProtocolType.STREAM,
+            )
 
         return session_id
 
     async def send_streaming_data(
-        self,
-        session_id: str,
-        data_type: str,
-        data: Dict[str, Any]
+        self, session_id: str, data_type: str, data: Dict[str, Any]
     ) -> None:
         """Sendet Daten über Streaming-Session."""
-        await self.execute_agent_operation("send_frame", {
-            "stream_id": session_id,
-            "frame_type": data_type,
-            "frame_payload": data
-        }, ProtocolType.STREAM)
+        await self.execute_agent_operation(
+            "send_frame",
+            {"stream_id": session_id, "frame_type": data_type, "frame_payload": data},
+            ProtocolType.STREAM,
+        )
 
     # Kompatibilitäts-API für Legacy-Code
 
@@ -1135,7 +1212,7 @@ class UnifiedKeiAgentClient:
         name: str,
         version: str = "1.0.0",
         description: str = "",
-        capabilities: Optional[List[str]] = None
+        capabilities: Optional[List[str]] = None,
     ) -> Agent:
         """Registriert Agent (Legacy-Kompatibilität)."""
         if not self._legacy_client:
@@ -1153,9 +1230,7 @@ class UnifiedKeiAgentClient:
         return await self._legacy_client.get_agent(agent_id, version)
 
     async def list_agents(
-        self,
-        capabilities: Optional[List[str]] = None,
-        status: Optional[str] = None
+        self, capabilities: Optional[List[str]] = None, status: Optional[str] = None
     ) -> List[Agent]:
         """Listet Agents auf (Legacy-Kompatibilität)."""
         if not self._legacy_client:
@@ -1177,7 +1252,9 @@ class UnifiedKeiAgentClient:
         if protocol == ProtocolType.RPC:
             return self.protocol_config.rpc_enabled and self._rpc_client is not None
         elif protocol == ProtocolType.STREAM:
-            return self.protocol_config.stream_enabled and self._stream_client is not None
+            return (
+                self.protocol_config.stream_enabled and self._stream_client is not None
+            )
         elif protocol == ProtocolType.BUS:
             return self.protocol_config.bus_enabled and self._bus_client is not None
         elif protocol == ProtocolType.MCP:
@@ -1207,6 +1284,6 @@ class UnifiedKeiAgentClient:
                 "capabilities": True,
                 "discovery": self.discovery is not None,
                 "auto_protocol_selection": self.protocol_config.auto_protocol_selection,
-                "protocol_fallback": self.protocol_config.protocol_fallback_enabled
-            }
+                "protocol_fallback": self.protocol_config.protocol_fallback_enabled,
+            },
         }

@@ -8,7 +8,6 @@ Testet alle Hauptfunktionen des Unified Clients mit Mocking für externe Depende
 import asyncio
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from typing import Dict, Any
 
 from kei_agent.unified_client import (
     UnifiedKeiAgentClient,
@@ -26,8 +25,7 @@ from kei_agent.client import AgentClientConfig
 from kei_agent.exceptions import (
     KeiSDKError,
     ProtocolError,
-    SecurityError,
-    CommunicationError
+    SecurityError
 )
 
 

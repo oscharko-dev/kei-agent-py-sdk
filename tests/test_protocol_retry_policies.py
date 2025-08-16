@@ -11,7 +11,6 @@ import sys
 import types
 from typing import Dict, Any, Optional, List
 import logging
-import time
 
 
 import pytest
@@ -153,7 +152,6 @@ logging.getLogger("sdk.python.kei_agent").setLevel(logging.WARNING)
 ensure_fake_opentelemetry()
 
 from kei_agent.unified_client import UnifiedKeiAgentClient
-from kei_agent.retry import CircuitBreakerConfig
 from contextlib import asynccontextmanager
 
 

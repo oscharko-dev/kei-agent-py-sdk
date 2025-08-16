@@ -8,8 +8,7 @@ Code-Qualität, vollständigen Type Hints und Enterprise-Features.
 
 from __future__ import annotations
 
-import asyncio
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Callable, Awaitable
 import logging
 
 from .client import AgentClientConfig, KeiAgentClient
@@ -17,18 +16,12 @@ from .protocol_types import ProtocolType, ProtocolConfig, SecurityConfig
 from .security_manager import SecurityManager
 from .protocol_clients import KEIRPCClient, KEIStreamClient, KEIBusClient, KEIMCPClient
 from .protocol_selector import ProtocolSelector
-from .models import Agent, AgentMetadata, AgentHealth
-from .exceptions import (
-    KeiSDKError,
-    CommunicationError,
-    ProtocolError,
-    SecurityError
-)
-from .tracing import TracingManager, TraceContext
-from .retry import RetryManager, RetryPolicy
-from .capabilities import CapabilityManager, CapabilityProfile
+from .exceptions import KeiSDKError, ProtocolError
+from .tracing import TracingManager
+from .retry import RetryManager
+from .capabilities import CapabilityManager
 from .discovery import ServiceDiscovery
-from .utils import create_correlation_id, format_trace_id
+from .utils import create_correlation_id
 
 # Initialisiert Modul-Logger
 _logger = logging.getLogger(__name__)
@@ -36,10 +29,10 @@ _logger = logging.getLogger(__name__)
 
 class UnifiedKeiAgentClient:
     """Unified KEI-Agent Client mit vollständiger Protokoll-Integration.
-    
+
     Bietet einheitliche API für alle KEI-Protokolle (RPC, Stream, Bus, MCP)
     mit automatischer Protokoll-Auswahl, Enterprise-Security und Monitoring.
-    
+
     Attributes:
         config: Agent-Client-Konfiguration
         protocol_config: Protokoll-spezifische Konfiguration
@@ -56,63 +49,65 @@ class UnifiedKeiAgentClient:
         self,
         config: AgentClientConfig,
         protocol_config: Optional[ProtocolConfig] = None,
-        security_config: Optional[SecurityConfig] = None
+        security_config: Optional[SecurityConfig] = None,
     ) -> None:
         """Initialisiert Unified KEI-Agent Client.
-        
+
         Args:
             config: Basis-Konfiguration für Agent-Client
             protocol_config: Protokoll-spezifische Konfiguration
             security_config: Sicherheitskonfiguration
-            
+
         Raises:
             KeiSDKError: Bei ungültiger Konfiguration
         """
         self.config = config
         self.protocol_config = protocol_config or ProtocolConfig()
         self.security_config = security_config or SecurityConfig(
-            auth_type=self.protocol_config.auth_type if hasattr(self.protocol_config, 'auth_type') else "bearer",
-            api_token=config.api_token
+            auth_type=self.protocol_config.auth_type
+            if hasattr(self.protocol_config, "auth_type")
+            else "bearer",
+            api_token=config.api_token,
         )
-        
+
         # Initialisiere Core-Komponenten
         self.security = SecurityManager(self.security_config)
         self.protocol_selector = ProtocolSelector(self.protocol_config)
-        
+
         # Enterprise-Features
         self.tracing: Optional[TracingManager] = None
         self.retry_manager: Optional[RetryManager] = None
         self.capability_manager: Optional[CapabilityManager] = None
         self.service_discovery: Optional[ServiceDiscovery] = None
-        
+
         # Protokoll-Clients
         self._rpc_client: Optional[KEIRPCClient] = None
         self._stream_client: Optional[KEIStreamClient] = None
         self._bus_client: Optional[KEIBusClient] = None
         self._mcp_client: Optional[KEIMCPClient] = None
-        
+
         # Legacy Client für Kompatibilität
         self._legacy_client: Optional[KeiAgentClient] = None
-        
+
         # Status-Tracking
         self._initialized = False
         self._closed = False
-        
+
         _logger.info(
             "Unified KEI-Agent Client erstellt",
             extra={
                 "agent_id": config.agent_id,
                 "base_url": config.base_url,
-                "enabled_protocols": self.protocol_config.get_enabled_protocols()
-            }
+                "enabled_protocols": self.protocol_config.get_enabled_protocols(),
+            },
         )
 
     async def initialize(self) -> None:
         """Initialisiert Client und alle Komponenten.
-        
+
         Startet Security Manager, initialisiert Protokoll-Clients und
         Enterprise-Features wie Tracing und Retry-Mechanismen.
-        
+
         Raises:
             KeiSDKError: Bei Initialisierungsfehlern
         """
@@ -122,23 +117,23 @@ class UnifiedKeiAgentClient:
 
         try:
             _logger.info("Initialisiere Unified KEI-Agent Client")
-            
+
             # Starte Security Manager
             await self.security.start_token_refresh()
-            
+
             # Initialisiere Legacy Client für Kompatibilität
             self._legacy_client = KeiAgentClient(self.config)
             await self._legacy_client.initialize()
-            
+
             # Initialisiere Protokoll-Clients
             await self._initialize_protocol_clients()
-            
+
             # Initialisiere Enterprise-Features
             await self._initialize_enterprise_features()
-            
+
             self._initialized = True
             _logger.info("Unified KEI-Agent Client erfolgreich initialisiert")
-            
+
         except Exception as e:
             _logger.error(f"Client-Initialisierung fehlgeschlagen: {e}")
             raise KeiSDKError(f"Initialisierung fehlgeschlagen: {e}") from e
@@ -147,40 +142,40 @@ class UnifiedKeiAgentClient:
         """Initialisiert alle aktivierten Protokoll-Clients."""
         if self.protocol_config.rpc_enabled:
             self._rpc_client = KEIRPCClient(self.config.base_url, self.security)
-            
+
         if self.protocol_config.stream_enabled:
             self._stream_client = KEIStreamClient(self.config.base_url, self.security)
-            
+
         if self.protocol_config.bus_enabled:
             self._bus_client = KEIBusClient(self.config.base_url, self.security)
-            
+
         if self.protocol_config.mcp_enabled:
             self._mcp_client = KEIMCPClient(self.config.base_url, self.security)
-            
+
         _logger.debug("Protokoll-Clients initialisiert")
 
     async def _initialize_enterprise_features(self) -> None:
         """Initialisiert Enterprise-Features."""
         # Tracing Manager
-        if hasattr(self.config, 'tracing') and self.config.tracing:
+        if hasattr(self.config, "tracing") and self.config.tracing:
             self.tracing = TracingManager(self.config.tracing)
             await self.tracing.initialize()
-            
+
         # Retry Manager
-        if hasattr(self.config, 'retry') and self.config.retry:
+        if hasattr(self.config, "retry") and self.config.retry:
             self.retry_manager = RetryManager(self.config.retry)
-            
+
         # Capability Manager
         self.capability_manager = CapabilityManager(self.config.agent_id)
-        
+
         # Service Discovery
         self.service_discovery = ServiceDiscovery(self.config.base_url, self.security)
-        
+
         _logger.debug("Enterprise-Features initialisiert")
 
     async def close(self) -> None:
         """Schließt Client und alle Verbindungen.
-        
+
         Stoppt alle Background-Tasks, schließt Protokoll-Clients und
         räumt Ressourcen auf.
         """
@@ -189,25 +184,25 @@ class UnifiedKeiAgentClient:
 
         try:
             _logger.info("Schließe Unified KEI-Agent Client")
-            
+
             # Stoppe Security Manager
             await self.security.stop_token_refresh()
-            
+
             # Schließe Stream-Client
             if self._stream_client:
                 await self._stream_client.disconnect()
-                
+
             # Schließe Legacy Client
             if self._legacy_client:
                 await self._legacy_client.close()
-                
+
             # Schließe Tracing Manager
             if self.tracing:
                 await self.tracing.shutdown()
-                
+
             self._closed = True
             _logger.info("Unified KEI-Agent Client geschlossen")
-            
+
         except Exception as e:
             _logger.error(f"Fehler beim Schließen des Clients: {e}")
 
@@ -221,16 +216,14 @@ class UnifiedKeiAgentClient:
         await self.close()
 
     def _select_optimal_protocol(
-        self, 
-        operation: str, 
-        context: Optional[Dict[str, Any]] = None
+        self, operation: str, context: Optional[Dict[str, Any]] = None
     ) -> ProtocolType:
         """Wählt optimales Protokoll für Operation aus.
-        
+
         Args:
             operation: Name der Operation
             context: Zusätzlicher Kontext
-            
+
         Returns:
             Ausgewähltes Protokoll
         """
@@ -238,40 +231,45 @@ class UnifiedKeiAgentClient:
 
     def is_protocol_available(self, protocol: ProtocolType) -> bool:
         """Prüft ob Protokoll verfügbar ist.
-        
+
         Args:
             protocol: Zu prüfendes Protokoll
-            
+
         Returns:
             True wenn Protokoll verfügbar ist
         """
         if not self._initialized:
             return False
-            
+
         protocol_clients = {
             ProtocolType.RPC: self._rpc_client,
             ProtocolType.STREAM: self._stream_client,
             ProtocolType.BUS: self._bus_client,
             ProtocolType.MCP: self._mcp_client,
         }
-        
+
         return protocol_clients.get(protocol) is not None
 
     def get_available_protocols(self) -> List[ProtocolType]:
         """Gibt Liste verfügbarer Protokolle zurück.
-        
+
         Returns:
             Liste verfügbarer Protokolle
         """
         available = []
-        for protocol in [ProtocolType.RPC, ProtocolType.STREAM, ProtocolType.BUS, ProtocolType.MCP]:
+        for protocol in [
+            ProtocolType.RPC,
+            ProtocolType.STREAM,
+            ProtocolType.BUS,
+            ProtocolType.MCP,
+        ]:
             if self.is_protocol_available(protocol):
                 available.append(protocol)
         return available
 
     def get_client_info(self) -> Dict[str, Any]:
         """Gibt Client-Informationen zurück.
-        
+
         Returns:
             Dictionary mit Client-Status und Konfiguration
         """
@@ -286,10 +284,9 @@ class UnifiedKeiAgentClient:
                 "tracing": self.tracing is not None,
                 "retry_manager": self.retry_manager is not None,
                 "capability_manager": self.capability_manager is not None,
-                "service_discovery": self.service_discovery is not None
-            }
+                "service_discovery": self.service_discovery is not None,
+            },
         }
-
 
     # ============================================================================
     # CORE EXECUTION METHODS
@@ -299,7 +296,7 @@ class UnifiedKeiAgentClient:
         self,
         operation: str,
         data: Dict[str, Any],
-        protocol: Optional[ProtocolType] = None
+        protocol: Optional[ProtocolType] = None,
     ) -> Dict[str, Any]:
         """Führt Agent-Operation mit automatischer Protokoll-Auswahl aus.
 
@@ -331,9 +328,13 @@ class UnifiedKeiAgentClient:
                     span.set_attribute("protocol", selected_protocol)
                     span.set_attribute("correlation_id", correlation_id)
 
-                    return await self._execute_with_protocol(selected_protocol, operation, data)
+                    return await self._execute_with_protocol(
+                        selected_protocol, operation, data
+                    )
             else:
-                return await self._execute_with_protocol(selected_protocol, operation, data)
+                return await self._execute_with_protocol(
+                    selected_protocol, operation, data
+                )
 
         except Exception as e:
             _logger.error(
@@ -342,16 +343,13 @@ class UnifiedKeiAgentClient:
                     "operation": operation,
                     "protocol": selected_protocol,
                     "correlation_id": correlation_id,
-                    "error": str(e)
-                }
+                    "error": str(e),
+                },
             )
             raise
 
     async def _execute_with_protocol(
-        self,
-        protocol: ProtocolType,
-        operation: str,
-        data: Dict[str, Any]
+        self, protocol: ProtocolType, operation: str, data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Führt Operation mit spezifischem Protokoll aus.
 
@@ -387,14 +385,18 @@ class UnifiedKeiAgentClient:
                         _logger.warning(
                             f"Fallback von {protocol} zu {fallback_protocol} für Operation '{operation}'"
                         )
-                        return await self._execute_with_protocol(fallback_protocol, operation, data)
+                        return await self._execute_with_protocol(
+                            fallback_protocol, operation, data
+                        )
                     except Exception:
                         continue
 
             # Kein Fallback erfolgreich
             raise e
 
-    async def _execute_rpc_operation(self, operation: str, data: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_rpc_operation(
+        self, operation: str, data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Führt RPC-Operation aus."""
         if not self._rpc_client:
             raise ProtocolError("RPC-Client nicht verfügbar")
@@ -410,9 +412,13 @@ class UnifiedKeiAgentClient:
                 return await client.explain(data["query"], data.get("context"))
             else:
                 # Fallback auf Legacy Client
-                return await self._legacy_client._make_request("POST", f"/api/v1/{operation}", data)
+                return await self._legacy_client._make_request(
+                    "POST", f"/api/v1/{operation}", data
+                )
 
-    async def _execute_stream_operation(self, operation: str, data: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_stream_operation(
+        self, operation: str, data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Führt Stream-Operation aus."""
         if not self._stream_client:
             raise ProtocolError("Stream-Client nicht verfügbar")
@@ -427,7 +433,9 @@ class UnifiedKeiAgentClient:
         else:
             raise ProtocolError(f"Unbekannte Stream-Operation: {operation}")
 
-    async def _execute_bus_operation(self, operation: str, data: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_bus_operation(
+        self, operation: str, data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Führt Bus-Operation aus."""
         if not self._bus_client:
             raise ProtocolError("Bus-Client nicht verfügbar")
@@ -437,7 +445,7 @@ class UnifiedKeiAgentClient:
                 message = {
                     "type": data["type"],
                     "target": data["target"],
-                    "payload": data["payload"]
+                    "payload": data["payload"],
                 }
                 return await client.publish(message)
             elif operation == "subscribe":
@@ -446,7 +454,9 @@ class UnifiedKeiAgentClient:
                 # Generische Bus-Publish
                 return await client.publish({"operation": operation, **data})
 
-    async def _execute_mcp_operation(self, operation: str, data: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_mcp_operation(
+        self, operation: str, data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Führt MCP-Operation aus."""
         if not self._mcp_client:
             raise ProtocolError("MCP-Client nicht verfügbar")
@@ -468,7 +478,7 @@ class UnifiedKeiAgentClient:
         self,
         objective: str,
         context: Optional[Dict[str, Any]] = None,
-        protocol: Optional[ProtocolType] = None
+        protocol: Optional[ProtocolType] = None,
     ) -> Dict[str, Any]:
         """Erstellt Plan für gegebenes Ziel.
 
@@ -484,16 +494,14 @@ class UnifiedKeiAgentClient:
             KeiSDKError: Bei Plan-Erstellungsfehlern
         """
         return await self.execute_agent_operation(
-            "plan",
-            {"objective": objective, "context": context or {}},
-            protocol
+            "plan", {"objective": objective, "context": context or {}}, protocol
         )
 
     async def execute_action(
         self,
         action: str,
         parameters: Optional[Dict[str, Any]] = None,
-        protocol: Optional[ProtocolType] = None
+        protocol: Optional[ProtocolType] = None,
     ) -> Dict[str, Any]:
         """Führt Aktion aus.
 
@@ -506,16 +514,14 @@ class UnifiedKeiAgentClient:
             Action-Response mit Ergebnis
         """
         return await self.execute_agent_operation(
-            "act",
-            {"action": action, "parameters": parameters or {}},
-            protocol
+            "act", {"action": action, "parameters": parameters or {}}, protocol
         )
 
     async def observe_environment(
         self,
         observation_type: str,
         data: Optional[Dict[str, Any]] = None,
-        protocol: Optional[ProtocolType] = None
+        protocol: Optional[ProtocolType] = None,
     ) -> Dict[str, Any]:
         """Führt Umgebungsbeobachtung durch.
 
@@ -528,16 +534,14 @@ class UnifiedKeiAgentClient:
             Observe-Response mit verarbeiteten Beobachtungen
         """
         return await self.execute_agent_operation(
-            "observe",
-            {"type": observation_type, "data": data or {}},
-            protocol
+            "observe", {"type": observation_type, "data": data or {}}, protocol
         )
 
     async def explain_reasoning(
         self,
         query: str,
         context: Optional[Dict[str, Any]] = None,
-        protocol: Optional[ProtocolType] = None
+        protocol: Optional[ProtocolType] = None,
     ) -> Dict[str, Any]:
         """Erklärt Reasoning für gegebene Anfrage.
 
@@ -550,16 +554,11 @@ class UnifiedKeiAgentClient:
             Explain-Response mit Erklärung und Reasoning
         """
         return await self.execute_agent_operation(
-            "explain",
-            {"query": query, "context": context or {}},
-            protocol
+            "explain", {"query": query, "context": context or {}}, protocol
         )
 
     async def send_agent_message(
-        self,
-        target_agent: str,
-        message_type: str,
-        payload: Dict[str, Any]
+        self, target_agent: str, message_type: str, payload: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Sendet Nachricht an anderen Agent (A2A-Kommunikation).
 
@@ -573,17 +572,12 @@ class UnifiedKeiAgentClient:
         """
         return await self.execute_agent_operation(
             "send_message",
-            {
-                "target": target_agent,
-                "type": message_type,
-                "payload": payload
-            },
-            ProtocolType.BUS  # Bus-Protokoll für A2A-Kommunikation
+            {"target": target_agent, "type": message_type, "payload": payload},
+            ProtocolType.BUS,  # Bus-Protokoll für A2A-Kommunikation
         )
 
     async def discover_available_tools(
-        self,
-        category: Optional[str] = None
+        self, category: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """Entdeckt verfügbare MCP-Tools.
 
@@ -596,17 +590,13 @@ class UnifiedKeiAgentClient:
         result = await self.execute_agent_operation(
             "discover_tools",
             {"category": category},
-            ProtocolType.MCP  # MCP-Protokoll für Tool-Discovery
+            ProtocolType.MCP,  # MCP-Protokoll für Tool-Discovery
         )
 
         # Extrahiere Tools aus Response
         return result.get("tools", [])
 
-    async def use_tool(
-        self,
-        tool_name: str,
-        **parameters: Any
-    ) -> Dict[str, Any]:
+    async def use_tool(self, tool_name: str, **parameters: Any) -> Dict[str, Any]:
         """Führt MCP-Tool aus.
 
         Args:
@@ -619,12 +609,11 @@ class UnifiedKeiAgentClient:
         return await self.execute_agent_operation(
             "use_tool",
             {"tool_name": tool_name, "parameters": parameters},
-            ProtocolType.MCP  # MCP-Protokoll für Tool-Execution
+            ProtocolType.MCP,  # MCP-Protokoll für Tool-Execution
         )
 
     async def start_streaming_session(
-        self,
-        callback: Optional[Callable[[Dict[str, Any]], Awaitable[None]]] = None
+        self, callback: Optional[Callable[[Dict[str, Any]], Awaitable[None]]] = None
     ) -> None:
         """Startet Streaming-Session für Echtzeit-Kommunikation.
 
@@ -655,7 +644,7 @@ class UnifiedKeiAgentClient:
         name: str,
         version: str,
         description: str = "",
-        capabilities: Optional[List[str]] = None
+        capabilities: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """Registriert Agent im KEI-Framework.
 
@@ -674,8 +663,8 @@ class UnifiedKeiAgentClient:
                 "name": name,
                 "version": version,
                 "description": description,
-                "capabilities": capabilities or []
-            }
+                "capabilities": capabilities or [],
+            },
         )
 
 
