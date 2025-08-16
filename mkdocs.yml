@@ -1,0 +1,239 @@
+# MkDocs-Konfiguration für KEI-Agent Python SDK
+site_name: KEI-Agent Python SDK
+site_description: Enterprise-Grade Python SDK für KEI-Agent Framework mit Multi-Protocol Support
+site_author: KEI-Agent-Framework Team
+site_url: https://docs.kei-framework.com
+
+# Repository-Informationen
+repo_name: kei-framework/kei-agent
+repo_url: https://github.com/kei-framework/kei-agent
+edit_uri: edit/main/sdk/python/kei_agent/docs/
+
+# Copyright
+copyright: Copyright &copy; 2024 KEI-Agent-Framework Team
+
+# Konfiguration
+theme:
+  name: material
+  language: de
+  palette:
+    # Palette toggle for light mode
+    - scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.indexes
+    - navigation.top
+    - search.highlight
+    - search.share
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - content.tooltips
+    - toc.follow
+    - toc.integrate
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+
+# Plugins
+plugins:
+  - search:
+      lang: de
+  - autorefs
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            docstring_options:
+              ignore_init_summary: true
+            merge_init_into_class: true
+            show_submodules: false
+            show_source: true
+            show_bases: true
+            show_inheritance_diagram: false
+            members_order: source
+            group_by_category: true
+            show_category_heading: true
+            show_if_no_docstring: false
+            annotations_path: brief
+            line_length: 80
+  - mermaid2:
+      arguments:
+        theme: auto
+  - git-revision-date-localized:
+      type: datetime
+      timezone: Europe/Berlin
+      locale: de
+      fallback_to_build_date: true
+  - minify:
+      minify_html: true
+      minify_css: true
+      minify_js: true
+      htmlmin_opts:
+        remove_comments: true
+  - redirects:
+      redirect_maps:
+        'index.md': 'getting-started/installation.md'
+
+# Markdown-Extensions
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+      title: Inhaltsverzeichnis
+  - tables
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      repo_url_shorthand: true
+      user: kei-framework
+      repo: kei-agent
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Navigation
+nav:
+  - Startseite: index.md
+  - Erste Schritte:
+    - getting-started/index.md
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+    - Konfiguration: getting-started/configuration.md
+  - Benutzerhandbuch:
+    - user-guide/index.md
+    - Basis-Konzepte: user-guide/concepts.md
+    - Client-Verwendung: user-guide/client-usage.md
+    - Protokolle: user-guide/protocols.md
+    - Authentifizierung: user-guide/authentication.md
+    - Fehlerbehandlung: user-guide/error-handling.md
+  - Enterprise Features:
+    - enterprise/index.md
+    - Structured Logging: enterprise/logging.md
+    - Health Checks: enterprise/health-checks.md
+    - Input Validation: enterprise/input-validation.md
+    - Security: enterprise/security.md
+    - Monitoring: enterprise/monitoring.md
+  - API-Referenz:
+    - api/index.md
+    - Unified Client: api/unified-client.md
+    - Protocol Types: api/protocol-types.md
+    - Security Manager: api/security-manager.md
+    - Protocol Clients: api/protocol-clients.md
+    - Protocol Selector: api/protocol-selector.md
+    - Enterprise Logging: api/enterprise-logging.md
+    - Health Checks: api/health-checks.md
+    - Input Validation: api/input-validation.md
+    - Exceptions: api/exceptions.md
+  - Architektur:
+    - architecture/index.md
+    - Überblick: architecture/overview.md
+    - Design Patterns: architecture/design-patterns.md
+    - Modulstruktur: architecture/modules.md
+    - Protocol Integration: architecture/protocols.md
+    - Security Architecture: architecture/security.md
+  - Beispiele:
+    - examples/index.md
+    - Basis-Verwendung: examples/basic-usage.md
+    - Multi-Protocol: examples/multi-protocol.md
+    - Enterprise Setup: examples/enterprise-setup.md
+    - Custom Integrations: examples/custom-integrations.md
+    - Performance Tuning: examples/performance-tuning.md
+  - Migration:
+    - migration/index.md
+    - Von Legacy SDK: migration/from-legacy.md
+    - Breaking Changes: migration/breaking-changes.md
+    - Upgrade Guide: migration/upgrade-guide.md
+  - Entwicklung:
+    - development/index.md
+    - Contributing: development/contributing.md
+    - Testing: development/testing.md
+    - Building: development/building.md
+    - Release Process: development/release-process.md
+  - Troubleshooting:
+    - troubleshooting/index.md
+    - Häufige Probleme: troubleshooting/common-issues.md
+    - Debugging: troubleshooting/debugging.md
+    - Performance: troubleshooting/performance.md
+    - Security: troubleshooting/security.md
+
+# Extra CSS und JavaScript
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/extra.js
+
+# Extra-Konfiguration
+extra:
+  version:
+    provider: mike
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/kei-framework/kei-agent
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/kei-agent-sdk/
+    - icon: fontawesome/solid/globe
+      link: https://kei-framework.com
+  analytics:
+    provider: google
+    property: !ENV GOOGLE_ANALYTICS_KEY
+  consent:
+    title: Cookie-Einstellungen
+    description: >-
+      Wir verwenden Cookies, um wiederkehrende Besucher zu erkennen und zu verstehen,
+      welche Bereiche unserer Dokumentation am nützlichsten sind. Mit Ihrer Einwilligung
+      helfen Sie uns, unsere Dokumentation zu verbessern.
+
+# Hooks für erweiterte Funktionalität
+hooks:
+  - docs/hooks/macros.py

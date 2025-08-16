@@ -1,0 +1,52 @@
+# MANIFEST.in für KEI-Agent Python SDK
+# Definiert zusätzliche Dateien die in das Package eingeschlossen werden sollen
+
+# Dokumentation
+include README.md
+include LICENSE
+include CHANGELOG.md
+include CONTRIBUTING.md
+include CODE_REVIEW_REPORT.md
+
+# Konfigurationsdateien
+include pyproject.toml
+include setup.cfg
+include tox.ini
+
+# Type Stubs
+include py.typed
+recursive-include kei_agent *.pyi
+
+# Tests (optional für Source Distribution)
+recursive-include tests *.py
+recursive-include tests *.yaml
+recursive-include tests *.json
+
+# Beispiele
+recursive-include examples *.py
+recursive-include examples *.md
+recursive-include examples *.yaml
+recursive-include examples *.json
+
+# Dokumentations-Assets
+recursive-include docs *.md
+recursive-include docs *.rst
+recursive-include docs *.png
+recursive-include docs *.jpg
+recursive-include docs *.svg
+
+# Ausschlüsse
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *.pyd
+global-exclude __pycache__
+global-exclude .git*
+global-exclude .DS_Store
+global-exclude *.so
+global-exclude .coverage
+global-exclude .pytest_cache
+global-exclude .mypy_cache
+global-exclude .tox
+global-exclude build
+global-exclude dist
+global-exclude *.egg-info
