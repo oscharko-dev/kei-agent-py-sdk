@@ -15,7 +15,7 @@ PYTHON := python3
 PIP := pip3
 
 # Verzeichnisse
-SRC_DIR := kei_agent
+SRC_DIR := .
 TEST_DIR := tests
 DOCS_DIR := docs
 BUILD_DIR := build
@@ -113,28 +113,28 @@ test-fast: ## Führt schnelle Tests aus (ohne Coverage)
 
 lint: ## Führt Linting aus
 	@echo "$(BLUE)Führe Linting aus...$(RESET)"
-	ruff check $(SRC_DIR) $(TEST_DIR)
+	ruff check *.py $(TEST_DIR)
 
 lint-fix: ## Führt Linting mit Auto-Fix aus
 	@echo "$(BLUE)Führe Linting mit Auto-Fix aus...$(RESET)"
-	ruff check --fix $(SRC_DIR) $(TEST_DIR)
+	ruff check --fix *.py $(TEST_DIR)
 
 format: ## Formatiert Code
 	@echo "$(BLUE)Formatiere Code...$(RESET)"
-	ruff format $(SRC_DIR) $(TEST_DIR)
+	ruff format *.py $(TEST_DIR)
 
 format-check: ## Prüft Code-Formatierung
 	@echo "$(BLUE)Prüfe Code-Formatierung...$(RESET)"
-	ruff format --check $(SRC_DIR) $(TEST_DIR)
+	ruff format --check *.py $(TEST_DIR)
 
 type-check: ## Führt Type-Checking aus
 	@echo "$(BLUE)Führe Type-Checking aus...$(RESET)"
-	mypy $(SRC_DIR)
+	mypy *.py
 
 security-scan: ## Führt Security-Scan aus
 	@echo "$(BLUE)Führe Security-Scan aus...$(RESET)"
-	bandit -r $(SRC_DIR) -f json -o bandit-report.json || true
-	bandit -r $(SRC_DIR)
+	bandit *.py -f json -o bandit-report.json || true
+	bandit *.py
 
 quality: lint format-check type-check security-scan ## Führt alle Qualitätsprüfungen aus
 	@echo "$(GREEN)Alle Qualitätsprüfungen abgeschlossen!$(RESET)"

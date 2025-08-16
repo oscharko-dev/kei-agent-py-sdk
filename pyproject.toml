@@ -123,13 +123,17 @@ Changelog = "https://github.com/oscharko/kei-agent-python-sdk/blob/main/CHANGELO
 [tool.setuptools]
 package-dir = {"" = "."}
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["kei_agent*"]
-exclude = ["tests*", "examples*"]
+[tool.setuptools.py-modules]
+py_modules = [
+    "kei_agent", "client", "models", "exceptions", "protocol_types",
+    "protocol_clients", "protocol_selector", "unified_client",
+    "unified_client_refactored", "capabilities", "discovery", "a2a",
+    "enterprise_logging", "health_checks", "input_validation", "retry",
+    "security_manager", "tracing", "utils", "validate_setup", "cli"
+]
 
 [tool.setuptools.package-data]
-kei_agent = ["py.typed", "*.pyi"]
+"" = ["py.typed", "*.pyi"]
 
 # Black Code Formatter
 [tool.black]
@@ -202,11 +206,13 @@ markers = [
 
 # Coverage.py
 [tool.coverage.run]
-source = ["kei_agent"]
+source = ["."]
 omit = [
     "*/tests/*",
     "*/examples/*",
-    "setup.py"
+    "setup.py",
+    "build_and_publish.py",
+    "run_tests.py"
 ]
 
 [tool.coverage.report]
