@@ -1,19 +1,12 @@
 name: 🚀 Release & Publish
 
 on:
-  # Trigger bei Git-Tags (sowohl v*.*.* als auch *.*.*)
   push:
     tags:
       - "v*.*.*"
       - "v*.*.*-alpha.*"
       - "v*.*.*-beta.*"
       - "v*.*.*-rc.*"
-      - "*.*.*"
-      - "*.*.*-alpha.*"
-      - "*.*.*-beta.*"
-      - "*.*.*-rc.*"
-
-  # Manueller Trigger für Testing
   workflow_dispatch:
     inputs:
       version:
