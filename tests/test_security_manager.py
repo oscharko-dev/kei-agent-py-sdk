@@ -9,7 +9,7 @@ mit umfassenden Mock-Szenarien und Edge Cases.
 import asyncio
 import pytest
 import time
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from security_manager import SecurityManager
 from protocol_types import SecurityConfig, AuthType
@@ -23,8 +23,7 @@ class TestSecurityManager:
     def bearer_config(self):
         """Erstellt Bearer-Token-Konfiguration."""
         return SecurityConfig(
-            auth_type=AuthType.BEARER,
-            api_token="test-bearer-token-123"
+            auth_type=AuthType.BEARER, api_token="test-bearer-token-123"
         )
 
     @pytest.fixture
@@ -35,7 +34,7 @@ class TestSecurityManager:
             oidc_issuer="https://auth.test.com",
             oidc_client_id="test-client-id",
             oidc_client_secret="test-client-secret",
-            oidc_scope="openid profile"
+            oidc_scope="openid profile",
         )
 
     @pytest.fixture
@@ -45,7 +44,7 @@ class TestSecurityManager:
             auth_type=AuthType.MTLS,
             mtls_cert_path="/path/to/cert.pem",
             mtls_key_path="/path/to/key.pem",
-            mtls_ca_path="/path/to/ca.pem"
+            mtls_ca_path="/path/to/ca.pem",
         )
 
     def test_initialization_valid_config(self, bearer_config):
@@ -60,7 +59,7 @@ class TestSecurityManager:
         """Testet Initialisierung mit ungültiger Konfiguration."""
         invalid_config = SecurityConfig(
             auth_type=AuthType.BEARER,
-            api_token=None  # Fehlt für Bearer
+            api_token=None,  # Fehlt für Bearer
         )
 
         with pytest.raises(SecurityError, match="Ungültige Sicherheitskonfiguration"):
@@ -98,7 +97,7 @@ class TestSecurityManager:
         assert headers == {}
 
     @pytest.mark.asyncio
-    @patch('httpx.AsyncClient')
+    @patch("httpx.AsyncClient")
     async def test_get_auth_headers_oidc_success(self, mock_client, oidc_config):
         """Testet erfolgreiche OIDC-Token-Abruf."""
         # Mock HTTP-Response
@@ -106,7 +105,7 @@ class TestSecurityManager:
         mock_response.json.return_value = {
             "access_token": "oidc-access-token-123",
             "expires_in": 3600,
-            "token_type": "Bearer"
+            "token_type": "Bearer",
         }
         mock_response.raise_for_status.return_value = None
 
@@ -121,10 +120,13 @@ class TestSecurityManager:
 
         # Prüfe dass Token gecacht wurde
         assert "oidc_token" in manager._token_cache
-        assert manager._token_cache["oidc_token"]["access_token"] == "oidc-access-token-123"
+        assert (
+            manager._token_cache["oidc_token"]["access_token"]
+            == "oidc-access-token-123"
+        )
 
     @pytest.mark.asyncio
-    @patch('httpx.AsyncClient')
+    @patch("httpx.AsyncClient")
     async def test_get_auth_headers_oidc_cached_token(self, mock_client, oidc_config):
         """Testet OIDC mit gecachtem Token."""
         manager = SecurityManager(oidc_config)
@@ -133,7 +135,7 @@ class TestSecurityManager:
         manager._token_cache["oidc_token"] = {
             "access_token": "cached-token-123",
             "expires_at": time.time() + 1800,  # 30 Minuten in der Zukunft
-            "cached_at": time.time()
+            "cached_at": time.time(),
         }
 
         headers = await manager.get_auth_headers()
@@ -143,7 +145,7 @@ class TestSecurityManager:
         mock_client.assert_not_called()
 
     @pytest.mark.asyncio
-    @patch('httpx.AsyncClient')
+    @patch("httpx.AsyncClient")
     async def test_oidc_token_http_error(self, mock_client, oidc_config):
         """Testet OIDC-Token-Abruf mit HTTP-Fehler."""
         import httpx
@@ -163,7 +165,7 @@ class TestSecurityManager:
             await manager.get_auth_headers()
 
     @pytest.mark.asyncio
-    @patch('httpx.AsyncClient')
+    @patch("httpx.AsyncClient")
     async def test_oidc_token_network_error(self, mock_client, oidc_config):
         """Testet OIDC-Token-Abruf mit Netzwerkfehler."""
         import httpx
@@ -178,13 +180,13 @@ class TestSecurityManager:
             await manager.get_auth_headers()
 
     @pytest.mark.asyncio
-    @patch('httpx.AsyncClient')
+    @patch("httpx.AsyncClient")
     async def test_oidc_invalid_response(self, mock_client, oidc_config):
         """Testet OIDC mit ungültiger Token-Response."""
         mock_response = MagicMock()
         mock_response.json.return_value = {
             "token_type": "Bearer",
-            "expires_in": 3600
+            "expires_in": 3600,
             # access_token fehlt
         }
         mock_response.raise_for_status.return_value = None
@@ -205,14 +207,14 @@ class TestSecurityManager:
         # Token nicht abgelaufen
         valid_token = {
             "access_token": "token",
-            "expires_at": time.time() + 1800  # 30 Minuten in der Zukunft
+            "expires_at": time.time() + 1800,  # 30 Minuten in der Zukunft
         }
         assert manager._is_token_expired(valid_token) is False
 
         # Token abgelaufen
         expired_token = {
             "access_token": "token",
-            "expires_at": time.time() - 300  # 5 Minuten in der Vergangenheit
+            "expires_at": time.time() - 300,  # 5 Minuten in der Vergangenheit
         }
         assert manager._is_token_expired(expired_token) is True
 
@@ -227,7 +229,7 @@ class TestSecurityManager:
         token_data = {
             "access_token": "test-token",
             "expires_in": 3600,
-            "token_type": "Bearer"
+            "token_type": "Bearer",
         }
 
         manager._cache_token("test_key", token_data)
@@ -256,9 +258,11 @@ class TestSecurityManager:
         """Testet Token-Refresh-Start für OIDC."""
         manager = SecurityManager(oidc_config)
 
-        with patch.object(manager, '_token_refresh_loop') as mock_loop:
+        with patch.object(manager, "_token_refresh_loop") as mock_loop:
             mock_task = AsyncMock()
-            with patch('asyncio.create_task', return_value=mock_task) as mock_create_task:
+            with patch(
+                "asyncio.create_task", return_value=mock_task
+            ) as mock_create_task:
                 await manager.start_token_refresh()
 
                 # Prüfe dass create_task aufgerufen wurde (ohne spezifische Coroutine zu vergleichen)
@@ -329,16 +333,16 @@ class TestSecurityManagerIntegration:
             oidc_issuer="https://auth.test.com",
             oidc_client_id="test-client",
             oidc_client_secret="test-secret",
-            token_cache_ttl=60
+            token_cache_ttl=60,
         )
 
-        with patch('httpx.AsyncClient') as mock_client:
+        with patch("httpx.AsyncClient") as mock_client:
             # Mock erfolgreiche Token-Response
             mock_response = MagicMock()
             mock_response.json.return_value = {
                 "access_token": "integration-token-123",
                 "expires_in": 60,
-                "token_type": "Bearer"
+                "token_type": "Bearer",
             }
             mock_response.raise_for_status.return_value = None
 

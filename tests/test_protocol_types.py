@@ -8,12 +8,7 @@ mit vollständiger Validierung und Edge Cases.
 
 import pytest
 
-from protocol_types import (
-    ProtocolType,
-    AuthType,
-    ProtocolConfig,
-    SecurityConfig
-)
+from protocol_types import ProtocolType, AuthType, ProtocolConfig, SecurityConfig
 
 
 class TestProtocolType:
@@ -75,7 +70,7 @@ class TestProtocolConfig:
             bus_enabled=False,
             mcp_enabled=True,
             auto_protocol_selection=False,
-            protocol_fallback_enabled=False
+            protocol_fallback_enabled=False,
         )
 
         assert config.rpc_enabled is False
@@ -91,7 +86,7 @@ class TestProtocolConfig:
             rpc_endpoint="/custom/rpc",
             stream_endpoint="/custom/stream",
             bus_endpoint="/custom/bus",
-            mcp_endpoint="/custom/mcp"
+            mcp_endpoint="/custom/mcp",
         )
 
         assert config.rpc_endpoint == "/custom/rpc"
@@ -113,10 +108,7 @@ class TestProtocolConfig:
 
         # Nur RPC aktiviert
         config = ProtocolConfig(
-            rpc_enabled=True,
-            stream_enabled=False,
-            bus_enabled=False,
-            mcp_enabled=False
+            rpc_enabled=True, stream_enabled=False, bus_enabled=False, mcp_enabled=False
         )
         enabled = config.get_enabled_protocols()
 
@@ -125,10 +117,7 @@ class TestProtocolConfig:
     def test_is_protocol_enabled(self):
         """Testet is_protocol_enabled Methode."""
         config = ProtocolConfig(
-            rpc_enabled=True,
-            stream_enabled=False,
-            bus_enabled=True,
-            mcp_enabled=False
+            rpc_enabled=True, stream_enabled=False, bus_enabled=True, mcp_enabled=False
         )
 
         assert config.is_protocol_enabled(ProtocolType.RPC) is True
@@ -169,10 +158,7 @@ class TestSecurityConfig:
 
     def test_bearer_configuration(self):
         """Testet Bearer-Token-Konfiguration."""
-        config = SecurityConfig(
-            auth_type=AuthType.BEARER,
-            api_token="test-token-123"
-        )
+        config = SecurityConfig(auth_type=AuthType.BEARER, api_token="test-token-123")
 
         assert config.auth_type == AuthType.BEARER
         assert config.api_token == "test-token-123"
@@ -184,7 +170,7 @@ class TestSecurityConfig:
             oidc_issuer="https://auth.example.com",
             oidc_client_id="client-123",
             oidc_client_secret="secret-456",
-            oidc_scope="openid profile email"
+            oidc_scope="openid profile email",
         )
 
         assert config.auth_type == AuthType.OIDC
@@ -199,7 +185,7 @@ class TestSecurityConfig:
             auth_type=AuthType.MTLS,
             mtls_cert_path="/path/to/cert.pem",
             mtls_key_path="/path/to/key.pem",
-            mtls_ca_path="/path/to/ca.pem"
+            mtls_ca_path="/path/to/ca.pem",
         )
 
         assert config.auth_type == AuthType.MTLS
@@ -209,20 +195,14 @@ class TestSecurityConfig:
 
     def test_validate_bearer_success(self):
         """Testet erfolgreiche Bearer-Validierung."""
-        config = SecurityConfig(
-            auth_type=AuthType.BEARER,
-            api_token="valid-token"
-        )
+        config = SecurityConfig(auth_type=AuthType.BEARER, api_token="valid-token")
 
         # Sollte keine Exception werfen
         config.validate()
 
     def test_validate_bearer_missing_token(self):
         """Testet Bearer-Validierung mit fehlendem Token."""
-        config = SecurityConfig(
-            auth_type=AuthType.BEARER,
-            api_token=None
-        )
+        config = SecurityConfig(auth_type=AuthType.BEARER, api_token=None)
 
         with pytest.raises(ValueError, match="API Token ist erforderlich"):
             config.validate()
@@ -233,7 +213,7 @@ class TestSecurityConfig:
             auth_type=AuthType.OIDC,
             oidc_issuer="https://auth.example.com",
             oidc_client_id="client-id",
-            oidc_client_secret="client-secret"
+            oidc_client_secret="client-secret",
         )
 
         # Sollte keine Exception werfen
@@ -255,7 +235,7 @@ class TestSecurityConfig:
         config = SecurityConfig(
             auth_type=AuthType.MTLS,
             mtls_cert_path="/path/to/cert.pem",
-            mtls_key_path="/path/to/key.pem"
+            mtls_key_path="/path/to/key.pem",
         )
 
         # Sollte keine Exception werfen
@@ -265,7 +245,7 @@ class TestSecurityConfig:
         """Testet mTLS-Validierung mit unvollständiger Konfiguration."""
         config = SecurityConfig(
             auth_type=AuthType.MTLS,
-            mtls_cert_path="/path/to/cert.pem"
+            mtls_cert_path="/path/to/cert.pem",
             # mtls_key_path fehlt
         )
 
@@ -285,24 +265,15 @@ class TestSecurityConfig:
     def test_requires_refresh(self):
         """Testet requires_refresh Methode."""
         # Bearer mit Refresh aktiviert
-        config = SecurityConfig(
-            auth_type=AuthType.BEARER,
-            token_refresh_enabled=True
-        )
+        config = SecurityConfig(auth_type=AuthType.BEARER, token_refresh_enabled=True)
         assert config.requires_refresh() is True
 
         # Bearer mit Refresh deaktiviert
-        config = SecurityConfig(
-            auth_type=AuthType.BEARER,
-            token_refresh_enabled=False
-        )
+        config = SecurityConfig(auth_type=AuthType.BEARER, token_refresh_enabled=False)
         assert config.requires_refresh() is False
 
         # mTLS (nicht token-basiert)
-        config = SecurityConfig(
-            auth_type=AuthType.MTLS,
-            token_refresh_enabled=True
-        )
+        config = SecurityConfig(auth_type=AuthType.MTLS, token_refresh_enabled=True)
         assert config.requires_refresh() is False
 
 
