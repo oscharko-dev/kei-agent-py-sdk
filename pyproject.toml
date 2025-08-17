@@ -5,13 +5,12 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "kei-agent-sdk"
+name = "kei_agent_py_sdk"
 version = "0.1.0-beta.1"
 description = "Enterprise-Grade Python SDK for KEI Agent Framework with Multi-Protocol Support and Comprehensive Documentation"
 readme = "README.md"
 license = "MIT"
 authors = [
-    { name = "KEI-Agent-Framework Team", email = "dev@kei-agent-framework.com" },
     { name = "Oliver Scharkowski", email = "o.scharkowski@oscharko.de" }
 ]
 maintainers = [
@@ -79,12 +78,12 @@ dev = [
     "pytest-cov>=4.1.0,<5.0.0",
     "pytest-mock>=3.11.0,<4.0.0",
     "pytest-benchmark>=4.0.0,<6.0.0",
-    "ruff>=0.1.0,<1.0.0", # Modern linter/formatter
+    "ruff>=0.1.0,<1.0.0",
     "mypy>=1.5.0,<2.0.0",
-    "bandit>=1.7.0,<2.0.0", # Security linting
+    "bandit>=1.7.0,<2.0.0",
     "pre-commit>=3.4.0,<4.0.0",
-    "twine>=4.0.0,<5.0.0", # Package publishing
-    "build>=0.10.0,<2.0.0"  # Package building
+    "twine>=4.0.0,<5.0.0",
+    "build>=0.10.0,<2.0.0"
 ]
 docs = [
     "mkdocs>=1.5.0,<2.0.0",
@@ -104,11 +103,11 @@ all = [
 kei-agent = "cli:main"
 
 [project.urls]
-Homepage = "https://docs.kei-agent-framework.com"
-Documentation = "https://docs.kei-agent-framework.com"
-Repository = "https://github.com/oscharko/kei-agent-python-sdk"
-"Bug Tracker" = "https://github.com/oscharko/kei-agent-python-sdk/issues"
-Changelog = "https://github.com/oscharko/kei-agent-python-sdk/blob/main/CHANGELOG.md"
+Homepage = "https://oscharko.de"
+Documentation = "https://oscharko-dev.github.io/kei-agent-py-sdk/"
+Repository = "https://github.com/oscharko-dev/kei-agent-py-sdk"
+"Bug Tracker" = "https://github.com/oscharko-dev/kei-agent-py-sdk/issues"
+Changelog = "https://github.com/oscharko-dev/kei-agent-py-sdk/blob/main/CHANGELOG.md"
 
 # Tool-Konfigurationen
 
