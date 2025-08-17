@@ -9,7 +9,8 @@ name = "kei_agent_py_sdk"
 version = "0.1.0-beta.1"
 description = "Enterprise-Grade Python SDK for Keiko-Personal-Assistant Platform with Multi-Protocol Support and Comprehensive Documentation"
 readme = "README.md"
-license = "MIT"
+[project.license]
+text = "MIT"
 authors = [
     { name = "Oliver Scharkowski", email = "o.scharkowski@oscharko.de" }
 ]
@@ -25,6 +26,7 @@ classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: Information Technology",
     "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: System :: Distributed Computing",
