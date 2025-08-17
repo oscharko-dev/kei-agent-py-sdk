@@ -305,12 +305,16 @@ Beispiele:
     elif args.performance:
         total_errors += run_performance_tests(args.verbose)
     elif args.coverage_report:
-        total_errors += run_coverage_report()
+        # Zuerst Tests mit Coverage ausführen, dann Report erstellen
+        print("[INFO] Führe Tests mit Coverage aus, um Report zu generieren...")
+        total_errors += run_all_tests(args.verbose, coverage=True)
+        if total_errors == 0:
+            total_errors += run_coverage_report()
     else:
         # Standard: Unit Tests
         total_errors += run_unit_tests(args.verbose, not args.no_coverage)
 
-    # Coverage-Report falls Tests ausgeführt wurden
+    # Coverage-Report falls Tests ausgeführt wurden (aber nicht bei explizitem --coverage-report)
     if not args.coverage_report and not args.quality and not args.no_coverage:
         run_coverage_report()
 
