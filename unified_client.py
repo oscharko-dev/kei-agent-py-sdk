@@ -218,8 +218,9 @@ class SecurityManager:
 
             except asyncio.CancelledError:
                 break
-            except Exception:
+            except Exception as e:
                 # Bei Fehlern: 5 Minuten warten und erneut versuchen
+                _logger.error(f"Fehler bei Token-Erneuerung: {e}", exc_info=True)
                 await asyncio.sleep(300)
 
 
@@ -350,9 +351,9 @@ class KEIStreamClient:
             try:
                 data = json.loads(message)
                 await callback(data)
-            except Exception:
+            except Exception as e:
                 # Log error but continue listening
-                pass
+                _logger.error(f"Fehler bei WebSocket-Callback: {e}", exc_info=True)
 
     async def send_frame(
         self, stream_id: str, frame_type: str, payload: Dict[str, Any]
@@ -605,8 +606,11 @@ class UnifiedKeiAgentClient:
                         policy_cfg.max_attempts,
                         policy_cfg.base_delay,
                     )
-        except Exception:
+        except Exception as e:
             # Defensive: Fällt auf Standard zurück, falls etwas schief geht
+            _logger.warning(
+                f"Fehler bei RetryManager-Konfiguration: {e}", exc_info=True
+            )
             self._retry_managers["default"] = RetryManager(config.retry)
 
         # Protokoll-Clients (werden lazy initialisiert)
@@ -682,9 +686,9 @@ class UnifiedKeiAgentClient:
 
             self._closed = True
 
-        except Exception:
+        except Exception as e:
             # Log error but don't raise
-            pass
+            _logger.error(f"Fehler beim Schließen des Clients: {e}", exc_info=True)
 
     # Intelligente Protokoll-Auswahl und Orchestrierung
 
@@ -839,8 +843,11 @@ class UnifiedKeiAgentClient:
             else:
                 raise ProtocolError(f"Unbekanntes Protokoll: {protocol}")
 
-        except Exception:
+        except Exception as e:
             # Fallback-Mechanismus wenn aktiviert
+            _logger.warning(
+                f"Protokoll-Operation fehlgeschlagen mit {protocol}: {e}", exc_info=True
+            )
             if (
                 self.protocol_config.protocol_fallback_enabled
                 and protocol != ProtocolType.RPC
