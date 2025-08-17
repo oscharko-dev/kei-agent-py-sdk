@@ -36,6 +36,7 @@ class TestProtocolType:
         assert ProtocolType.RPC != ProtocolType.STREAM
 
 
+@pytest.mark.security
 class TestAuthType:
     """Tests für AuthType Enum."""
 
@@ -145,6 +146,7 @@ class TestProtocolConfig:
             config.get_endpoint("unknown")
 
 
+@pytest.mark.security
 class TestSecurityConfig:
     """Tests für SecurityConfig Datenklasse."""
 
