@@ -77,18 +77,29 @@ jobs:
       - name: 📦 Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          echo "📋 Installiere Development Dependencies..."
-          pip install -e ".[dev]" || {
-            echo "❌ Installation fehlgeschlagen"
+          echo "📋 Installiere ALLE Dependencies (Haupt + Development)..."
+          pip install -e "." || {
+            echo "❌ Haupt-Dependencies Installation fehlgeschlagen"
             echo "📋 pyproject.toml Inhalt:"
-            cat pyproject.toml | head -20
+            cat pyproject.toml | head -50
+            exit 1
+          }
+          pip install -e ".[dev]" || {
+            echo "❌ Dev-Dependencies Installation fehlgeschlagen"
             exit 1
           }
           echo "✅ Dependencies erfolgreich installiert"
+          echo "📋 Installierte Haupt-Dependencies:"
+          pip list | grep -E "(httpx|aiohttp|websockets|pydantic|tenacity)"
+          echo "📋 Installierte Dev-Dependencies:"
           pip list | grep -E "(ruff|mypy|bandit|pytest)"
 
           # Test basic import
           python -c "import kei_agent; print(f'✅ KEI-Agent SDK importiert: {kei_agent.__version__ if hasattr(kei_agent, \"__version__\") else \"unknown\"}')" || echo "⚠️ Import-Test fehlgeschlagen"
+
+          # Test kritische Dependencies
+          python -c "import httpx; print('✅ httpx verfügbar')" || echo "❌ httpx fehlt"
+          python -c "import aiohttp; print('✅ aiohttp verfügbar')" || echo "❌ aiohttp fehlt"
 
       # Ruff Linting
       - name: 🔍 Ruff Linting
@@ -163,7 +174,11 @@ jobs:
       - name: 📦 Install Dependencies
         run: |
           python -m pip install --upgrade pip
+          echo "📋 Installiere ALLE Dependencies..."
+          pip install -e "."
           pip install -e ".[dev]"
+          echo "✅ Dependencies installiert"
+          python -c "import httpx, aiohttp; print('✅ Kritische Dependencies verfügbar')"
 
       # Schnelle Tests (Unit Tests)
       - name: 🚀 Fast Tests
@@ -205,7 +220,11 @@ jobs:
       - name: 📦 Install Dependencies
         run: |
           python -m pip install --upgrade pip
+          echo "📋 Installiere ALLE Dependencies (Haupt + Dev + Security)..."
+          pip install -e "."
           pip install -e ".[dev,security]"
+          echo "✅ Dependencies installiert"
+          python -c "import httpx, aiohttp; print('✅ Kritische Dependencies verfügbar')"
 
       # Unit Tests mit Coverage
       - name: 🧪 Unit Tests
@@ -323,7 +342,10 @@ jobs:
       - name: 📦 Install Dependencies
         run: |
           python -m pip install --upgrade pip
+          echo "📋 Installiere ALLE Dependencies..."
+          pip install -e "."
           pip install -e ".[dev]"
+          echo "✅ Dependencies installiert"
 
       # Package Build testen
       - name: 🏗️ Test Package Build
