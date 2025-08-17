@@ -119,32 +119,32 @@ jobs:
           # Python 3.11+ hat tomllib, für ältere Versionen verwenden wir toml
           export TAG_VERSION="${{ steps.version.outputs.version }}"
           python - <<'PY'
-import os, sys
-try:
-    import tomllib
-    with open('pyproject.toml', 'rb') as f:
-        data = tomllib.load(f)
-except Exception:
-    import toml
-    data = toml.load('pyproject.toml')
+          import os, sys
+          try:
+              import tomllib
+              with open('pyproject.toml', 'rb') as f:
+                  data = tomllib.load(f)
+          except Exception:
+              import toml
+              data = toml.load('pyproject.toml')
 
-py_ver = data['project']['version']
-tag_ver = os.environ['TAG_VERSION']
+          py_ver = data['project']['version']
+          tag_ver = os.environ['TAG_VERSION']
 
-from packaging.version import Version
-py_norm = Version(py_ver)
-tag_norm = Version(tag_ver)
+          from packaging.version import Version
+          py_norm = Version(py_ver)
+          tag_norm = Version(tag_ver)
 
-print(f"📋 pyproject.toml Version: {py_ver}")
-print(f"📋 Tag Version: {tag_ver}")
-print(f"📋 Normalisiert (PEP 440): pyproject={py_norm}, tag={tag_norm}")
+          print(f"📋 pyproject.toml Version: {py_ver}")
+          print(f"📋 Tag Version: {tag_ver}")
+          print(f"📋 Normalisiert (PEP 440): pyproject={py_norm}, tag={tag_norm}")
 
-if py_norm != tag_norm:
-    print(f"❌ Version-Mismatch zwischen pyproject.toml ({py_ver}) und Tag ({tag_ver})", file=sys.stderr)
-    sys.exit(1)
+          if py_norm != tag_norm:
+              print(f"❌ Version-Mismatch zwischen pyproject.toml ({py_ver}) und Tag ({tag_ver})", file=sys.stderr)
+              sys.exit(1)
 
-print(f"✅ Version validiert: {tag_norm}")
-PY
+          print(f"✅ Version validiert: {tag_norm}")
+          PY
 
       # Qualitätsprüfungen
       - name: 🔍 Quality Checks
