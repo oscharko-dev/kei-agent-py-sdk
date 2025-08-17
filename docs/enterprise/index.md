@@ -352,7 +352,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # KEI-Agent SDK installieren
-RUN pip install "kei-agent-sdk[security,docs]"
+RUN pip install "kei_agent_py_sdk[security,docs]"
 
 # Application Code
 COPY . /app
@@ -384,37 +384,37 @@ spec:
         app: kei-agent-enterprise
     spec:
       containers:
-      - name: kei-agent
-        image: kei-agent-enterprise:latest
-        env:
-        - name: KEI_API_URL
-          value: "https://api.kei-framework.com"
-        - name: KEI_API_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: kei-agent-secrets
-              key: api-token
-        - name: KEI_AGENT_ID
-          value: "k8s-enterprise-agent"
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "250m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: 8080
-          initialDelaySeconds: 5
-          periodSeconds: 5
+        - name: kei-agent
+          image: kei-agent-enterprise:latest
+          env:
+            - name: KEI_API_URL
+              value: "https://api.kei-framework.com"
+            - name: KEI_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: kei-agent-secrets
+                  key: api-token
+            - name: KEI_AGENT_ID
+              value: "k8s-enterprise-agent"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
 ```
 
 ## 📈 Compliance & Governance
@@ -484,6 +484,7 @@ def sanitize_for_logging(data: Dict[str, Any]) -> Dict[str, Any]:
 ---
 
 **Enterprise-Feature Details:**
+
 - [Structured Logging →](logging.md) - Production-Logging-Setup
 - [Health Checks →](health-checks.md) - System-Monitoring
 - [Input Validation →](input-validation.md) - Security-Hardening

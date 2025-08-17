@@ -1,7 +1,8 @@
 # UnifiedKeiAgentClient
 
-<!-- API-Dokumentation wird automatisch generiert -->
-<!-- ::: unified_client_refactored.UnifiedKeiAgentClient -->
+<!-- API aus Code generieren -->
+
+::: unified_client_refactored.UnifiedKeiAgentClient
 
 Die `UnifiedKeiAgentClient` Klasse ist die Haupt-API-Schnittstelle des KEI-Agent SDK. Sie bietet eine einheitliche, typisierte API für alle Agent-Operationen mit automatischer Protokoll-Auswahl und Enterprise-Features.
 
@@ -27,11 +28,11 @@ def __init__(
 
 ### Parameter
 
-| Parameter | Typ | Standard | Beschreibung |
-|-----------|-----|----------|--------------|
-| `config` | `AgentClientConfig` | **Erforderlich** | Basis-Client-Konfiguration |
-| `protocol_config` | `ProtocolConfig` | `None` | Protokoll-spezifische Konfiguration |
-| `security_config` | `SecurityConfig` | `None` | Sicherheitskonfiguration |
+| Parameter         | Typ                 | Standard         | Beschreibung                        |
+| ----------------- | ------------------- | ---------------- | ----------------------------------- |
+| `config`          | `AgentClientConfig` | **Erforderlich** | Basis-Client-Konfiguration          |
+| `protocol_config` | `ProtocolConfig`    | `None`           | Protokoll-spezifische Konfiguration |
+| `security_config` | `SecurityConfig`    | `None`           | Sicherheitskonfiguration            |
 
 ### Beispiel
 
@@ -111,11 +112,13 @@ async def plan_task(
 Erstellt einen Plan für ein gegebenes Ziel.
 
 **Parameter:**
+
 - `objective`: Ziel-Beschreibung für die Planung
 - `context`: Zusätzlicher Kontext für die Planung
 - `protocol`: Bevorzugtes Protokoll (optional)
 
 **Beispiel:**
+
 ```python
 plan = await client.plan_task(
     objective="Erstelle einen Quartalsbericht",
@@ -142,11 +145,13 @@ async def execute_action(
 Führt eine spezifische Aktion aus.
 
 **Parameter:**
+
 - `action`: Name der auszuführenden Aktion
 - `parameters`: Parameter für die Aktion
 - `protocol`: Bevorzugtes Protokoll (optional)
 
 **Beispiel:**
+
 ```python
 result = await client.execute_action(
     action="generate_report",
@@ -173,11 +178,13 @@ async def observe_environment(
 Führt Umgebungsbeobachtung durch.
 
 **Parameter:**
+
 - `observation_type`: Typ der Beobachtung
 - `data`: Beobachtungsdaten
 - `protocol`: Bevorzugtes Protokoll (optional)
 
 **Beispiel:**
+
 ```python
 observation = await client.observe_environment(
     observation_type="system_metrics",
@@ -203,11 +210,13 @@ async def explain_reasoning(
 Erklärt das Reasoning für eine gegebene Anfrage.
 
 **Parameter:**
+
 - `query`: Erklärungsanfrage
 - `context`: Kontext für die Erklärung
 - `protocol`: Bevorzugtes Protokoll (optional)
 
 **Beispiel:**
+
 ```python
 explanation = await client.explain_reasoning(
     query="Warum wurde diese Vorlage gewählt?",
@@ -232,6 +241,7 @@ async def send_agent_message(
 Sendet Nachricht an anderen Agent (A2A-Kommunikation).
 
 **Beispiel:**
+
 ```python
 response = await client.send_agent_message(
     target_agent="data-processor-agent",
@@ -257,6 +267,7 @@ async def start_streaming_session(
 Startet Streaming-Session für Echtzeit-Kommunikation.
 
 **Beispiel:**
+
 ```python
 async def message_handler(message: Dict[str, Any]):
     print(f"Received: {message}")
@@ -278,6 +289,7 @@ async def discover_available_tools(
 Entdeckt verfügbare MCP-Tools.
 
 **Beispiel:**
+
 ```python
 tools = await client.discover_available_tools("math")
 for tool in tools:
@@ -297,6 +309,7 @@ async def use_tool(
 Führt MCP-Tool aus.
 
 **Beispiel:**
+
 ```python
 result = await client.use_tool(
     "calculator",
@@ -316,6 +329,7 @@ async def health_check(self) -> Dict[str, Any]
 Führt System-Health-Check durch.
 
 **Beispiel:**
+
 ```python
 health = await client.health_check()
 print(f"Status: {health['status']}")
@@ -337,6 +351,7 @@ async def register_agent(
 Registriert Agent im KEI-Framework.
 
 **Beispiel:**
+
 ```python
 registration = await client.register_agent(
     name="Report Generator",
@@ -358,6 +373,7 @@ def get_client_info(self) -> Dict[str, Any]
 Gibt Client-Informationen zurück.
 
 **Beispiel:**
+
 ```python
 info = client.get_client_info()
 print(f"Agent ID: {info['agent_id']}")
@@ -375,6 +391,7 @@ def get_available_protocols(self) -> List[ProtocolType]
 Gibt Liste verfügbarer Protokolle zurück.
 
 **Beispiel:**
+
 ```python
 protocols = client.get_available_protocols()
 print(f"Verfügbare Protokolle: {protocols}")
@@ -389,6 +406,7 @@ def is_protocol_available(self, protocol: ProtocolType) -> bool
 Prüft ob spezifisches Protokoll verfügbar ist.
 
 **Beispiel:**
+
 ```python
 if client.is_protocol_available(ProtocolType.STREAM):
     print("Stream-Protokoll verfügbar")
@@ -410,6 +428,7 @@ async def execute_agent_operation(
 Führt Agent-Operation mit automatischer Protokoll-Auswahl aus.
 
 **Beispiel:**
+
 ```python
 # Automatische Protokoll-Auswahl
 result = await client.execute_agent_operation(
@@ -511,6 +530,7 @@ except ProtocolError as e:
 ---
 
 **Siehe auch:**
+
 - [ProtocolTypes →](protocol-types.md) - Konfigurationsklassen
 - [Enterprise Logging →](enterprise-logging.md) - Logging-Integration
 - [Examples →](../examples/basic-usage.md) - Praktische Beispiele

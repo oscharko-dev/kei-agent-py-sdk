@@ -1,10 +1,14 @@
 # Protocol Types
 
-*Diese API-Dokumentation wird noch entwickelt.*
+<!-- API aus Code generieren -->
 
-## Übersicht
+::: protocol_types.ProtocolType
 
-Typen und Konfigurationen für die verschiedenen Protokolle.
+::: protocol_types.AuthType
+
+::: protocol_types.ProtocolConfig
+
+::: protocol_types.SecurityConfig
 
 ## AgentClientConfig
 

@@ -5,9 +5,9 @@ site_author: Keiko-Personal-Assistant Developer Team
 site_url: https://oscharko-dev.github.io/kei-agent-py-sdk/
 
 # Repository-Informationen
-repo_name: kei-agent-py-sdk
+repo_name: oscharko-dev/kei-agent-py-sdk
 repo_url: https://github.com/oscharko-dev/kei-agent-py-sdk
-edit_uri: edit/main/sdk/python/kei_agent/docs/
+edit_uri: edit/main/docs/
 
 # Copyright
 copyright: Copyright &copy; 2025 Keiko-Personal-Assistant Developer Team
@@ -16,7 +16,6 @@ copyright: Copyright &copy; 2025 Keiko-Personal-Assistant Developer Team
 theme:
   name: material
   language: de
-  palette:
   palette:
     - media: "(prefers-color-scheme)"
       toggle:
@@ -98,10 +97,9 @@ plugins:
       minify_js: true
       htmlmin_opts:
         remove_comments: true
-  # redirects plugin entfernt - nicht installiert
-  # - redirects:
-  #     redirect_maps:
-  #       'index.md': 'getting-started/installation.md'
+  - redirects:
+      redirect_maps:
+        "README.md": "index.md"
 
 # Markdown-Extensions
 markdown_extensions:
@@ -132,8 +130,8 @@ markdown_extensions:
   - pymdownx.keys
   - pymdownx.magiclink:
       repo_url_shorthand: true
-      user: kei-framework
-      repo: kei-agent
+      user: oscharko-dev
+      repo: kei-agent-py-sdk
   - pymdownx.mark
   - pymdownx.smartsymbols
   - pymdownx.superfences:
@@ -158,17 +156,50 @@ nav:
   - Benutzerhandbuch:
       - user-guide/index.md
       - Basis-Konzepte: user-guide/concepts.md
+      - Client-Verwendung: user-guide/client-usage.md
+      - Protokolle: user-guide/protocols.md
+      - Authentifizierung: user-guide/authentication.md
   - Enterprise Features:
       - enterprise/index.md
+      - Logging: enterprise/logging.md
+      - Health Checks: enterprise/health-checks.md
+      - Input Validation: enterprise/input-validation.md
+      - Security: enterprise/security.md
+      - Monitoring: enterprise/monitoring.md
   - API-Referenz:
       - api/index.md
       - Unified Client: api/unified-client.md
+      - Protocol Types: api/protocol-types.md
+      - Input Validation: api/input-validation.md
+      - Exceptions: api/exceptions.md
+      - Protocol Clients: api/protocol-clients.md
+      - Protocol Selector: api/protocol-selector.md
+      - Security Manager: api/security-manager.md
+      - Enterprise Logging: api/enterprise-logging.md
+      - Health Checks: api/health-checks.md
   - Architektur:
       - architecture/index.md
+      - Überblick: architecture/overview.md
+      - Module: architecture/modules.md
+      - Protokolle: architecture/protocols.md
+      - Design-Patterns: architecture/design-patterns.md
   - Beispiele:
       - examples/index.md
+      - Multi-Protocol: examples/multi-protocol.md
+      - Enterprise Setup: examples/enterprise-setup.md
+      - Performance Tuning: examples/performance-tuning.md
+  - Deployment:
+      - deployment/index.md
+  - Entwicklung:
+      - development/index.md
+      - Aufgaben & Plan: development/tasks.md
   - Troubleshooting:
       - troubleshooting/index.md
+      - Häufige Probleme: troubleshooting/common-issues.md
+      - Debugging: troubleshooting/debugging.md
+      - Performance: troubleshooting/performance.md
+      - Security: troubleshooting/security.md
+      - FAQ: troubleshooting/faq.md
 
 # Extra CSS und JavaScript
 extra_css:
@@ -183,11 +214,11 @@ extra:
     provider: mike
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/kei-framework/kei-agent
+      link: https://github.com/oscharko-dev/kei-agent-py-sdk
     - icon: fontawesome/brands/python
-      link: https://pypi.org/project/kei-agent-sdk/
+      link: https://pypi.org/project/kei_agent_py_sdk/
     - icon: fontawesome/solid/globe
-      link: https://kei-framework.com
+      link: https://oscharko-dev.github.io/kei-agent-py-sdk/
   analytics:
     provider: google
     property: !ENV GOOGLE_ANALYTICS_KEY

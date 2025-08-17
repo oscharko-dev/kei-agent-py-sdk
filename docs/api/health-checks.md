@@ -1,6 +1,14 @@
 # 🏥 Health-Checks API
 
-Umfassende Gesundheitsprüfungen für System-Monitoring und Service-Verfügbarkeit.
+<!-- API aus Code generieren -->
+
+::: health_checks.HealthCheckManager
+
+::: health_checks.APIHealthCheck
+
+::: health_checks.MemoryHealthCheck
+
+::: health_checks.HealthStatus
 
 ## 🏗️ Health-Check-Architektur
 
@@ -528,7 +536,7 @@ class HealthCheckManager:
 ```
 
 !!! info "Kubernetes Integration"
-    Die `/health/readiness` und `/health/liveness` Endpunkte sind für Kubernetes Probes optimiert.
+Die `/health/readiness` und `/health/liveness` Endpunkte sind für Kubernetes Probes optimiert.
 
 !!! tip "Monitoring-Integration"
-    Nutzen Sie die Prometheus-Metriken für umfassendes Health-Check-Monitoring in Grafana-Dashboards.
+Nutzen Sie die Prometheus-Metriken für umfassendes Health-Check-Monitoring in Grafana-Dashboards.

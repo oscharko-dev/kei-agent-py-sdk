@@ -9,7 +9,7 @@ Diese Anleitung führt Sie durch die Installation des KEI-Agent Python SDK in ve
 Die einfachste Methode ist die Installation über PyPI:
 
 ```bash
-pip install kei-agent-sdk
+pip install kei_agent_py_sdk
 ```
 
 ### Mit Enterprise-Features
@@ -17,32 +17,32 @@ pip install kei-agent-sdk
 Für vollständige Enterprise-Funktionalität installieren Sie alle optionalen Dependencies:
 
 ```bash
-pip install "kei-agent-sdk[security,dev,docs]"
+pip install "kei_agent_py_sdk[security,dev,docs]"
 ```
 
 ### Spezifische Version
 
 ```bash
 # Neueste stabile Version
-pip install "kei-agent-sdk>=0.0.1"
+pip install "kei_agent_py_sdk>=0.1.0b1"
 
 # Spezifische Version
-pip install "kei-agent-sdk==0.0.1-beta"
+pip install "kei_agent_py_sdk==0.1.0b1"
 
 # Neueste Pre-Release
-pip install --pre kei-agent-sdk
+pip install --pre kei_agent_py_sdk
 ```
 
 ## 🐍 Installation mit conda
 
 ```bash
 # Aus conda-forge (falls verfügbar)
-conda install -c conda-forge kei-agent-sdk
+conda install -c conda-forge kei_agent_py_sdk
 
 # Oder mit pip in conda-Umgebung
 conda create -n kei-agent python=3.11
 conda activate kei-agent
-pip install kei-agent-sdk
+pip install kei_agent_py_sdk
 ```
 
 ## 🔧 Development-Installation
@@ -52,8 +52,8 @@ Für Entwicklung und Beiträge zum SDK:
 ### Repository klonen
 
 ```bash
-git clone https://github.com/kei-framework/kei-agent.git
-cd kei-agent/sdk/python/kei_agent
+git clone https://github.com/oscharko-dev/kei-agent-py-sdk.git
+cd kei-agent-py-sdk
 ```
 
 ### Editable Installation
@@ -89,7 +89,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # KEI-Agent SDK
-RUN pip install kei-agent-sdk
+RUN pip install kei_agent_py_sdk
 
 # Anwendung
 COPY . /app
@@ -101,7 +101,7 @@ CMD ["python", "main.py"]
 ### Docker Compose
 
 ```yaml
-version: '3.8'
+version: "3.8"
 services:
   kei-agent:
     build: .
@@ -197,10 +197,11 @@ python test_installation.py
 ### Security-Features
 
 ```bash
-pip install "kei-agent-sdk[security]"
+pip install "kei_agent_py_sdk[security]"
 ```
 
 Enthält:
+
 - `authlib` - OIDC-Authentifizierung
 - `cryptography` - Kryptographische Funktionen
 - `pyopenssl` - SSL/TLS-Unterstützung
@@ -208,10 +209,11 @@ Enthält:
 ### Development-Tools
 
 ```bash
-pip install "kei-agent-sdk[dev]"
+pip install "kei_agent_py_sdk[dev]"
 ```
 
 Enthält:
+
 - `pytest` - Testing-Framework
 - `ruff` - Linting und Formatierung
 - `mypy` - Type-Checking
@@ -220,10 +222,11 @@ Enthält:
 ### Dokumentation
 
 ```bash
-pip install "kei-agent-sdk[docs]"
+pip install "kei_agent_py_sdk[docs]"
 ```
 
 Enthält:
+
 - `mkdocs` - Dokumentations-Generator
 - `mkdocs-material` - Material-Theme
 - `mkdocstrings` - API-Dokumentation
@@ -237,6 +240,7 @@ ModuleNotFoundError: No module named 'kei_agent'
 ```
 
 **Lösung:**
+
 ```bash
 # Virtuelle Umgebung aktivieren
 source venv/bin/activate  # Linux/macOS
@@ -244,7 +248,7 @@ source venv/bin/activate  # Linux/macOS
 venv\Scripts\activate     # Windows
 
 # SDK neu installieren
-pip install --upgrade kei-agent-sdk
+pip install --upgrade kei_agent_py_sdk
 ```
 
 ### Problem: Version-Konflikte
@@ -254,13 +258,14 @@ ERROR: pip's dependency resolver does not currently consider all the ways...
 ```
 
 **Lösung:**
+
 ```bash
 # Dependency-Resolver verwenden
-pip install --use-feature=2020-resolver kei-agent-sdk
+pip install --use-feature=2020-resolver kei_agent_py_sdk
 
 # Oder neue pip-Version
 pip install --upgrade pip
-pip install kei-agent-sdk
+pip install kei_agent_py_sdk
 ```
 
 ### Problem: SSL-Zertifikat-Fehler
@@ -270,12 +275,13 @@ SSL: CERTIFICATE_VERIFY_FAILED
 ```
 
 **Lösung:**
+
 ```bash
 # Zertifikate aktualisieren (macOS)
 /Applications/Python\ 3.x/Install\ Certificates.command
 
 # Oder mit pip
-pip install --trusted-host pypi.org --trusted-host pypi.python.org kei-agent-sdk
+pip install --trusted-host pypi.org --trusted-host pypi.python.org kei_agent_py_sdk
 ```
 
 ### Problem: Permission-Fehler
@@ -285,14 +291,15 @@ PermissionError: [Errno 13] Permission denied
 ```
 
 **Lösung:**
+
 ```bash
 # User-Installation
-pip install --user kei-agent-sdk
+pip install --user kei_agent_py_sdk
 
 # Oder virtuelle Umgebung verwenden
 python -m venv venv
 source venv/bin/activate
-pip install kei-agent-sdk
+pip install kei_agent_py_sdk
 ```
 
 ## 🔄 Upgrade
@@ -300,13 +307,13 @@ pip install kei-agent-sdk
 ### Auf neueste Version
 
 ```bash
-pip install --upgrade kei-agent-sdk
+pip install --upgrade kei_agent_py_sdk
 ```
 
 ### Upgrade mit Dependencies
 
 ```bash
-pip install --upgrade "kei-agent-sdk[security,dev]"
+pip install --upgrade "kei_agent_py_sdk[security,dev]"
 ```
 
 ### Upgrade-Verifikation
@@ -319,17 +326,17 @@ print(f"Neue Version: {kei_agent.__version__}")
 ## 🗑️ Deinstallation
 
 ```bash
-pip uninstall kei-agent-sdk
+pip uninstall kei_agent_py_sdk
 ```
 
 Mit Dependencies:
 
 ```bash
 # Liste installierter Packages
-pip freeze | grep -E "(kei-agent|httpx|websockets|pydantic)"
+pip freeze | grep -E "(kei_agent_py_sdk|httpx|websockets|pydantic)"
 
 # Manuell entfernen
-pip uninstall kei-agent-sdk httpx websockets pydantic
+pip uninstall kei_agent_py_sdk httpx websockets pydantic
 ```
 
 ---

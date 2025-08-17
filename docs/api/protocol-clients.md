@@ -1,6 +1,14 @@
 # 🔌 Protocol-Clients
 
-Keiko Personal Assistant unterstützt verschiedene Protokoll-Clients für die Kommunikation mit externen Services und MCP-Servern.
+<!-- API aus Code generieren -->
+
+::: protocol_clients.KEIRPCClient
+
+::: protocol_clients.KEIStreamClient
+
+::: protocol_clients.KEIBusClient
+
+::: protocol_clients.KEIMCPClient
 
 ## 🏗️ Client-Architektur
 
@@ -506,7 +514,7 @@ async def example_usage():
 ```
 
 !!! info "Client-Auswahl"
-    Verwenden Sie den **HTTP-Client** für REST-APIs, den **WebSocket-Client** für Echtzeit-Kommunikation und den **MCP-Client** für Model Context Protocol-Server.
+Verwenden Sie den **HTTP-Client** für REST-APIs, den **WebSocket-Client** für Echtzeit-Kommunikation und den **MCP-Client** für Model Context Protocol-Server.
 
 !!! tip "Performance-Optimierung"
-    Nutzen Sie Connection-Pooling und Keep-Alive-Verbindungen für bessere Performance bei häufigen Requests.
+Nutzen Sie Connection-Pooling und Keep-Alive-Verbindungen für bessere Performance bei häufigen Requests.

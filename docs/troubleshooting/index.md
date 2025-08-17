@@ -15,21 +15,24 @@ ModuleNotFoundError: No module named 'kei_agent'
 **Ursachen & Lösungen:**
 
 1. **SDK nicht installiert**
+
    ```bash
-   pip install kei-agent-sdk
+   pip install kei_agent_py_sdk
    ```
 
 2. **Falsche virtuelle Umgebung**
+
    ```bash
    # Virtuelle Umgebung aktivieren
    source venv/bin/activate  # Linux/macOS
    venv\Scripts\activate     # Windows
 
    # SDK installieren
-   pip install kei-agent-sdk
+   pip install kei_agent_py_sdk
    ```
 
 3. **Python-Path-Problem**
+
    ```python
    import sys
    print(sys.path)  # Prüfe Python-Path
@@ -47,21 +50,23 @@ ERROR: pip's dependency resolver does not currently consider all the ways...
 **Lösungen:**
 
 1. **Dependency-Resolver verwenden**
+
    ```bash
-   pip install --use-feature=2020-resolver kei-agent-sdk
+   pip install --use-feature=2020-resolver kei_agent_py_sdk
    ```
 
 2. **Pip aktualisieren**
+
    ```bash
    pip install --upgrade pip
-   pip install kei-agent-sdk
+   pip install kei_agent_py_sdk
    ```
 
 3. **Saubere Installation**
    ```bash
-   pip uninstall kei-agent-sdk
+   pip uninstall kei_agent_py_sdk
    pip cache purge
-   pip install kei-agent-sdk
+   pip install kei_agent_py_sdk
    ```
 
 ### Client-Initialisierung
@@ -124,6 +129,7 @@ SecurityError: Authentifizierung fehlgeschlagen: 401 Unauthorized
 **Debugging-Schritte:**
 
 1. **Token validieren**
+
    ```python
    # Token-Format prüfen
    print(f"Token length: {len(api_token)}")
@@ -139,6 +145,7 @@ SecurityError: Authentifizierung fehlgeschlagen: 401 Unauthorized
    ```
 
 2. **OIDC-Konfiguration prüfen**
+
    ```python
    # OIDC-Endpunkte testen
    import httpx
@@ -162,6 +169,7 @@ SecurityError: OIDC Token-Request fehlgeschlagen: 400 Bad Request
 **Lösungen:**
 
 1. **OIDC-Konfiguration validieren**
+
    ```python
    security_config = SecurityConfig(
        auth_type=AuthType.OIDC,
@@ -231,6 +239,7 @@ ProtocolError: Stream-Verbindung fehlgeschlagen: Connection refused
 **Debugging-Schritte:**
 
 1. **WebSocket-Endpunkt prüfen**
+
    ```python
    import websockets
 
@@ -245,6 +254,7 @@ ProtocolError: Stream-Verbindung fehlgeschlagen: Connection refused
    ```
 
 2. **Firewall/Proxy prüfen**
+
    ```bash
    # Netzwerk-Konnektivität testen
    telnet api.kei-framework.com 443
@@ -273,6 +283,7 @@ print(f"Response time: {duration:.2f}s")
 **Optimierungen:**
 
 1. **Timeout anpassen**
+
    ```python
    config = AgentClientConfig(
        base_url="https://api.kei-framework.com",
@@ -283,6 +294,7 @@ print(f"Response time: {duration:.2f}s")
    ```
 
 2. **Connection Pooling optimieren**
+
    ```python
    # Wird automatisch vom SDK verwaltet
    # Bei Bedarf Client-Instanz wiederverwenden
@@ -323,6 +335,7 @@ monitor_memory()
 **Lösungen:**
 
 1. **Async Context Manager verwenden**
+
    ```python
    # ✅ Automatisches Cleanup
    async with UnifiedKeiAgentClient(config=config) as client:
@@ -572,6 +585,7 @@ profile_agent_operation()
 ---
 
 **Weitere Troubleshooting-Ressourcen:**
+
 - [Häufige Probleme →](common-issues.md) - Detaillierte Problemlösungen
 - [Debugging →](debugging.md) - Erweiterte Debugging-Techniken
 - [Performance →](performance.md) - Performance-Optimierung

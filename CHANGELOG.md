@@ -12,7 +12,7 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Performance-Optimierungen
 - Erweiterte Monitoring-Features
 
-## [0.1.0b1] - 2024-08-17
+## [0.1.0b1] - 2025-08-17
 
 ### Added
 - **Multi-Protocol Support**: KEI-RPC, KEI-Stream, KEI-Bus und KEI-MCP
@@ -47,30 +47,3 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Praktische Beispiele und Tutorials
 - Enterprise-Integration-Guides
 - Performance-Tuning-Dokumentation
-
-## [0.0.1] - 2024-07-01
-
-### Added
-- Initiale Projektstruktur
-- Grundlegende KEI-RPC-Implementierung
-- Basis-Authentifizierung
-- Erste Tests und Dokumentation
-
----
-
-## Versioning-Schema
-
-- **Major** (X.y.z): Breaking Changes in der API
-- **Minor** (x.Y.z): Neue Features, rückwärtskompatibel
-- **Patch** (x.y.Z): Bugfixes, rückwärtskompatibel
-- **Pre-Release**: alpha, beta, rc Suffixe für Vorab-Versionen
-
-## Support-Policy
-
-- **Current Release**: Vollständiger Support und Updates
-- **Previous Major**: Security-Updates für 12 Monate
-- **Legacy Versions**: Community-Support nur
-
-## Migration-Guides
-
-Detaillierte Migration-Guides für Breaking Changes finden Sie in der [Dokumentation](https://docs.kei-framework.com/migration/).

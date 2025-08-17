@@ -1,7 +1,10 @@
 # KEI-Agent Python SDK
 
+[![CI](https://github.com/oscharko-dev/kei-agent-py-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/oscharko-dev/kei-agent-py-sdk/actions/workflows/ci.yml)
+[![Docs](https://github.com/oscharko-dev/kei-agent-py-sdk/actions/workflows/docs.yml/badge.svg)](https://github.com/oscharko-dev/kei-agent-py-sdk/actions/workflows/docs.yml)
 [![TestPyPI](https://img.shields.io/badge/TestPyPI-available-brightgreen.svg)](https://test.pypi.org/project/kei-agent-py-sdk/)
-[![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://test.pypi.org/project/kei-agent-py-sdk/)
+[![PyPI](https://img.shields.io/pypi/v/kei_agent_py_sdk.svg)](https://pypi.org/project/kei_agent_py_sdk/)
+[![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://pypi.org/project/kei_agent_py_sdk/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://oscharko-dev.github.io/kei-agent-py-sdk/)
 
@@ -310,14 +313,14 @@ python -m pytest tests/ -m "performance"
 
 ## 🤝 Contributing
 
-Wir freuen uns über Beiträge! Bitte lesen Sie unseren [Contributing Guide](CONTRIBUTING.md) für Details.
+Wir freuen uns über Beiträge! Bitte lesen Sie unseren [Development Guide](docs/development/index.md) und die [Contribution-Hinweise](PRE_COMMIT_SETUP.md).
 
 ### Development Setup
 
 ```bash
 # Repository klonen
-git clone https://github.com/kei-framework/kei-agent.git
-cd kei-agent/sdk/python/kei_agent
+git clone https://github.com/oscharko-dev/kei-agent-py-sdk.git
+cd kei-agent-py-sdk
 
 # Development-Umgebung einrichten
 python -m venv venv
@@ -331,7 +334,7 @@ pre-commit install
 make test
 
 # Dokumentation erstellen
-make docs
+mkdocs build --strict
 ```
 
 ## 📄 Lizenz
@@ -355,4 +358,4 @@ Dieses Projekt ist unter der [MIT-Lizenz](LICENSE) lizenziert.
 
 ---
 
-**Bereit loszulegen?** Installieren Sie das SDK und folgen Sie unserem [Quick Start Guide](https://docs.kei-framework.com/getting-started/quickstart/)!
+**Bereit loszulegen?** Installieren Sie das SDK und folgen Sie unserem [Quick Start Guide](https://oscharko-dev.github.io/kei-agent-py-sdk/getting-started/quickstart/)!

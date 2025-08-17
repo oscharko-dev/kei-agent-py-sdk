@@ -1,6 +1,14 @@
 # 📝 Enterprise-Logging API
 
-Enterprise-grade Logging-Funktionen für umfassende Audit-Trails und Compliance-Anforderungen.
+<!-- API aus Code generieren -->
+
+::: enterprise_logging.EnterpriseLogger
+
+::: enterprise_logging.LogContext
+
+::: enterprise_logging.get_logger
+
+::: enterprise_logging.configure_logging
 
 ## 🏗️ Logging-Architektur
 
@@ -543,7 +551,7 @@ class GDPRCompliantLogger(EnterpriseLogger):
 ```
 
 !!! warning "Compliance-Hinweis"
-    Stellen Sie sicher, dass Ihre Logging-Konfiguration den geltenden Datenschutz- und Compliance-Anforderungen entspricht.
+Stellen Sie sicher, dass Ihre Logging-Konfiguration den geltenden Datenschutz- und Compliance-Anforderungen entspricht.
 
 !!! info "Log-Retention"
-    Implementieren Sie automatische Log-Rotation und -Löschung basierend auf Retention-Richtlinien und rechtlichen Anforderungen.
+Implementieren Sie automatische Log-Rotation und -Löschung basierend auf Retention-Richtlinien und rechtlichen Anforderungen.

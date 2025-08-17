@@ -1,5 +1,9 @@
 # 🎯 Protocol-Selector
 
+<!-- API aus Code generieren -->
+
+::: protocol_selector.ProtocolSelector
+
 Der Protocol-Selector automatisiert die Auswahl des optimalen Kommunikationsprotokolls basierend auf Service-Eigenschaften und Anforderungen.
 
 ## 🏗️ Selector-Architektur
@@ -484,11 +488,7 @@ def monitor_protocol_selection(func):
     return wrapper
 ```
 
-!!! tip "Optimale Protocol-Selection"
-    - Verwenden Sie **HTTP** für einfache Request/Response-Patterns
-    - Wählen Sie **WebSocket** für Real-Time-Kommunikation
-    - Nutzen Sie **gRPC** für High-Performance-Anwendungen
-    - Setzen Sie **MCP** für Model Context Protocol-spezifische Operationen ein
+!!! tip "Optimale Protocol-Selection" - Verwenden Sie **HTTP** für einfache Request/Response-Patterns - Wählen Sie **WebSocket** für Real-Time-Kommunikation - Nutzen Sie **gRPC** für High-Performance-Anwendungen - Setzen Sie **MCP** für Model Context Protocol-spezifische Operationen ein
 
 !!! info "Machine Learning"
-    Der ML-basierte Selector lernt aus Performance-Daten und passt die Protocol-Selection automatisch an veränderte Bedingungen an.
+Der ML-basierte Selector lernt aus Performance-Daten und passt die Protocol-Selection automatisch an veränderte Bedingungen an.
