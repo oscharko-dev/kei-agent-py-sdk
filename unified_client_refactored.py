@@ -388,7 +388,11 @@ class UnifiedKeiAgentClient:
                         return await self._execute_with_protocol(
                             fallback_protocol, operation, data
                         )
-                    except Exception:
+                    except Exception as e:
+                        _logger.warning(
+                            f"Fallback fehlgeschlagen mit {fallback_protocol}: {e}",
+                            exc_info=True,
+                        )
                         continue
 
             # Kein Fallback erfolgreich

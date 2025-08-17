@@ -1,0 +1,85 @@
+# Alternative GitHub Actions Workflow für KEI-Agent Python SDK Dokumentation
+# Verwendet gh-pages Branch statt Environment
+
+name: 📚 Documentation (Alternative)
+
+on:
+  # Trigger bei Push auf main Branch
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - '*.py'
+      - 'README.md'
+      - '.github/workflows/docs-alternative.yml'
+
+  # Manueller Trigger
+  workflow_dispatch:
+
+# Berechtigungen
+permissions:
+  contents: write
+  pages: read
+
+jobs:
+  # Job: Dokumentation erstellen und deployen
+  build-and-deploy:
+    name: 🔨 Build and Deploy Documentation
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    steps:
+      # Repository auschecken
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      # Python Setup
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      # Dependencies installieren
+      - name: 📦 Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[docs]"
+
+      # Dokumentation erstellen
+      - name: 🏗️ Build Documentation
+        run: |
+          echo "🚀 Erstelle Dokumentation..."
+          mkdocs build --clean --verbose
+
+          # Build-Informationen hinzufügen
+          echo "Build-Zeit: $(date)" > site/build-info.txt
+          echo "Git-Commit: ${{ github.sha }}" >> site/build-info.txt
+          echo "Branch: ${{ github.ref_name }}" >> site/build-info.txt
+
+      # Zu gh-pages Branch deployen
+      - name: 🚀 Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          publish_branch: gh-pages
+          force_orphan: true
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: |
+            Deploy documentation from ${{ github.sha }}
+
+            - Build-Zeit: $(date)
+            - Branch: ${{ github.ref_name }}
+            - Commit: ${{ github.sha }}
+
+      # Deployment-URL ausgeben
+      - name: 📋 Deployment Info
+        run: |
+          echo "✅ Dokumentation erfolgreich deployed!"
+          echo "🌐 URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+          echo "📝 Commit: ${{ github.sha }}"

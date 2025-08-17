@@ -8,6 +8,7 @@ und kategorisierter Test-Ausführung für Enterprise-Entwicklung.
 """
 
 import argparse
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -58,17 +59,27 @@ def run_unit_tests(verbose: bool = False, coverage: bool = True) -> int:
     if verbose:
         cmd.append("-v")
 
-    if not coverage:
+    if coverage:
+        cmd.extend(
+            [
+                "--cov=.",
+                "--cov-report=term-missing",
+                "--cov-report=html",
+                "--cov-report=xml",
+            ]
+        )
+    else:
         cmd.extend(["--no-cov"])
 
     return run_command(cmd, "Unit Tests")
 
 
-def run_integration_tests(verbose: bool = False) -> int:
+def run_integration_tests(verbose: bool = False, coverage: bool = True) -> int:
     """Führt Integration Tests aus.
 
     Args:
         verbose: Verbose Output
+        coverage: Coverage-Reporting aktivieren
 
     Returns:
         Rückgabecode
@@ -77,6 +88,18 @@ def run_integration_tests(verbose: bool = False) -> int:
 
     if verbose:
         cmd.append("-v")
+
+    if coverage:
+        cmd.extend(
+            [
+                "--cov=.",
+                "--cov-report=term-missing",
+                "--cov-report=html",
+                "--cov-report=xml",
+            ]
+        )
+    else:
+        cmd.extend(["--no-cov"])
 
     return run_command(cmd, "Integration Tests")
 
@@ -172,7 +195,16 @@ def run_all_tests(verbose: bool = False, coverage: bool = True) -> int:
     if verbose:
         cmd.append("-v")
 
-    if not coverage:
+    if coverage:
+        cmd.extend(
+            [
+                "--cov=.",
+                "--cov-report=term-missing",
+                "--cov-report=html",
+                "--cov-report=xml",
+            ]
+        )
+    else:
         cmd.extend(["--no-cov"])
 
     return run_command(cmd, "Alle Tests")
@@ -186,6 +218,14 @@ def run_coverage_report() -> int:
     """
     print("\n[COVERAGE] Coverage Report")
     print("-" * 60)
+
+    # Prüfen ob Coverage-Daten vorhanden sind
+    if not os.path.exists(".coverage"):
+        print("❌ Keine Coverage-Daten gefunden.")
+        print("💡 Führen Sie zuerst Tests mit Coverage aus:")
+        print("   python3 run_tests.py --all")
+        print("   python3 run_tests.py --unit")
+        return 1
 
     # HTML-Report öffnen falls verfügbar
     html_report = Path("htmlcov/index.html")
