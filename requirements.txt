@@ -1,0 +1,3 @@
+# Minimal CI-Requirements
+# Hinweis: Vollständige Abhängigkeiten werden über pyproject.toml installiert.
+httpx
