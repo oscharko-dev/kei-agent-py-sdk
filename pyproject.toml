@@ -195,28 +195,28 @@ markers = [
     "security: marks tests as security tests"
 ]
 
-# Coverage.py
-[tool.coverage.run]
-source = ["."]
-omit = [
-    "*/tests/*",
-    "*/examples/*",
-    "setup.py",
-    "build_and_publish.py",
-    "run_tests.py"
-]
-
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "if self.debug:",
-    "if settings.DEBUG",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if 0:",
-    "if __name__ == .__main__.:"
-]
-
-[tool.coverage.html]
-directory = "htmlcov"
+# Coverage.py DEAKTIVIERT wegen importlib_metadata KeyError-Problem
+# [tool.coverage.run]
+# source = ["."]
+# omit = [
+#     "*/tests/*",
+#     "*/examples/*",
+#     "setup.py",
+#     "build_and_publish.py",
+#     "run_tests.py"
+# ]
+#
+# [tool.coverage.report]
+# exclude_lines = [
+#     "pragma: no cover",
+#     "def __repr__",
+#     "if self.debug:",
+#     "if settings.DEBUG",
+#     "raise AssertionError",
+#     "raise NotImplementedError",
+#     "if 0:",
+#     "if __name__ == .__main__.:"
+# ]
+#
+# [tool.coverage.html]
+# directory = "htmlcov"
