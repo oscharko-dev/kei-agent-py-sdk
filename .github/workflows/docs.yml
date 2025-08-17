@@ -6,31 +6,31 @@ name: 📚 Documentation
 on:
   # Trigger bei Push auf main Branch
   push:
-    branches: [ main, master ]
+    branches: [main, master]
     paths:
-      - 'docs/**'
-      - 'mkdocs.yml'
-      - '*.py'
-      - 'README.md'
-      - '.github/workflows/docs.yml'
+      - "docs/**"
+      - "mkdocs.yml"
+      - "*.py"
+      - "README.md"
+      - ".github/workflows/docs.yml"
 
   # Trigger bei Pull Requests
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
     paths:
-      - 'docs/**'
-      - 'mkdocs.yml'
-      - '*.py'
-      - 'README.md'
-      - '.github/workflows/docs.yml'
+      - "docs/**"
+      - "mkdocs.yml"
+      - "*.py"
+      - "README.md"
+      - ".github/workflows/docs.yml"
 
   # Manueller Trigger
   workflow_dispatch:
     inputs:
       deploy_to_pages:
-        description: 'Deploy to GitHub Pages'
+        description: "Deploy to GitHub Pages"
         required: false
-        default: 'true'
+        default: true
         type: boolean
 
 # Berechtigungen für GitHub Pages
@@ -55,14 +55,14 @@ jobs:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v5
         with:
-          fetch-depth: 0  # Vollständige Historie für git-revision-date-localized
+          fetch-depth: 0 # Vollständige Historie für git-revision-date-localized
 
       # Python Setup
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-          cache: 'pip'
+          python-version: "3.11"
+          cache: "pip"
 
       # Dependencies installieren
       - name: 📦 Install Dependencies
@@ -166,7 +166,7 @@ jobs:
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       # Dokumentations-Artefakt herunterladen
       - name: 📥 Download Documentation
@@ -223,7 +223,7 @@ jobs:
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       # Metriken sammeln
       - name: 📊 Collect Documentation Metrics

@@ -1,29 +1,3 @@
-name: 🚀 Release & Publish
-
-on:
-  push:
-    tags:
-      - "v*.*.*"
-      - "v*.*.*-alpha.*"
-      - "v*.*.*-beta.*"
-      - "v*.*.*-rc.*"
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "Version to release (e.g., 1.0.0)"
-        required: true
-        type: string
-      publish_to_pypi:
-        description: "Publish to PyPI"
-        required: false
-        default: false
-        type: boolean
-      publish_to_test_pypi:
-        description: "Publish to TestPyPI"
-        required: false
-        default: true
-        type: boolean
-
 # GitHub Actions Workflow für KEI-Agent Python SDK Release und PyPI Publishing
 # Automatisiert das Erstellen und Veröffentlichen von Releases
 
