@@ -76,6 +76,7 @@ jobs:
       # Dependencies installieren
       - name: 📦 Install Dependencies
         run: |
+          set -x
           python -m pip install --upgrade pip
           echo "📋 Installiere Basis-Dependencies aus requirements.txt..."
           pip install -r requirements.txt || echo "ℹ️ requirements.txt optional nicht gefunden"
@@ -89,9 +90,9 @@ jobs:
           pip install -e "." || echo "⚠️ Editable install fehlgeschlagen, aber Dependencies sind installiert"
           echo "✅ Dependencies erfolgreich installiert"
           echo "📋 Installierte Haupt-Dependencies:"
-          pip list | grep -E "(httpx|aiohttp|websockets|pydantic|tenacity)"
+          pip list | grep -E "(httpx|aiohttp|websockets|pydantic|tenacity)" || true
           echo "📋 Installierte Dev-Dependencies:"
-          pip list | grep -E "(ruff|mypy|bandit|pytest)"
+          pip list | grep -E "(ruff|mypy|bandit|pytest)" || true
 
           # Test basic import
           python -c "import kei_agent; print(f'✅ KEI-Agent SDK importiert: {kei_agent.__version__ if hasattr(kei_agent, \"__version__\") else \"unknown\"}')" || echo "⚠️ Import-Test fehlgeschlagen"
@@ -172,6 +173,7 @@ jobs:
       # Dependencies installieren
       - name: 📦 Install Dependencies
         run: |
+          set -x
           python -m pip install --upgrade pip
           echo "📋 Installiere Basis-Dependencies aus requirements.txt..."
           pip install -r requirements.txt || echo "ℹ️ requirements.txt optional nicht gefunden"
@@ -220,6 +222,7 @@ jobs:
       # Dependencies installieren
       - name: 📦 Install Dependencies
         run: |
+          set -x
           python -m pip install --upgrade pip
           echo "📋 Installiere Basis-Dependencies aus requirements.txt..."
           pip install -r requirements.txt || echo "ℹ️ requirements.txt optional nicht gefunden"
@@ -347,6 +350,7 @@ jobs:
       # Dependencies installieren
       - name: 📦 Install Dependencies
         run: |
+          set -x
           python -m pip install --upgrade pip
           echo "📋 Installiere Basis-Dependencies aus requirements.txt..."
           pip install -r requirements.txt || echo "ℹ️ requirements.txt optional nicht gefunden"
