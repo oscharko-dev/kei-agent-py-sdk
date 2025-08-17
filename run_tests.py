@@ -44,7 +44,7 @@ def run_command(cmd: List[str], description: str) -> int:
         return 130
 
 
-def run_unit_tests(verbose: bool = False, coverage: bool = True) -> int:
+def run_unit_tests(verbose: bool = False, coverage: bool = False) -> int:
     """Führt Unit Tests aus.
 
     Args:
@@ -59,22 +59,23 @@ def run_unit_tests(verbose: bool = False, coverage: bool = True) -> int:
     if verbose:
         cmd.append("-v")
 
-    if coverage:
-        cmd.extend(
-            [
-                "--cov=.",
-                "--cov-report=term-missing",
-                "--cov-report=html",
-                "--cov-report=xml",
-            ]
-        )
-    else:
-        cmd.extend(["--no-cov"])
+    # Coverage DEAKTIVIERT wegen importlib_metadata KeyError-Problem
+    # if coverage:
+    #     cmd.extend(
+    #         [
+    #             "--cov=.",
+    #             "--cov-report=term-missing",
+    #             "--cov-report=html",
+    #             "--cov-report=xml",
+    #         ]
+    #     )
+    # else:
+    #     cmd.extend(["--no-cov"])
 
     return run_command(cmd, "Unit Tests")
 
 
-def run_integration_tests(verbose: bool = False, coverage: bool = True) -> int:
+def run_integration_tests(verbose: bool = False, coverage: bool = False) -> int:
     """Führt Integration Tests aus.
 
     Args:
@@ -89,17 +90,18 @@ def run_integration_tests(verbose: bool = False, coverage: bool = True) -> int:
     if verbose:
         cmd.append("-v")
 
-    if coverage:
-        cmd.extend(
-            [
-                "--cov=.",
-                "--cov-report=term-missing",
-                "--cov-report=html",
-                "--cov-report=xml",
-            ]
-        )
-    else:
-        cmd.extend(["--no-cov"])
+    # Coverage DEAKTIVIERT wegen importlib_metadata KeyError-Problem
+    # if coverage:
+    #     cmd.extend(
+    #         [
+    #             "--cov=.",
+    #             "--cov-report=term-missing",
+    #             "--cov-report=html",
+    #             "--cov-report=xml",
+    #         ]
+    #     )
+    # else:
+    #     cmd.extend(["--no-cov"])
 
     return run_command(cmd, "Integration Tests")
 
@@ -180,7 +182,7 @@ def run_performance_tests(verbose: bool = False) -> int:
     return run_command(cmd, "Performance Tests")
 
 
-def run_all_tests(verbose: bool = False, coverage: bool = True) -> int:
+def run_all_tests(verbose: bool = False, coverage: bool = False) -> int:
     """Führt alle Tests aus.
 
     Args:
@@ -195,17 +197,18 @@ def run_all_tests(verbose: bool = False, coverage: bool = True) -> int:
     if verbose:
         cmd.append("-v")
 
-    if coverage:
-        cmd.extend(
-            [
-                "--cov=.",
-                "--cov-report=term-missing",
-                "--cov-report=html",
-                "--cov-report=xml",
-            ]
-        )
-    else:
-        cmd.extend(["--no-cov"])
+    # Coverage DEAKTIVIERT wegen importlib_metadata KeyError-Problem
+    # if coverage:
+    #     cmd.extend(
+    #         [
+    #             "--cov=.",
+    #             "--cov-report=term-missing",
+    #             "--cov-report=html",
+    #             "--cov-report=xml",
+    #         ]
+    #     )
+    # else:
+    #     cmd.extend(["--no-cov"])
 
     return run_command(cmd, "Alle Tests")
 
@@ -219,22 +222,27 @@ def run_coverage_report() -> int:
     print("\n[COVERAGE] Coverage Report")
     print("-" * 60)
 
-    # Prüfen ob Coverage-Daten vorhanden sind
-    if not os.path.exists(".coverage"):
-        print("❌ Keine Coverage-Daten gefunden.")
-        print("💡 Führen Sie zuerst Tests mit Coverage aus:")
-        print("   python3 run_tests.py --all")
-        print("   python3 run_tests.py --unit")
-        return 1
+    # Coverage DEAKTIVIERT wegen importlib_metadata KeyError-Problem
+    print("❌ Coverage-Reporting deaktiviert wegen License-Metadaten-Problem.")
+    print("💡 Tests werden ohne Coverage ausgeführt.")
+    return 0
 
-    # HTML-Report öffnen falls verfügbar
-    html_report = Path("htmlcov/index.html")
-    if html_report.exists():
-        print(f"📄 HTML-Report verfügbar: {html_report.absolute()}")
-
-    # Terminal-Report anzeigen
-    cmd = ["python3", "-m", "coverage", "report", "--show-missing"]
-    return run_command(cmd, "Coverage Report")
+    # # Prüfen ob Coverage-Daten vorhanden sind
+    # if not os.path.exists(".coverage"):
+    #     print("❌ Keine Coverage-Daten gefunden.")
+    #     print("💡 Führen Sie zuerst Tests mit Coverage aus:")
+    #     print("   python3 run_tests.py --all")
+    #     print("   python3 run_tests.py --unit")
+    #     return 1
+    #
+    # # HTML-Report öffnen falls verfügbar
+    # html_report = Path("htmlcov/index.html")
+    # if html_report.exists():
+    #     print(f"📄 HTML-Report verfügbar: {html_report.absolute()}")
+    #
+    # # Terminal-Report anzeigen
+    # cmd = ["python3", "-m", "coverage", "report", "--show-missing"]
+    # return run_command(cmd, "Coverage Report")
 
 
 def run_code_quality_checks() -> int:
@@ -316,7 +324,6 @@ Beispiele:
 
     # Wechsle ins SDK-Verzeichnis
     sdk_dir = Path(__file__).parent
-    import os
 
     os.chdir(sdk_dir)
 
@@ -351,12 +358,12 @@ Beispiele:
         if total_errors == 0:
             total_errors += run_coverage_report()
     else:
-        # Standard: Unit Tests
-        total_errors += run_unit_tests(args.verbose, not args.no_coverage)
+        # Standard: Unit Tests (Coverage deaktiviert)
+        total_errors += run_unit_tests(args.verbose, False)
 
-    # Coverage-Report falls Tests ausgeführt wurden (aber nicht bei explizitem --coverage-report)
-    if not args.coverage_report and not args.quality and not args.no_coverage:
-        run_coverage_report()
+    # Coverage-Report DEAKTIVIERT wegen License-Metadaten-Problem
+    # if not args.coverage_report and not args.quality and not args.no_coverage:
+    #     run_coverage_report()
 
     # Zusammenfassung
     print("\n" + "=" * 60)
