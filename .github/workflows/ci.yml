@@ -54,6 +54,7 @@ env:
   PYTHONUNBUFFERED: 1
   PYTHONDONTWRITEBYTECODE: 1
   PIP_DISABLE_PIP_VERSION_CHECK: 1
+  PYTHONIOENCODING: utf-8
 
 jobs:
   # Job 1: Code-Qualität und Linting
@@ -83,19 +84,19 @@ jobs:
           pip install "httpx>=0.24.0,<1.0.0" "aiohttp>=3.8.0,<4.0.0" "websockets>=11.0.0,<12.0.0" "pydantic>=2.0.0,<3.0.0" "tenacity>=8.2.0,<9.0.0" "msgpack>=1.0.0,<2.0.0" "packaging>=21.0" "python-dateutil>=2.8.0" "psutil>=5.9.0,<8.0.0" "structlog>=23.1.0,<26.0.0" "typing-extensions>=4.0.0"
           pip install "opentelemetry-api>=1.20.0,<2.0.0" "opentelemetry-sdk>=1.20.0,<2.0.0" "opentelemetry-exporter-jaeger>=1.20.0,<2.0.0" "opentelemetry-exporter-zipkin-json>=1.20.0,<2.0.0" "opentelemetry-propagator-b3>=1.20.0,<2.0.0"
           pip install "pytest>=7.4.0,<8.0.0" "pytest-asyncio>=0.21.0,<1.0.0" "pytest-cov>=4.1.0,<5.0.0" "pytest-mock>=3.11.0,<4.0.0" "pytest-benchmark>=4.0.0,<6.0.0" "ruff>=0.1.0,<1.0.0" "mypy>=1.5.0,<2.0.0" "bandit>=1.7.0,<2.0.0" "pre-commit>=3.4.0,<4.0.0" "twine>=4.0.0,<5.0.0" "build>=0.10.0,<2.0.0"
-          pip install -e "." || echo "⚠️ Editable install fehlgeschlagen, aber Dependencies sind installiert"
-          echo "✅ Dependencies erfolgreich installiert"
-          echo "📋 Installierte Haupt-Dependencies:"
+          pip install -e "." || echo "WARNING: Editable install fehlgeschlagen, aber Dependencies sind installiert"
+          echo "SUCCESS: Dependencies erfolgreich installiert"
+          echo "INFO: Installierte Haupt-Dependencies:"
           pip list | grep -E "(httpx|aiohttp|websockets|pydantic|tenacity)" || true
-          echo "📋 Installierte Dev-Dependencies:"
+          echo "INFO: Installierte Dev-Dependencies:"
           pip list | grep -E "(ruff|mypy|bandit|pytest)" || true
 
           # Test basic import
-          python -c "import kei_agent; print(f'✅ KEI-Agent SDK importiert: {kei_agent.__version__ if hasattr(kei_agent, \"__version__\") else \"unknown\"}')" || echo "⚠️ Import-Test fehlgeschlagen"
+          python -c "import kei_agent; print(f'SUCCESS: KEI-Agent SDK importiert: {kei_agent.__version__ if hasattr(kei_agent, \"__version__\") else \"unknown\"}')" || echo "WARNING: Import-Test fehlgeschlagen"
 
           # Test kritische Dependencies
-          python -c "import httpx; print('✅ httpx verfügbar')" || echo "❌ httpx fehlt"
-          python -c "import aiohttp; print('✅ aiohttp verfügbar')" || echo "❌ aiohttp fehlt"
+          python -c "import httpx; print('SUCCESS: httpx verfügbar')" || echo "ERROR: httpx fehlt"
+          python -c "import aiohttp; print('SUCCESS: aiohttp verfügbar')" || echo "ERROR: aiohttp fehlt"
 
       # Ruff Linting
       - name: 🔍 Ruff Linting
@@ -113,7 +114,7 @@ jobs:
       - name: 🔬 MyPy Type Checking
         run: |
           echo "🔬 Führe Type-Checking aus..."
-          timeout 60 make type-check || echo "⚠️ MyPy timeout - wird übersprungen"
+          timeout 60 make type-check || echo "WARNING: MyPy timeout - wird übersprungen"
         continue-on-error: true
 
       # Bandit Security Scan
@@ -174,9 +175,9 @@ jobs:
           python -m pip install --upgrade pip
           echo "📋 Installiere ALLE Dependencies DIREKT..."
           pip install "httpx>=0.24.0,<1.0.0" "aiohttp>=3.8.0,<4.0.0" "websockets>=11.0.0,<12.0.0" "pydantic>=2.0.0,<3.0.0" "tenacity>=8.2.0,<9.0.0" "pytest>=7.4.0,<8.0.0" "pytest-asyncio>=0.21.0,<1.0.0" "pytest-cov>=4.1.0,<5.0.0" "pytest-mock>=3.11.0,<4.0.0" "pytest-benchmark>=4.0.0,<6.0.0"
-          pip install -e "." || echo "⚠️ Editable install fehlgeschlagen, aber Dependencies sind installiert"
-          echo "✅ Dependencies installiert"
-          python -c "import httpx, aiohttp; print('✅ Kritische Dependencies verfügbar')"
+          pip install -e "." || echo "WARNING: Editable install fehlgeschlagen, aber Dependencies sind installiert"
+          echo "SUCCESS: Dependencies installiert"
+          python -c "import httpx, aiohttp; print('SUCCESS: Kritische Dependencies verfügbar')"
 
       # Schnelle Tests (Unit Tests)
       - name: 🚀 Fast Tests
@@ -225,11 +226,11 @@ jobs:
           pip install "opentelemetry-api>=1.20.0,<2.0.0" "opentelemetry-sdk>=1.20.0,<2.0.0" "opentelemetry-exporter-jaeger>=1.20.0,<2.0.0" "opentelemetry-exporter-zipkin-json>=1.20.0,<2.0.0" "opentelemetry-propagator-b3>=1.20.0,<2.0.0"
           pip install "pytest>=7.4.0,<8.0.0" "pytest-asyncio>=0.21.0,<1.0.0" "pytest-cov>=4.1.0,<5.0.0" "pytest-mock>=3.11.0,<4.0.0" "pytest-benchmark>=4.0.0,<6.0.0" "ruff>=0.1.0,<1.0.0" "mypy>=1.5.0,<2.0.0" "bandit>=1.7.0,<2.0.0" "pre-commit>=3.4.0,<4.0.0" "twine>=4.0.0,<5.0.0" "build>=0.10.0,<2.0.0"
           pip install "authlib>=1.2.0,<2.0.0" "cryptography>=41.0.0,<42.0.0" "pyopenssl>=23.0.0,<26.0.0"
-          pip install -e "." || echo "⚠️ Editable install fehlgeschlagen, aber Dependencies sind installiert"
-          echo "✅ Dependencies installiert"
-          echo "📋 Teste kritische Dependencies:"
-          python -c "import httpx; print('✅ httpx verfügbar:', httpx.__version__)"
-          python -c "import aiohttp; print('✅ aiohttp verfügbar:', aiohttp.__version__)"
+          pip install -e "." || echo "WARNING: Editable install fehlgeschlagen, aber Dependencies sind installiert"
+          echo "SUCCESS: Dependencies installiert"
+          echo "INFO: Teste kritische Dependencies:"
+          python -c "import httpx; print('SUCCESS: httpx verfügbar:', httpx.__version__)"
+          python -c "import aiohttp; print('SUCCESS: aiohttp verfügbar:', aiohttp.__version__)"
 
       # Unit Tests mit Coverage
       - name: 🧪 Unit Tests
@@ -314,7 +315,7 @@ jobs:
           pip install safety
           echo "🔒 Prüfe Dependencies auf bekannte Sicherheitslücken..."
           safety check --json --output safety-report.json || true
-          safety check || echo "⚠️ Sicherheitswarnungen gefunden"
+          safety check || echo "WARNING: Sicherheitswarnungen gefunden"
 
       # Upload Safety Report
       - name: 📤 Upload Safety Report
@@ -351,8 +352,8 @@ jobs:
           python -m pip install --upgrade pip
           echo "📋 Installiere ALLE Dependencies DIREKT..."
           pip install "httpx>=0.24.0,<1.0.0" "aiohttp>=3.8.0,<4.0.0" "websockets>=11.0.0,<12.0.0" "pydantic>=2.0.0,<3.0.0" "tenacity>=8.2.0,<9.0.0" "pytest>=7.4.0,<8.0.0" "pytest-asyncio>=0.21.0,<1.0.0" "pytest-cov>=4.1.0,<5.0.0" "pytest-mock>=3.11.0,<4.0.0" "pytest-benchmark>=4.0.0,<6.0.0" "ruff>=0.1.0,<1.0.0" "mypy>=1.5.0,<2.0.0" "bandit>=1.7.0,<2.0.0" "pre-commit>=3.4.0,<4.0.0" "twine>=4.0.0,<5.0.0" "build>=0.10.0,<2.0.0"
-          pip install -e "." || echo "⚠️ Editable install fehlgeschlagen, aber Dependencies sind installiert"
-          echo "✅ Dependencies installiert"
+          pip install -e "." || echo "WARNING: Editable install fehlgeschlagen, aber Dependencies sind installiert"
+          echo "SUCCESS: Dependencies installiert"
 
       # Package Build testen
       - name: 🏗️ Test Package Build
@@ -396,7 +397,7 @@ jobs:
 
           # Prüfe kritische Jobs (Code Quality muss erfolgreich sein)
           if [[ "${{ needs.code-quality.result }}" != "success" ]]; then
-            echo "❌ Code Quality fehlgeschlagen - CI Pipeline gestoppt!"
+            echo "ERROR: Code Quality fehlgeschlagen - CI Pipeline gestoppt!"
             exit 1
           fi
 
@@ -416,9 +417,9 @@ jobs:
           fi
 
           if [[ -n "$FAILED_JOBS" ]]; then
-            echo "❌ Fehlgeschlagene Jobs:$FAILED_JOBS"
+            echo "ERROR: Fehlgeschlagene Jobs:$FAILED_JOBS"
             exit 1
           else
-            echo "✅ CI Pipeline erfolgreich abgeschlossen!"
+            echo "SUCCESS: CI Pipeline erfolgreich abgeschlossen!"
             exit 0
           fi
