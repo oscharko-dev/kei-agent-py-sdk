@@ -1,0 +1,200 @@
+# GitHub Actions Workflow – nur TestPyPI
+
+name: Release & Publish to TestPyPi
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+      - "v*.*.*-alpha.*"
+      - "v*.*.*-beta.*"
+      - "v*.*.*-rc.*"
+      - "*.*.*"
+      - "*.*.*-alpha.*"
+      - "*.*.*-beta.*"
+      - "*.*.*-rc.*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g., 0.1.0b1 or 0.1.0-beta.1)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  id-token: write
+
+env:
+  PYTHONUNBUFFERED: 1
+  PYTHONDONTWRITEBYTECODE: 1
+  PIP_DISABLE_PIP_VERSION_CHECK: 1
+  PYTHONIOENCODING: utf-8
+
+jobs:
+  validate-release:
+    name: 🔍 Validate Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      is_prerelease: ${{ steps.version.outputs.is_prerelease }}
+      normalized_version: ${{ steps.version.outputs.normalized_version }}
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: 📦 Install Dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          pip install packaging toml build ruff bandit pytest
+
+      - name: 🏷️ Extract Version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/}
+            VERSION=${VERSION#v}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          export VERSION GITHUB_OUTPUT
+          python - <<'PY'
+          import os
+          from packaging.version import Version
+          v = os.environ.get('VERSION','').strip()
+          is_pr = Version(v).is_prerelease
+          norm = str(Version(v))
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"is_prerelease={'true' if is_pr else 'false'}\n")
+              f.write(f"normalized_version={norm}\n")
+          print(f"🔖 Normalized: {norm}")
+          PY
+
+      - name: ✅ Validate Version
+        run: |
+          export TAG_VERSION="${{ steps.version.outputs.version }}"
+          python - <<'PY'
+          import os, sys
+          try:
+              import tomllib
+              with open('pyproject.toml','rb') as f:
+                  data = tomllib.load(f)
+          except Exception:
+              import toml
+              data = toml.load('pyproject.toml')
+          from packaging.version import Version
+          py_ver = data['project']['version']
+          tag_ver = os.environ['TAG_VERSION']
+          if Version(py_ver) != Version(tag_ver):
+              print(f"Mismatch: pyproject={py_ver} tag={tag_ver}", file=sys.stderr)
+              sys.exit(1)
+          print(f"✅ Version ok: {tag_ver}")
+          PY
+
+  build-package:
+    name: 🏗️ Build Package
+    runs-on: ubuntu-latest
+    needs: validate-release
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: 📦 Install Dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e "." || true
+          pip install build twine
+
+      - name: 🏗️ Build Package
+        run: |
+          python build_and_publish.py --build-only
+
+      - name: 📤 Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-packages-${{ needs.validate-release.outputs.normalized_version }}
+          path: dist/
+          retention-days: 30
+
+  publish-test:
+    name: 🧪 Publish to TestPyPI
+    runs-on: ubuntu-latest
+    needs: [validate-release, build-package]
+    environment:
+      name: test-pypi
+      url: https://test.pypi.org/project/kei_agent_py_sdk/
+    steps:
+      - name: 📥 Download Build Artifacts
+        uses: actions/download-artifact@v5
+        with:
+          name: dist-packages-${{ needs.validate-release.outputs.normalized_version }}
+          path: dist/
+
+      - name: 🧪 Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          verbose: true
+
+      - name: ✅ Verify Install from TestPyPI
+        run: |
+          python -m pip install --index-url https://test.pypi.org/simple/ \
+            --extra-index-url https://pypi.org/simple/ \
+            kei_agent_py_sdk==${{ needs.validate-release.outputs.normalized_version }}
+          python -c "import kei_agent; print(kei_agent.__version__ if hasattr(kei_agent,'__version__') else 'import ok')"
+
+  create-release:
+    name: 📝 Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [validate-release, build-package, publish-test]
+    if: needs.publish-test.result == 'success'
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: 📥 Download Build Artifacts
+        uses: actions/download-artifact@v5
+        with:
+          name: dist-packages-${{ needs.validate-release.outputs.normalized_version }}
+          path: dist/
+
+      - name: 📝 Generate Release Notes
+        id: notes
+        run: |
+          VERSION="${{ needs.validate-release.outputs.normalized_version }}"
+          echo "# KEI-Agent Python SDK v$VERSION" > release_notes.md
+          echo "" >> release_notes.md
+          echo "## 📦 Installation" >> release_notes.md
+          echo '\`\`\`bash' >> release_notes.md
+          echo "pip install kei_agent_py_sdk==$VERSION" >> release_notes.md
+          echo '\`\`\`' >> release_notes.md
+          echo "release_notes_file=release_notes.md" >> $GITHUB_OUTPUT
+
+      - name: 🏷️ Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.validate-release.outputs.normalized_version }}
+          name: KEI-Agent Python SDK v${{ needs.validate-release.outputs.normalized_version }}
+          body_path: release_notes.md
+          files: dist/*
+          prerelease: ${{ needs.validate-release.outputs.is_prerelease == 'true' }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
