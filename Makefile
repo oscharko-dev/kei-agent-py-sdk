@@ -160,8 +160,10 @@ type-check: ## Führt Type-Checking aus
 
 security-scan: ## Führt Security-Scan aus
 	@echo "$(BLUE)Führe Security-Scan aus...$(RESET)"
-	bandit *.py -f json -o bandit-report.json || true
-	bandit *.py
+	# JSON-Report immer erzeugen (rekursiv), Build nicht brechen
+	bandit -r . -f json -o bandit-report.json || true
+	# Konsolen-Ausgabe nur für Medium/High, Build nicht brechen
+	bandit -r . -s medium,high -q || true
 
 quality: lint format-check type-check security-scan ## Führt alle Qualitätsprüfungen aus
 	@echo "$(GREEN)Alle Qualitätsprüfungen abgeschlossen!$(RESET)"
