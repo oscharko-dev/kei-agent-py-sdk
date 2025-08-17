@@ -17,12 +17,12 @@ from contextvars import ContextVar
 from dataclasses import dataclass, field, asdict
 import uuid
 
-# Package-Metadaten für Version
-try:
-    from importlib.metadata import version, PackageNotFoundError
-except ImportError:
-    # Fallback für Python < 3.8
-    from importlib_metadata import version, PackageNotFoundError
+# Package-Metadaten DEAKTIVIERT wegen importlib_metadata KeyError-Problemen
+# try:
+#     from importlib.metadata import version, PackageNotFoundError
+# except ImportError:
+#     # Fallback für Python < 3.8
+#     from importlib_metadata import version, PackageNotFoundError
 
 # Context Variables für Request-Tracking
 correlation_id_var: ContextVar[Optional[str]] = ContextVar(
@@ -38,11 +38,12 @@ def _get_package_version() -> str:
     Returns:
         Package-Version oder Fallback-Version
     """
-    try:
-        return version("kei_agent_py_sdk")
-    except (PackageNotFoundError, Exception):
-        # Fallback wenn Package nicht installiert ist (z.B. Development)
-        return "0.1.0-beta.1"
+    # DEAKTIVIERT: importlib_metadata verursacht KeyError-Probleme
+    # try:
+    #     return version("kei_agent_py_sdk")
+    # except (PackageNotFoundError, Exception):
+    #     # Fallback wenn Package nicht installiert ist (z.B. Development)
+    return "0.1.0-beta.1"
 
 
 @dataclass
