@@ -12,6 +12,9 @@ from protocol_selector import ProtocolSelector
 from protocol_types import ProtocolType, ProtocolConfig
 from exceptions import ProtocolError
 
+# Markiere alle Tests in dieser Datei als Protokoll-Tests
+pytestmark = pytest.mark.protocol
+
 
 class TestProtocolSelector:
     """Tests für ProtocolSelector Klasse."""
@@ -25,7 +28,7 @@ class TestProtocolSelector:
             bus_enabled=True,
             mcp_enabled=True,
             auto_protocol_selection=True,
-            protocol_fallback_enabled=True
+            protocol_fallback_enabled=True,
         )
 
     @pytest.fixture
@@ -37,7 +40,7 @@ class TestProtocolSelector:
             bus_enabled=True,
             mcp_enabled=False,
             auto_protocol_selection=True,
-            protocol_fallback_enabled=True
+            protocol_fallback_enabled=True,
         )
 
     @pytest.fixture
@@ -49,7 +52,7 @@ class TestProtocolSelector:
             bus_enabled=True,
             mcp_enabled=True,
             auto_protocol_selection=True,
-            protocol_fallback_enabled=False
+            protocol_fallback_enabled=False,
         )
 
     def test_initialization(self, full_config):
@@ -65,8 +68,7 @@ class TestProtocolSelector:
         selector = ProtocolSelector(full_config)
 
         result = selector.select_protocol(
-            "test_operation",
-            preferred_protocol=ProtocolType.STREAM
+            "test_operation", preferred_protocol=ProtocolType.STREAM
         )
 
         assert result == ProtocolType.STREAM
@@ -78,7 +80,7 @@ class TestProtocolSelector:
         # Stream ist nicht verfügbar, sollte auf Auto-Auswahl fallen
         result = selector.select_protocol(
             "plan",  # RPC-Operation
-            preferred_protocol=ProtocolType.STREAM
+            preferred_protocol=ProtocolType.STREAM,
         )
 
         assert result == ProtocolType.RPC
@@ -91,7 +93,7 @@ class TestProtocolSelector:
             "stream_data",
             "realtime_updates",
             "live_monitoring",
-            "subscribe_events"
+            "subscribe_events",
         ]
 
         for operation in streaming_operations:
@@ -106,7 +108,7 @@ class TestProtocolSelector:
             "background_task",
             "async_process",
             "queue_message",
-            "publish_event"
+            "publish_event",
         ]
 
         for operation in async_operations:
@@ -121,7 +123,7 @@ class TestProtocolSelector:
             "tool_discovery",
             "resource_access",
             "prompt_management",
-            "discover_capabilities"
+            "discover_capabilities",
         ]
 
         for operation in mcp_operations:
@@ -132,13 +134,7 @@ class TestProtocolSelector:
         """Testet Auto-Auswahl für RPC-Operationen."""
         selector = ProtocolSelector(full_config)
 
-        rpc_operations = [
-            "plan",
-            "act",
-            "observe",
-            "explain",
-            "sync_operation"
-        ]
+        rpc_operations = ["plan", "act", "observe", "explain", "sync_operation"]
 
         for operation in rpc_operations:
             result = selector.select_protocol(operation)
@@ -157,22 +153,19 @@ class TestProtocolSelector:
 
         # Streaming-Kontext
         result = selector.select_protocol(
-            "process_data",
-            context={"stream": True, "realtime": True}
+            "process_data", context={"stream": True, "realtime": True}
         )
         assert result == ProtocolType.STREAM
 
         # Async-Kontext
         result = selector.select_protocol(
-            "process_data",
-            context={"async": True, "background": True}
+            "process_data", context={"async": True, "background": True}
         )
         assert result == ProtocolType.BUS
 
         # MCP-Kontext
         result = selector.select_protocol(
-            "process_data",
-            context={"tool": "calculator", "capability": "math"}
+            "process_data", context={"tool": "calculator", "capability": "math"}
         )
         assert result == ProtocolType.MCP
 
@@ -220,7 +213,7 @@ class TestProtocolSelector:
             rpc_enabled=False,
             stream_enabled=False,
             bus_enabled=False,
-            mcp_enabled=False
+            mcp_enabled=False,
         )
         selector = ProtocolSelector(config)
 
@@ -233,8 +226,7 @@ class TestProtocolSelector:
 
         # Streaming-Operation
         analysis = selector.analyze_operation_requirements(
-            "stream_data",
-            context={"realtime": True}
+            "stream_data", context={"realtime": True}
         )
 
         assert analysis["operation"] == "stream_data"
@@ -245,8 +237,7 @@ class TestProtocolSelector:
 
         # Tool-Operation
         analysis = selector.analyze_operation_requirements(
-            "use_calculator",
-            context={"tool": "calculator"}
+            "use_calculator", context={"tool": "calculator"}
         )
 
         assert analysis["recommended_protocol"] == ProtocolType.MCP
@@ -296,7 +287,7 @@ class TestProtocolSelector:
             bus_enabled=True,
             mcp_enabled=True,
             auto_protocol_selection=False,  # Deaktiviert
-            protocol_fallback_enabled=True
+            protocol_fallback_enabled=True,
         )
         selector = ProtocolSelector(config)
 
@@ -327,7 +318,7 @@ class TestProtocolSelector:
             "ASYNC_process",
             "Async_Process",
             "TOOL_discovery",
-            "Tool_Discovery"
+            "Tool_Discovery",
         ]
 
         expected_protocols = [
@@ -336,7 +327,7 @@ class TestProtocolSelector:
             ProtocolType.BUS,
             ProtocolType.BUS,
             ProtocolType.MCP,
-            ProtocolType.MCP
+            ProtocolType.MCP,
         ]
 
         for operation, expected in zip(operations, expected_protocols):

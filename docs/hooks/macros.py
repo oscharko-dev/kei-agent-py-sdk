@@ -10,6 +10,7 @@ import re
 from pathlib import Path
 from typing import Dict, Any
 
+
 def on_config(config: Dict[str, Any]) -> Dict[str, Any]:
     """Hook wird beim Laden der Konfiguration aufgerufen.
 
@@ -76,9 +77,9 @@ def on_page_markdown(markdown: str, page, config: Dict[str, Any], files) -> str:
     if "{{SDK_VERSION}}" in markdown:
         # Versuche Version aus pyproject.toml zu lesen
         try:
-            pyproject_path = Path(config['docs_dir']).parent / "pyproject.toml"
+            pyproject_path = Path(config["docs_dir"]).parent / "pyproject.toml"
             if pyproject_path.exists():
-                with open(pyproject_path, 'r', encoding='utf-8') as f:
+                with open(pyproject_path, "r", encoding="utf-8") as f:
                     content = f.read()
                     version_match = re.search(r'version\s*=\s*"([^"]+)"', content)
                     if version_match:
@@ -91,6 +92,7 @@ def on_page_markdown(markdown: str, page, config: Dict[str, Any], files) -> str:
     # Beispiel: Automatische Einfügung des aktuellen Datums
     if "{{BUILD_DATE}}" in markdown:
         from datetime import datetime
+
         build_date = datetime.now().strftime("%Y-%m-%d")
         markdown = markdown.replace("{{BUILD_DATE}}", build_date)
 

@@ -205,7 +205,11 @@ class SecurityManager:
             token_data: Token-Daten vom Provider
         """
         expires_in = token_data.get("expires_in", self.config.token_cache_ttl)
-        expires_at = time.time() + expires_in - 60  # 60s Puffer für Erneuerung
+        # Puffer für Erneuerung, aber mindestens 10 Sekunden Cache-Zeit
+        buffer_time = min(
+            60, max(10, expires_in // 4)
+        )  # Max 60s, min 10s, oder 25% der Laufzeit
+        expires_at = time.time() + expires_in - buffer_time
 
         self._token_cache[key] = {
             **token_data,

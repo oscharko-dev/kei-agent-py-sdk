@@ -24,19 +24,19 @@ def run_command(cmd: List[str], description: str) -> int:
     Returns:
         Rückgabecode des Kommandos
     """
-    print(f"\n🔄 {description}")
+    print(f"\n[RUN] {description}")
     print(f"Kommando: {' '.join(cmd)}")
     print("-" * 60)
 
     try:
         result = subprocess.run(cmd, check=False)
         if result.returncode == 0:
-            print(f"✅ {description} erfolgreich")
+            print(f"[OK] {description} erfolgreich")
         else:
-            print(f"❌ {description} fehlgeschlagen (Code: {result.returncode})")
+            print(f"[FAIL] {description} fehlgeschlagen (Code: {result.returncode})")
         return result.returncode
     except FileNotFoundError:
-        print(f"❌ Kommando nicht gefunden: {cmd[0]}")
+        print(f"[ERROR] Kommando nicht gefunden: {cmd[0]}")
         return 1
     except KeyboardInterrupt:
         print(f"\n⚠️ {description} abgebrochen")
@@ -91,7 +91,7 @@ def run_protocol_tests(protocol: Optional[str] = None, verbose: bool = False) ->
     Returns:
         Rückgabecode
     """
-    if protocol:
+    if protocol and protocol != "all":
         marker = protocol
         description = f"KEI-{protocol.upper()} Tests"
     else:
@@ -184,7 +184,7 @@ def run_coverage_report() -> int:
     Returns:
         Rückgabecode
     """
-    print("\n📊 Coverage Report")
+    print("\n[COVERAGE] Coverage Report")
     print("-" * 60)
 
     # HTML-Report öffnen falls verfügbar
@@ -243,8 +243,10 @@ Beispiele:
     )
     parser.add_argument(
         "--protocol",
-        choices=["rpc", "stream", "bus", "mcp"],
-        help="Protokoll-spezifische Tests",
+        nargs="?",  # Optional argument
+        const="all",  # Default value when --protocol is used without argument
+        choices=["rpc", "stream", "bus", "mcp", "all"],
+        help="Protokoll-spezifische Tests (ohne Argument = alle Protokolle)",
     )
     parser.add_argument(
         "--refactored", action="store_true", help="Refactored Component Tests"
@@ -278,8 +280,8 @@ Beispiele:
 
     os.chdir(sdk_dir)
 
-    print("🧪 KEI-Agent SDK Test Runner")
-    print(f"📁 Arbeitsverzeichnis: {sdk_dir.absolute()}")
+    print("[TEST] KEI-Agent SDK Test Runner")
+    print(f"[DIR] Arbeitsverzeichnis: {sdk_dir.absolute()}")
 
     total_errors = 0
 
@@ -315,10 +317,10 @@ Beispiele:
     # Zusammenfassung
     print("\n" + "=" * 60)
     if total_errors == 0:
-        print("✅ Alle Prüfungen erfolgreich!")
+        print("[SUCCESS] Alle Prüfungen erfolgreich!")
         sys.exit(0)
     else:
-        print(f"❌ {total_errors} Prüfung(en) fehlgeschlagen")
+        print(f"[FAILED] {total_errors} Prüfung(en) fehlgeschlagen")
         sys.exit(1)
 
 

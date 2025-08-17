@@ -15,24 +15,29 @@ import logging
 
 import pytest
 
+# Markiere alle Tests in dieser Datei als Protokoll-Tests
+pytestmark = pytest.mark.protocol
+
 # Erzeuge Dummy-OpenTelemetry-Module, um Importfehler zu vermeiden
 # Dies muss VOR dem Import von kei_agent erfolgen
+
 
 def ensure_fake_opentelemetry() -> None:
     """Erstellt minimale Fake-Module für OpenTelemetry-Imports.
 
     Verhindert ImportErrors in Testumgebungen ohne OTel-Exporter.
     """
+
     def add_module(name: str) -> types.ModuleType:
         mod = types.ModuleType(name)
         sys.modules[name] = mod
         return mod
 
     # Basis-Pakete
-    otel = add_module("opentelemetry")
+    add_module("opentelemetry")  # otel - nicht direkt verwendet
     trace = add_module("opentelemetry.trace")
     metrics = add_module("opentelemetry.metrics")
-    baggage = add_module("opentelemetry.baggage")
+    add_module("opentelemetry.baggage")  # baggage - nicht direkt verwendet
 
     # Metrics API Platzhalter
     def get_meter(name, version=None):
@@ -40,27 +45,40 @@ def ensure_fake_opentelemetry() -> None:
             create_counter=lambda name, **kwargs: lambda **kw: None,
             create_histogram=lambda name, **kwargs: lambda **kw: None,
             create_gauge=lambda name, **kwargs: lambda **kw: None,
-            create_up_down_counter=lambda name, **kwargs: lambda **kw: None
+            create_up_down_counter=lambda name, **kwargs: lambda **kw: None,
         )
+
     def set_meter_provider(provider):
         pass
+
     metrics.get_meter = get_meter
     metrics.set_meter_provider = set_meter_provider
 
     # Trace API Platzhalter
     class Status:  # noqa: D401
         """Fake Status."""
+
         pass
+
     class StatusCode:  # noqa: D401
         """Fake StatusCode."""
+
         OK = "OK"
         ERROR = "ERROR"
+
     def get_current_span(ctx=None):
-        return types.SimpleNamespace(get_span_context=lambda: types.SimpleNamespace(trace_id=0, span_id=0))
+        return types.SimpleNamespace(
+            get_span_context=lambda: types.SimpleNamespace(trace_id=0, span_id=0)
+        )
+
     def get_tracer(name, version=None):
-        return types.SimpleNamespace(start_as_current_span=lambda name, **kwargs: types.SimpleNamespace())
+        return types.SimpleNamespace(
+            start_as_current_span=lambda name, **kwargs: types.SimpleNamespace()
+        )
+
     def set_tracer_provider(provider):
         pass
+
     trace.Status = Status
     trace.StatusCode = StatusCode
     trace.get_current_span = get_current_span
@@ -73,11 +91,13 @@ def ensure_fake_opentelemetry() -> None:
 
     class JaegerExporter:  # noqa: D401
         """Fake JaegerExporter."""
+
         def __init__(self, *args, **kwargs):
             pass
 
     class ZipkinExporter:  # noqa: D401
         """Fake ZipkinExporter."""
+
         def __init__(self, *args, **kwargs):
             pass
 
@@ -90,19 +110,23 @@ def ensure_fake_opentelemetry() -> None:
 
     class TracerProvider:  # noqa: D401
         """Fake TracerProvider."""
+
         pass
 
     class Span:  # noqa: D401
         """Fake Span."""
+
         pass
 
     class BatchSpanProcessor:  # noqa: D401
         """Fake BatchSpanProcessor."""
+
         def __init__(self, *a, **kw):
             pass
 
     class ConsoleSpanExporter:  # noqa: D401
         """Fake ConsoleSpanExporter."""
+
         def __init__(self, *a, **kw):
             pass
 
@@ -117,15 +141,18 @@ def ensure_fake_opentelemetry() -> None:
 
     class MeterProvider:  # noqa: D401
         """Fake MeterProvider."""
+
         pass
 
     class ConsoleMetricExporter:  # noqa: D401
         """Fake ConsoleMetricExporter."""
+
         def __init__(self, *a, **kw):
             pass
 
     class PeriodicExportingMetricReader:  # noqa: D401
         """Fake PeriodicExportingMetricReader."""
+
         def __init__(self, *a, **kw):
             pass
 
@@ -135,33 +162,46 @@ def ensure_fake_opentelemetry() -> None:
 
     # Propagators
     propagate = add_module("opentelemetry.propagate")
+
     def inject(carrier=None):
         return None
+
     def extract(headers=None):
         return None
+
     propagate.inject = inject
     propagate.extract = extract
 
     tracecontext = add_module("opentelemetry.trace.propagation.tracecontext")
+
     class TraceContextTextMapPropagator:  # noqa: D401
         """Fake Propagator."""
+
         pass
+
     tracecontext.TraceContextTextMapPropagator = TraceContextTextMapPropagator
 
     baggage_prop = add_module("opentelemetry.baggage.propagation")
+
     class W3CBaggagePropagator:  # noqa: D401
         """Fake Baggage Propagator."""
+
         pass
+
     baggage_prop.W3CBaggagePropagator = W3CBaggagePropagator
 
     composite = add_module("opentelemetry.propagators.composite")
+
     class CompositeHTTPPropagator:  # noqa: D401
         """Fake Composite Propagator."""
+
         def __init__(self, *a, **kw):
             pass
+
     composite.CompositeHTTPPropagator = CompositeHTTPPropagator
 
     baggage_prop.W3CBaggagePropagator = W3CBaggagePropagator
+
 
 # Reduziert Log-Noise in Tests
 logging.getLogger("kei_agent").setLevel(logging.WARNING)
@@ -170,11 +210,11 @@ logging.getLogger("sdk.python.kei_agent").setLevel(logging.WARNING)
 # Fake OTel vor Paket-Import erzeugen
 ensure_fake_opentelemetry()
 
-from unified_client import UnifiedKeiAgentClient
-from contextlib import asynccontextmanager
+from unified_client import UnifiedKeiAgentClient  # noqa: E402
+from contextlib import asynccontextmanager  # noqa: E402
 
 
-from contextlib import contextmanager
+from contextlib import contextmanager  # noqa: E402
 
 
 @contextmanager
@@ -213,7 +253,9 @@ def get_messages(records: list[logging.LogRecord]) -> list[str]:
     return [r.getMessage() for r in records]
 
 
-def assert_cb_initialized_and_used(messages: list[str], cb_name: str, min_used: int) -> None:
+def assert_cb_initialized_and_used(
+    messages: list[str], cb_name: str, min_used: int
+) -> None:
     """Prüft CB-Initialisierung und Mindestanzahl der Nutzungs-Logs.
 
     Args:
@@ -228,14 +270,16 @@ def assert_cb_initialized_and_used(messages: list[str], cb_name: str, min_used: 
         f"Vorhandene Nachrichten: {messages}"
     )
     # Prüfe Mindestanzahl der Verwendungs-Logs
-    used_count = sum(m.startswith(f"Circuit Breaker verwendet: {cb_name}") for m in messages)
+    used_count = sum(
+        m.startswith(f"Circuit Breaker verwendet: {cb_name}") for m in messages
+    )
     assert used_count >= min_used, (
         f"Zu wenige Nutzungs-Logs für CB='{cb_name}'. Erwartet >= {min_used}, erhalten {used_count}. "
         f"Vorhandene Nachrichten: {messages}"
     )
 
 
-from client import AgentClientConfig, RetryConfig, TracingConfig, RetryStrategy
+from client import AgentClientConfig, RetryConfig, TracingConfig, RetryStrategy  # noqa: E402
 
 
 class DummyTransientError(Exception):
@@ -264,8 +308,10 @@ async def test_rpc_specific_retry_policy(monkeypatch):
     class FakeRPC:
         async def __aenter__(self):
             return self
+
         async def __aexit__(self, exc_type, exc, tb):
             return False
+
         async def plan(self, objective: str, context: Optional[Dict[str, Any]] = None):
             calls["count"] += 1
             if calls["count"] < 5:
@@ -291,7 +337,11 @@ async def capture_state_transitions(client: UnifiedKeiAgentClient, cb_name: str)
     """
     # Ermittelt passenden RetryManager aus dem Client
     proto = cb_name.split(".", 1)[0].lower() if "." in cb_name else ""
-    rm = client._retry_managers.get(proto) or client._retry_managers.get("default") or client.retry
+    rm = (
+        client._retry_managers.get(proto)
+        or client._retry_managers.get("default")
+        or client.retry
+    )
 
     # Holt oder erstellt den Circuit Breaker und hängt Hook an
     cb = rm.get_circuit_breaker(cb_name)
@@ -310,13 +360,6 @@ async def capture_state_transitions(client: UnifiedKeiAgentClient, cb_name: str)
     finally:
         # Hook wiederherstellen
         cb.config.on_state_change = original_hook  # type: ignore[attr-defined]
-
-
-    # Act (Dummy-Call nur zur Validierung der Hook-Funktion, wenn RPC verfügbar ist)
-    if client._rpc_client and hasattr(client._rpc_client, "plan"):
-        result = await client._execute_rpc_operation("plan", {"objective": "x"})
-        assert result == {"ok": True}
-        assert calls["count"] == 5
 
 
 @pytest.mark.asyncio
@@ -339,6 +382,7 @@ async def test_stream_specific_retry_policy(monkeypatch):
         async def subscribe(self, stream_id, callback):
             calls["count"] += 1
             raise DummyTransientError("temporary")
+
         async def send_frame(self, stream_id, frame_type, payload):
             calls["count"] += 1
             raise DummyTransientError("temporary")
@@ -347,13 +391,17 @@ async def test_stream_specific_retry_policy(monkeypatch):
 
     # subscribe sollte 2 Versuche machen und dann scheitern
     with pytest.raises(Exception):
-        await client._execute_stream_operation("subscribe", {"callback": lambda x: None, "stream_id": "s1"})
+        await client._execute_stream_operation(
+            "subscribe", {"callback": lambda x: None, "stream_id": "s1"}
+        )
     assert calls["count"] == 2
 
     # reset und test für send
     calls["count"] = 0
     with pytest.raises(Exception):
-        await client._execute_stream_operation("send", {"callback": lambda x: None, "stream_id": "s1"})
+        await client._execute_stream_operation(
+            "send", {"callback": lambda x: None, "stream_id": "s1"}
+        )
     assert calls["count"] == 2
 
 
@@ -376,12 +424,17 @@ async def test_bus_specific_retry_policy(monkeypatch):
     class FakeBus:
         async def __aenter__(self):
             return self
+
         async def __aexit__(self, exc_type, exc, tb):
             return False
+
         async def publish(self, envelope: Dict[str, Any]):
             calls["count"] += 1
             raise DummyTransientError("temporary")
-        async def rpc_invoke(self, service: str, method: str, payload: Dict[str, Any], timeout: float):
+
+        async def rpc_invoke(
+            self, service: str, method: str, payload: Dict[str, Any], timeout: float
+        ):
             calls["count"] += 1
             raise DummyTransientError("temporary")
 
@@ -418,8 +471,10 @@ async def test_mcp_specific_retry_policy(monkeypatch):
     class FakeMCP:
         async def __aenter__(self):
             return self
+
         async def __aexit__(self, exc_type, exc, tb):
             return False
+
         async def discover_tools(self, category: Optional[str] = None):
             calls["count"] += 1
             raise DummyTransientError("temporary")
@@ -450,8 +505,10 @@ async def test_fallback_to_default_retry_policy(monkeypatch):
     class FakeRPC:
         async def __aenter__(self):
             return self
+
         async def __aexit__(self, exc_type, exc, tb):
             return False
+
         async def _rpc_call(self, op: str, payload: Dict[str, Any]):
             calls["count"] += 1
             raise DummyTransientError("temporary")
@@ -479,8 +536,10 @@ async def test_backward_compatibility_without_protocol_policies(monkeypatch):
     class FakeRPC2:
         async def __aenter__(self):
             return self
+
         async def __aexit__(self, exc_type, exc, tb):
             return False
+
         async def _rpc_call(self, op: str, payload: Dict[str, Any]):
             calls["count"] += 1
             raise DummyTransientError("temporary")
@@ -502,7 +561,13 @@ async def test_circuit_breaker_metrics_and_transitions():
         agent_id="agent",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "rpc": RetryConfig(max_attempts=1, base_delay=0.0, jitter=False, failure_threshold=1, recovery_timeout=0.1)
+            "rpc": RetryConfig(
+                max_attempts=1,
+                base_delay=0.0,
+                jitter=False,
+                failure_threshold=1,
+                recovery_timeout=0.1,
+            )
         },
     )
     client = UnifiedKeiAgentClient(cfg)
@@ -510,8 +575,10 @@ async def test_circuit_breaker_metrics_and_transitions():
     class AlwaysFailRPC:
         async def __aenter__(self):
             return self
+
         async def __aexit__(self, exc_type, exc, tb):
             return False
+
         async def _rpc_call(self, op: str, payload: Dict[str, Any]):
             raise DummyTransientError("fail")
 
@@ -522,7 +589,11 @@ async def test_circuit_breaker_metrics_and_transitions():
         await client._execute_rpc_operation("unknown", {"x": 1})
 
     # Zugriff auf RetryManager/CB-Metriken
-    rm = client._retry_managers.get("rpc") or client._retry_managers.get("default") or client.retry
+    rm = (
+        client._retry_managers.get("rpc")
+        or client._retry_managers.get("default")
+        or client.retry
+    )
     metrics_before = rm.get_metrics()
     cb_metrics = metrics_before["circuit_breakers"].get("rpc.unknown")
     assert cb_metrics is not None
@@ -536,7 +607,11 @@ async def test_circuit_breaker_metrics_and_transitions():
     cb_metrics2 = metrics_after["circuit_breakers"].get("rpc.unknown")
     assert cb_metrics2 is not None
     # Je nach Implementierung: nach Überschreiten threshold → OPEN
-    assert cb_metrics2["state"] in ("open", "half_open", "closed")  # robust gegen Timing
+    assert cb_metrics2["state"] in (
+        "open",
+        "half_open",
+        "closed",
+    )  # robust gegen Timing
 
     # 3) Warte auf Recovery und prüfe Übergänge HALF_OPEN/CLOSED
     await asyncio.sleep(0.15)
@@ -565,8 +640,10 @@ async def test_retry_delay_patterns_by_strategy(monkeypatch):
     class FailingRPC:
         async def __aenter__(self):
             return self
+
         async def __aexit__(self, exc_type, exc, tb):
             return False
+
         async def _rpc_call(self, op: str, payload: Dict[str, Any]):
             raise DummyTransientError("fail")
 
@@ -577,7 +654,9 @@ async def test_retry_delay_patterns_by_strategy(monkeypatch):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "rpc": RetryConfig(max_attempts=4, base_delay=1.0, jitter=False, exponential_base=2.0)
+            "rpc": RetryConfig(
+                max_attempts=4, base_delay=1.0, jitter=False, exponential_base=2.0
+            )
         },
     )
     client_exp = UnifiedKeiAgentClient(config_exp)
@@ -596,7 +675,12 @@ async def test_retry_delay_patterns_by_strategy(monkeypatch):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "rpc": RetryConfig(max_attempts=3, base_delay=0.5, jitter=False, strategy=RetryStrategy.FIXED_DELAY)
+            "rpc": RetryConfig(
+                max_attempts=3,
+                base_delay=0.5,
+                jitter=False,
+                strategy=RetryStrategy.FIXED_DELAY,
+            )
         },
     )
     client_fix = UnifiedKeiAgentClient(config_fix)
@@ -615,7 +699,12 @@ async def test_retry_delay_patterns_by_strategy(monkeypatch):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "rpc": RetryConfig(max_attempts=4, base_delay=0.5, jitter=False, strategy=RetryStrategy.LINEAR_BACKOFF)
+            "rpc": RetryConfig(
+                max_attempts=4,
+                base_delay=0.5,
+                jitter=False,
+                strategy=RetryStrategy.LINEAR_BACKOFF,
+            )
         },
     )
     client_lin = UnifiedKeiAgentClient(config_lin)
@@ -641,7 +730,10 @@ async def test_stream_strategy_patterns(monkeypatch):
     class FailingStream:
         async def subscribe(self, stream_id: str, callback):
             raise DummyTransientError("temporary")
-        async def send_frame(self, stream_id: str, frame_type: str, payload: Dict[str, Any]):
+
+        async def send_frame(
+            self, stream_id: str, frame_type: str, payload: Dict[str, Any]
+        ):
             raise DummyTransientError("temporary")
 
     # FIXED_DELAY (konstante 2.0s)
@@ -651,13 +743,20 @@ async def test_stream_strategy_patterns(monkeypatch):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "stream": RetryConfig(max_attempts=3, base_delay=2.0, jitter=False, strategy=RetryStrategy.FIXED_DELAY)
+            "stream": RetryConfig(
+                max_attempts=3,
+                base_delay=2.0,
+                jitter=False,
+                strategy=RetryStrategy.FIXED_DELAY,
+            )
         },
     )
     client_fix = UnifiedKeiAgentClient(config_fix)
     client_fix._stream_client = FailingStream()
     with pytest.raises(Exception):
-        await client_fix._execute_stream_operation("subscribe", {"callback": lambda x: None, "stream_id": "s1"})
+        await client_fix._execute_stream_operation(
+            "subscribe", {"callback": lambda x: None, "stream_id": "s1"}
+        )
     assert delays[:2] == [2.0, 2.0]
 
     # EXPONENTIAL_BACKOFF (1.0, 2.0)
@@ -668,14 +767,21 @@ async def test_stream_strategy_patterns(monkeypatch):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "stream": RetryConfig(max_attempts=3, base_delay=1.0, jitter=False, exponential_base=2.0,
-                                   strategy=RetryStrategy.EXPONENTIAL_BACKOFF)
+            "stream": RetryConfig(
+                max_attempts=3,
+                base_delay=1.0,
+                jitter=False,
+                exponential_base=2.0,
+                strategy=RetryStrategy.EXPONENTIAL_BACKOFF,
+            )
         },
     )
     client_exp = UnifiedKeiAgentClient(config_exp)
     client_exp._stream_client = FailingStream()
     with pytest.raises(Exception):
-        await client_exp._execute_stream_operation("send", {"callback": lambda x: None, "stream_id": "s2"})
+        await client_exp._execute_stream_operation(
+            "send", {"callback": lambda x: None, "stream_id": "s2"}
+        )
     assert delays[:2] == [1.0, 2.0]
 
 
@@ -693,11 +799,16 @@ async def test_bus_strategy_patterns(monkeypatch):
     class FailingBus:
         async def __aenter__(self):
             return self
+
         async def __aexit__(self, exc_type, exc, tb):
             return False
+
         async def publish(self, envelope: Dict[str, Any]):
             raise DummyTransientError("temporary")
-        async def rpc_invoke(self, service: str, method: str, payload: Dict[str, Any], timeout: float):
+
+        async def rpc_invoke(
+            self, service: str, method: str, payload: Dict[str, Any], timeout: float
+        ):
             raise DummyTransientError("temporary")
 
     # LINEAR_BACKOFF (1.0, 2.0, 3.0)
@@ -707,7 +818,12 @@ async def test_bus_strategy_patterns(monkeypatch):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "bus": RetryConfig(max_attempts=4, base_delay=1.0, jitter=False, strategy=RetryStrategy.LINEAR_BACKOFF)
+            "bus": RetryConfig(
+                max_attempts=4,
+                base_delay=1.0,
+                jitter=False,
+                strategy=RetryStrategy.LINEAR_BACKOFF,
+            )
         },
     )
     client_lin = UnifiedKeiAgentClient(config_lin)
@@ -724,13 +840,21 @@ async def test_bus_strategy_patterns(monkeypatch):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "bus": RetryConfig(max_attempts=3, base_delay=0.5, jitter=False, strategy=RetryStrategy.FIXED_DELAY)
+            "bus": RetryConfig(
+                max_attempts=3,
+                base_delay=0.5,
+                jitter=False,
+                strategy=RetryStrategy.FIXED_DELAY,
+            )
         },
     )
     client_fix = UnifiedKeiAgentClient(config_fix)
     client_fix._bus_client = FailingBus()
     with pytest.raises(Exception):
-        await client_fix._execute_bus_operation("rpc_invoke", {"service": "agent", "method": "m", "payload": {}, "timeout": 1.0})
+        await client_fix._execute_bus_operation(
+            "rpc_invoke",
+            {"service": "agent", "method": "m", "payload": {}, "timeout": 1.0},
+        )
     assert delays[:2] == [0.5, 0.5]
 
 
@@ -748,10 +872,13 @@ async def test_mcp_strategy_patterns(monkeypatch):
     class FailingMCP:
         async def __aenter__(self):
             return self
+
         async def __aexit__(self, exc_type, exc, tb):
             return False
+
         async def discover_tools(self, category: Optional[str] = None):
             raise DummyTransientError("temporary")
+
         async def invoke_tool(self, tool_name: str, parameters: Dict[str, Any]):
             raise DummyTransientError("temporary")
 
@@ -762,8 +889,13 @@ async def test_mcp_strategy_patterns(monkeypatch):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "mcp": RetryConfig(max_attempts=3, base_delay=0.5, jitter=False, exponential_base=2.0,
-                                strategy=RetryStrategy.EXPONENTIAL_BACKOFF)
+            "mcp": RetryConfig(
+                max_attempts=3,
+                base_delay=0.5,
+                jitter=False,
+                exponential_base=2.0,
+                strategy=RetryStrategy.EXPONENTIAL_BACKOFF,
+            )
         },
     )
     client_exp = UnifiedKeiAgentClient(config_exp)
@@ -780,13 +912,20 @@ async def test_mcp_strategy_patterns(monkeypatch):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "mcp": RetryConfig(max_attempts=3, base_delay=1.5, jitter=False, strategy=RetryStrategy.FIXED_DELAY)
+            "mcp": RetryConfig(
+                max_attempts=3,
+                base_delay=1.5,
+                jitter=False,
+                strategy=RetryStrategy.FIXED_DELAY,
+            )
         },
     )
     client_fix = UnifiedKeiAgentClient(config_fix)
     client_fix._mcp_client = FailingMCP()
     with pytest.raises(Exception):
-        await client_fix._execute_mcp_operation("invoke_tool", {"tool_name": "t", "parameters": {}})
+        await client_fix._execute_mcp_operation(
+            "invoke_tool", {"tool_name": "t", "parameters": {}}
+        )
     assert delays[:2] == [1.5, 1.5]
 
 
@@ -800,19 +939,28 @@ async def test_circuit_breaker_precise_state_transitions():
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
             # threshold=2, recovery_timeout=0.1s, in HALF_OPEN nur 1 Call
-            "rpc": RetryConfig(max_attempts=1, base_delay=0.0, jitter=False, failure_threshold=2,
-                                recovery_timeout=0.1, half_open_max_calls=1)
+            "rpc": RetryConfig(
+                max_attempts=1,
+                base_delay=0.0,
+                jitter=False,
+                failure_threshold=2,
+                recovery_timeout=0.1,
+                half_open_max_calls=1,
+            )
         },
     )
     client = UnifiedKeiAgentClient(cfg)
 
     # Fake RPC: zwei Mal Fehler, dann Erfolg
     calls = {"count": 0}
+
     class FlakyRPC:
         async def __aenter__(self):
             return self
+
         async def __aexit__(self, exc_type, exc, tb):
             return False
+
         async def _rpc_call(self, op: str, payload: Dict[str, Any]):
             calls["count"] += 1
             if calls["count"] <= 2:
@@ -821,7 +969,11 @@ async def test_circuit_breaker_precise_state_transitions():
 
     client._rpc_client = FlakyRPC()
 
-    rm = client._retry_managers.get("rpc") or client._retry_managers.get("default") or client.retry
+    rm = (
+        client._retry_managers.get("rpc")
+        or client._retry_managers.get("default")
+        or client.retry
+    )
     cb_name = "rpc.unknown"
 
     # Start: closed
@@ -835,7 +987,10 @@ async def test_circuit_breaker_precise_state_transitions():
             await client._execute_rpc_operation("unknown", {"x": 1})
     m_open = rm.get_metrics()["circuit_breakers"][cb_name]
     assert m_open["state"] == "open"
-    assert m_open.get("current_failure_count", 0) >= 2 or m_open.get("total_failures", 0) >= 2
+    assert (
+        m_open.get("current_failure_count", 0) >= 2
+        or m_open.get("total_failures", 0) >= 2
+    )
 
     # Warten bis Half-Open möglich
     await asyncio.sleep(0.12)
@@ -859,8 +1014,14 @@ async def test_stream_state_transitions(caplog):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "stream": RetryConfig(max_attempts=1, base_delay=0.0, jitter=False,
-                                   failure_threshold=1, recovery_timeout=0.05, half_open_max_calls=1)
+            "stream": RetryConfig(
+                max_attempts=1,
+                base_delay=0.0,
+                jitter=False,
+                failure_threshold=1,
+                recovery_timeout=0.05,
+                half_open_max_calls=1,
+            )
         },
     )
     client = UnifiedKeiAgentClient(cfg)
@@ -868,6 +1029,7 @@ async def test_stream_state_transitions(caplog):
     class FlakyStream:
         def __init__(self):
             self.calls = 0
+
         async def subscribe(self, stream_id: str, callback):
             self.calls += 1
             if self.calls == 1:
@@ -880,9 +1042,13 @@ async def test_stream_state_transitions(caplog):
     with capture_logger_records("kei_agent.retry", logging.INFO) as recs_all:
         async with capture_state_transitions(client, cb_name) as transitions:
             with pytest.raises(Exception):
-                await client._execute_stream_operation("subscribe", {"callback": lambda x: None, "stream_id": "s"})
+                await client._execute_stream_operation(
+                    "subscribe", {"callback": lambda x: None, "stream_id": "s"}
+                )
             await asyncio.sleep(0.06)
-            await client._execute_stream_operation("subscribe", {"callback": lambda x: None, "stream_id": "s"})
+            await client._execute_stream_operation(
+                "subscribe", {"callback": lambda x: None, "stream_id": "s"}
+            )
 
     assert transitions == ["closed", "open", "half_open", "closed"]
     # Prüfe Logs aus gesamter Phase (standardisiert)
@@ -900,8 +1066,14 @@ async def test_bus_state_transitions(caplog):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "bus": RetryConfig(max_attempts=1, base_delay=0.0, jitter=False,
-                                failure_threshold=3, recovery_timeout=0.2, half_open_max_calls=1)
+            "bus": RetryConfig(
+                max_attempts=1,
+                base_delay=0.0,
+                jitter=False,
+                failure_threshold=3,
+                recovery_timeout=0.2,
+                half_open_max_calls=1,
+            )
         },
     )
     client = UnifiedKeiAgentClient(cfg)
@@ -909,10 +1081,13 @@ async def test_bus_state_transitions(caplog):
     class FlakyBus:
         def __init__(self):
             self.calls = 0
+
         async def __aenter__(self):
             return self
+
         async def __aexit__(self, exc_type, exc, tb):
             return False
+
         async def publish(self, envelope: Dict[str, Any]):
             self.calls += 1
             if self.calls <= 3:
@@ -928,7 +1103,9 @@ async def test_bus_state_transitions(caplog):
                 await client._execute_bus_operation("publish", {"envelope": {"x": 1}})
             for _ in range(2):
                 with pytest.raises(Exception):
-                    await client._execute_bus_operation("publish", {"envelope": {"x": 1}})
+                    await client._execute_bus_operation(
+                        "publish", {"envelope": {"x": 1}}
+                    )
             await asyncio.sleep(0.21)
             await client._execute_bus_operation("publish", {"envelope": {"x": 2}})
 
@@ -947,8 +1124,14 @@ async def test_mcp_state_transitions(caplog):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "mcp": RetryConfig(max_attempts=1, base_delay=0.0, jitter=False,
-                                failure_threshold=2, recovery_timeout=0.1, half_open_max_calls=1)
+            "mcp": RetryConfig(
+                max_attempts=1,
+                base_delay=0.0,
+                jitter=False,
+                failure_threshold=2,
+                recovery_timeout=0.1,
+                half_open_max_calls=1,
+            )
         },
     )
     client = UnifiedKeiAgentClient(cfg)
@@ -956,10 +1139,13 @@ async def test_mcp_state_transitions(caplog):
     class FlakyMCP:
         def __init__(self):
             self.calls = 0
+
         async def __aenter__(self):
             return self
+
         async def __aexit__(self, exc_type, exc, tb):
             return False
+
         async def discover_tools(self, category: Optional[str] = None):
             self.calls += 1
             if self.calls <= 2:
@@ -993,8 +1179,14 @@ async def test_half_open_failure_reopens(caplog):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "rpc": RetryConfig(max_attempts=1, base_delay=0.0, jitter=False,
-                                failure_threshold=1, recovery_timeout=0.05, half_open_max_calls=1)
+            "rpc": RetryConfig(
+                max_attempts=1,
+                base_delay=0.0,
+                jitter=False,
+                failure_threshold=1,
+                recovery_timeout=0.05,
+                half_open_max_calls=1,
+            )
         },
     )
     client = UnifiedKeiAgentClient(cfg)
@@ -1002,10 +1194,13 @@ async def test_half_open_failure_reopens(caplog):
     class FailAgainRPC:
         def __init__(self):
             self.calls = 0
+
         async def __aenter__(self):
             return self
+
         async def __aexit__(self, exc_type, exc, tb):
             return False
+
         async def _rpc_call(self, op: str, payload: Dict[str, Any]):
             self.calls += 1
             raise DummyTransientError("fail")
@@ -1026,7 +1221,6 @@ async def test_half_open_failure_reopens(caplog):
     assert_cb_initialized_and_used(all_msgs, cb_name, HALF_OPEN_FAILURE_MIN_USED)
 
 
-
 @pytest.mark.asyncio
 async def test_stream_half_open_failure_reopens(caplog):
     """Testet Fehlerfall: HALF_OPEN → OPEN bei erneutem Fehler für Stream inkl. Logs."""
@@ -1037,8 +1231,14 @@ async def test_stream_half_open_failure_reopens(caplog):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "stream": RetryConfig(max_attempts=1, base_delay=0.0, jitter=False,
-                                   failure_threshold=1, recovery_timeout=0.05, half_open_max_calls=1)
+            "stream": RetryConfig(
+                max_attempts=1,
+                base_delay=0.0,
+                jitter=False,
+                failure_threshold=1,
+                recovery_timeout=0.05,
+                half_open_max_calls=1,
+            )
         },
     )
     client = UnifiedKeiAgentClient(cfg)
@@ -1053,10 +1253,14 @@ async def test_stream_half_open_failure_reopens(caplog):
     with capture_logger_records("kei_agent.retry", logging.INFO) as recs_all:
         async with capture_state_transitions(client, cb_name) as transitions:
             with pytest.raises(Exception):
-                await client._execute_stream_operation("subscribe", {"callback": lambda x: None, "stream_id": "s"})
+                await client._execute_stream_operation(
+                    "subscribe", {"callback": lambda x: None, "stream_id": "s"}
+                )
             await asyncio.sleep(0.06)
             with pytest.raises(Exception):
-                await client._execute_stream_operation("subscribe", {"callback": lambda x: None, "stream_id": "s"})
+                await client._execute_stream_operation(
+                    "subscribe", {"callback": lambda x: None, "stream_id": "s"}
+                )
 
     assert transitions == ["closed", "open", "half_open", "open"]
     all_msgs = get_messages(recs_all)
@@ -1073,8 +1277,14 @@ async def test_bus_half_open_failure_reopens(caplog):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "bus": RetryConfig(max_attempts=1, base_delay=0.0, jitter=False,
-                                failure_threshold=3, recovery_timeout=0.2, half_open_max_calls=1)
+            "bus": RetryConfig(
+                max_attempts=1,
+                base_delay=0.0,
+                jitter=False,
+                failure_threshold=3,
+                recovery_timeout=0.2,
+                half_open_max_calls=1,
+            )
         },
     )
     client = UnifiedKeiAgentClient(cfg)
@@ -1082,8 +1292,10 @@ async def test_bus_half_open_failure_reopens(caplog):
     class AlwaysFailBus:
         async def __aenter__(self):
             return self
+
         async def __aexit__(self, exc_type, exc, tb):
             return False
+
         async def publish(self, envelope: Dict[str, Any]):
             raise DummyTransientError("fail")
 
@@ -1096,7 +1308,9 @@ async def test_bus_half_open_failure_reopens(caplog):
                 await client._execute_bus_operation("publish", {"envelope": {"x": 1}})
             for _ in range(2):
                 with pytest.raises(Exception):
-                    await client._execute_bus_operation("publish", {"envelope": {"x": 1}})
+                    await client._execute_bus_operation(
+                        "publish", {"envelope": {"x": 1}}
+                    )
             await asyncio.sleep(0.21)
             with pytest.raises(Exception):
                 await client._execute_bus_operation("publish", {"envelope": {"x": 2}})
@@ -1116,8 +1330,14 @@ async def test_mcp_half_open_failure_reopens(caplog):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "mcp": RetryConfig(max_attempts=1, base_delay=0.0, jitter=False,
-                                failure_threshold=2, recovery_timeout=0.1, half_open_max_calls=1)
+            "mcp": RetryConfig(
+                max_attempts=1,
+                base_delay=0.0,
+                jitter=False,
+                failure_threshold=2,
+                recovery_timeout=0.1,
+                half_open_max_calls=1,
+            )
         },
     )
     client = UnifiedKeiAgentClient(cfg)
@@ -1125,8 +1345,10 @@ async def test_mcp_half_open_failure_reopens(caplog):
     class AlwaysFailMCP:
         async def __aenter__(self):
             return self
+
         async def __aexit__(self, exc_type, exc, tb):
             return False
+
         async def discover_tools(self, category: Optional[str] = None):
             raise DummyTransientError("fail")
 
@@ -1148,7 +1370,6 @@ async def test_mcp_half_open_failure_reopens(caplog):
     assert_cb_initialized_and_used(all_msgs, cb_name, HALF_OPEN_FAILURE_MIN_USED)
 
 
-
 @pytest.mark.asyncio
 async def test_stream_half_open_success_closes(caplog):
     """Prüft HALF_OPEN → CLOSED bei erfolgreichem Call im Stream-Protokoll inkl. Logs."""
@@ -1159,8 +1380,14 @@ async def test_stream_half_open_success_closes(caplog):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "stream": RetryConfig(max_attempts=1, base_delay=0.0, jitter=False,
-                                   failure_threshold=1, recovery_timeout=0.05, half_open_max_calls=1)
+            "stream": RetryConfig(
+                max_attempts=1,
+                base_delay=0.0,
+                jitter=False,
+                failure_threshold=1,
+                recovery_timeout=0.05,
+                half_open_max_calls=1,
+            )
         },
     )
     client = UnifiedKeiAgentClient(cfg)
@@ -1168,6 +1395,7 @@ async def test_stream_half_open_success_closes(caplog):
     class FlakyThenSuccessStream:
         def __init__(self):
             self.calls = 0
+
         async def subscribe(self, stream_id: str, callback):
             self.calls += 1
             if self.calls == 1:
@@ -1180,9 +1408,13 @@ async def test_stream_half_open_success_closes(caplog):
     with capture_logger_records("kei_agent.retry", logging.INFO) as recs_all:
         async with capture_state_transitions(client, cb_name) as transitions:
             with pytest.raises(Exception):
-                await client._execute_stream_operation("subscribe", {"callback": lambda x: None, "stream_id": "s"})
+                await client._execute_stream_operation(
+                    "subscribe", {"callback": lambda x: None, "stream_id": "s"}
+                )
             await asyncio.sleep(0.06)
-            await client._execute_stream_operation("subscribe", {"callback": lambda x: None, "stream_id": "s"})
+            await client._execute_stream_operation(
+                "subscribe", {"callback": lambda x: None, "stream_id": "s"}
+            )
 
     assert transitions == ["closed", "open", "half_open", "closed"]
     all_msgs = get_messages(recs_all)
@@ -1199,8 +1431,14 @@ async def test_bus_half_open_success_closes(caplog):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "bus": RetryConfig(max_attempts=1, base_delay=0.0, jitter=False,
-                                failure_threshold=3, recovery_timeout=0.2, half_open_max_calls=1)
+            "bus": RetryConfig(
+                max_attempts=1,
+                base_delay=0.0,
+                jitter=False,
+                failure_threshold=3,
+                recovery_timeout=0.2,
+                half_open_max_calls=1,
+            )
         },
     )
     client = UnifiedKeiAgentClient(cfg)
@@ -1208,10 +1446,13 @@ async def test_bus_half_open_success_closes(caplog):
     class FlakyThenSuccessBus:
         def __init__(self):
             self.calls = 0
+
         async def __aenter__(self):
             return self
+
         async def __aexit__(self, exc_type, exc, tb):
             return False
+
         async def publish(self, envelope: Dict[str, Any]):
             self.calls += 1
             if self.calls <= 3:
@@ -1225,7 +1466,9 @@ async def test_bus_half_open_success_closes(caplog):
         async with capture_state_transitions(client, cb_name) as transitions:
             for _ in range(3):
                 with pytest.raises(Exception):
-                    await client._execute_bus_operation("publish", {"envelope": {"x": 1}})
+                    await client._execute_bus_operation(
+                        "publish", {"envelope": {"x": 1}}
+                    )
             await asyncio.sleep(0.21)
             await client._execute_bus_operation("publish", {"envelope": {"x": 2}})
 
@@ -1244,8 +1487,14 @@ async def test_mcp_half_open_success_closes(caplog):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "mcp": RetryConfig(max_attempts=1, base_delay=0.0, jitter=False,
-                                failure_threshold=2, recovery_timeout=0.1, half_open_max_calls=1)
+            "mcp": RetryConfig(
+                max_attempts=1,
+                base_delay=0.0,
+                jitter=False,
+                failure_threshold=2,
+                recovery_timeout=0.1,
+                half_open_max_calls=1,
+            )
         },
     )
     client = UnifiedKeiAgentClient(cfg)
@@ -1253,10 +1502,13 @@ async def test_mcp_half_open_success_closes(caplog):
     class FlakyThenSuccessMCP:
         def __init__(self):
             self.calls = 0
+
         async def __aenter__(self):
             return self
+
         async def __aexit__(self, exc_type, exc, tb):
             return False
+
         async def discover_tools(self, category: Optional[str] = None):
             self.calls += 1
             if self.calls <= 2:

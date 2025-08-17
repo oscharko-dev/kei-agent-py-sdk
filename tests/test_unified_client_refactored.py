@@ -24,7 +24,7 @@ class TestUnifiedKeiAgentClientRefactored:
         return AgentClientConfig(
             base_url="https://test.kei-framework.com",
             api_token="test-token-123",
-            agent_id="test-agent-refactored"
+            agent_id="test-agent-refactored",
         )
 
     @pytest.fixture
@@ -36,7 +36,7 @@ class TestUnifiedKeiAgentClientRefactored:
             bus_enabled=True,
             mcp_enabled=True,
             auto_protocol_selection=True,
-            protocol_fallback_enabled=True
+            protocol_fallback_enabled=True,
         )
 
     @pytest.fixture
@@ -46,7 +46,7 @@ class TestUnifiedKeiAgentClientRefactored:
             auth_type=AuthType.BEARER,
             api_token="test-token-123",
             rbac_enabled=True,
-            audit_enabled=True
+            audit_enabled=True,
         )
 
     @pytest.fixture
@@ -55,7 +55,7 @@ class TestUnifiedKeiAgentClientRefactored:
         return UnifiedKeiAgentClient(
             config=agent_config,
             protocol_config=protocol_config,
-            security_config=security_config
+            security_config=security_config,
         )
 
     def test_initialization(self, unified_client, agent_config):
@@ -78,10 +78,18 @@ class TestUnifiedKeiAgentClientRefactored:
     @pytest.mark.asyncio
     async def test_initialize_success(self, unified_client):
         """Testet erfolgreiche Client-Initialisierung."""
-        with patch.object(unified_client.security, 'start_token_refresh') as mock_token_refresh:
-            with patch.object(unified_client, '_initialize_protocol_clients') as mock_protocol_init:
-                with patch.object(unified_client, '_initialize_enterprise_features') as mock_enterprise_init:
-                    with patch('unified_client_refactored.KeiAgentClient') as mock_legacy_client:
+        with patch.object(
+            unified_client.security, "start_token_refresh"
+        ) as mock_token_refresh:
+            with patch.object(
+                unified_client, "_initialize_protocol_clients"
+            ) as mock_protocol_init:
+                with patch.object(
+                    unified_client, "_initialize_enterprise_features"
+                ) as mock_enterprise_init:
+                    with patch(
+                        "unified_client_refactored.KeiAgentClient"
+                    ) as mock_legacy_client:
                         mock_legacy_instance = AsyncMock()
                         mock_legacy_client.return_value = mock_legacy_instance
 
@@ -98,7 +106,9 @@ class TestUnifiedKeiAgentClientRefactored:
         """Testet Initialisierung wenn bereits initialisiert."""
         unified_client._initialized = True
 
-        with patch.object(unified_client.security, 'start_token_refresh') as mock_token_refresh:
+        with patch.object(
+            unified_client.security, "start_token_refresh"
+        ) as mock_token_refresh:
             await unified_client.initialize()
 
             # Sollte nicht erneut initialisiert werden
@@ -107,7 +117,11 @@ class TestUnifiedKeiAgentClientRefactored:
     @pytest.mark.asyncio
     async def test_initialize_error(self, unified_client):
         """Testet Initialisierungsfehler."""
-        with patch.object(unified_client.security, 'start_token_refresh', side_effect=Exception("Init error")):
+        with patch.object(
+            unified_client.security,
+            "start_token_refresh",
+            side_effect=Exception("Init error"),
+        ):
             with pytest.raises(KeiSDKError, match="Initialisierung fehlgeschlagen"):
                 await unified_client.initialize()
 
@@ -121,7 +135,7 @@ class TestUnifiedKeiAgentClientRefactored:
         unified_client.tracing = AsyncMock()
 
         # Mock Security Manager Methoden
-        with patch.object(unified_client.security, 'stop_token_refresh') as mock_stop:
+        with patch.object(unified_client.security, "stop_token_refresh") as mock_stop:
             await unified_client.close()
 
             assert unified_client._closed is True
@@ -135,7 +149,7 @@ class TestUnifiedKeiAgentClientRefactored:
         """Testet Schließen wenn bereits geschlossen."""
         unified_client._closed = True
 
-        with patch.object(unified_client.security, 'stop_token_refresh') as mock_stop:
+        with patch.object(unified_client.security, "stop_token_refresh") as mock_stop:
             await unified_client.close()
 
             # Sollte nicht erneut geschlossen werden
@@ -144,8 +158,8 @@ class TestUnifiedKeiAgentClientRefactored:
     @pytest.mark.asyncio
     async def test_context_manager(self, unified_client):
         """Testet Async Context Manager."""
-        with patch.object(unified_client, 'initialize') as mock_init:
-            with patch.object(unified_client, 'close') as mock_close:
+        with patch.object(unified_client, "initialize") as mock_init:
+            with patch.object(unified_client, "close") as mock_close:
                 async with unified_client as client:
                     assert client == unified_client
 
@@ -155,7 +169,9 @@ class TestUnifiedKeiAgentClientRefactored:
     def test_select_optimal_protocol(self, unified_client):
         """Testet optimale Protokoll-Auswahl."""
         # Mock Protocol Selector
-        with patch.object(unified_client.protocol_selector, 'select_protocol') as mock_select:
+        with patch.object(
+            unified_client.protocol_selector, "select_protocol"
+        ) as mock_select:
             mock_select.return_value = ProtocolType.STREAM
 
             result = unified_client._select_optimal_protocol("stream_data")
@@ -218,16 +234,20 @@ class TestUnifiedKeiAgentClientRefactored:
         """Testet erfolgreiche Operation-Ausführung."""
         unified_client._initialized = True
 
-        with patch.object(unified_client, '_select_optimal_protocol') as mock_select:
-            with patch.object(unified_client, '_execute_with_protocol') as mock_execute:
+        with patch.object(unified_client, "_select_optimal_protocol") as mock_select:
+            with patch.object(unified_client, "_execute_with_protocol") as mock_execute:
                 mock_select.return_value = ProtocolType.RPC
                 mock_execute.return_value = {"result": "success"}
 
-                result = await unified_client.execute_agent_operation("test_op", {"data": "test"})
+                result = await unified_client.execute_agent_operation(
+                    "test_op", {"data": "test"}
+                )
 
                 assert result["result"] == "success"
                 mock_select.assert_called_once_with("test_op", {"data": "test"})
-                mock_execute.assert_called_once_with(ProtocolType.RPC, "test_op", {"data": "test"})
+                mock_execute.assert_called_once_with(
+                    ProtocolType.RPC, "test_op", {"data": "test"}
+                )
 
     @pytest.mark.asyncio
     async def test_execute_agent_operation_with_tracing(self, unified_client):
@@ -237,10 +257,12 @@ class TestUnifiedKeiAgentClientRefactored:
 
         # Mock Tracing Context Manager
         mock_span = MagicMock()
-        unified_client.tracing.start_span.return_value.__enter__ = MagicMock(return_value=mock_span)
+        unified_client.tracing.start_span.return_value.__enter__ = MagicMock(
+            return_value=mock_span
+        )
         unified_client.tracing.start_span.return_value.__exit__ = MagicMock()
 
-        with patch.object(unified_client, '_execute_with_protocol') as mock_execute:
+        with patch.object(unified_client, "_execute_with_protocol") as mock_execute:
             mock_execute.return_value = {"result": "traced"}
 
             result = await unified_client.execute_agent_operation("traced_op", {})
@@ -252,7 +274,7 @@ class TestUnifiedKeiAgentClientRefactored:
     @pytest.mark.asyncio
     async def test_execute_with_protocol_rpc(self, unified_client):
         """Testet Protokoll-spezifische Ausführung für RPC."""
-        with patch.object(unified_client, '_execute_rpc_operation') as mock_rpc:
+        with patch.object(unified_client, "_execute_rpc_operation") as mock_rpc:
             mock_rpc.return_value = {"rpc_result": "success"}
 
             result = await unified_client._execute_with_protocol(
@@ -267,9 +289,11 @@ class TestUnifiedKeiAgentClientRefactored:
         """Testet Fallback-Mechanismus bei Protokoll-Fehlern."""
         unified_client.protocol_config.protocol_fallback_enabled = True
 
-        with patch.object(unified_client, '_execute_rpc_operation') as mock_rpc:
-            with patch.object(unified_client, '_execute_bus_operation') as mock_bus:
-                with patch.object(unified_client.protocol_selector, 'get_fallback_chain') as mock_chain:
+        with patch.object(unified_client, "_execute_rpc_operation") as mock_rpc:
+            with patch.object(unified_client, "_execute_bus_operation") as mock_bus:
+                with patch.object(
+                    unified_client.protocol_selector, "get_fallback_chain"
+                ) as mock_chain:
                     # Erstes Protokoll schlägt fehl
                     mock_rpc.side_effect = ProtocolError("RPC failed")
                     # Fallback erfolgreich
@@ -288,7 +312,7 @@ class TestUnifiedKeiAgentClientRefactored:
     @pytest.mark.asyncio
     async def test_plan_task_high_level_api(self, unified_client):
         """Testet High-Level Plan-Task API."""
-        with patch.object(unified_client, 'execute_agent_operation') as mock_execute:
+        with patch.object(unified_client, "execute_agent_operation") as mock_execute:
             mock_execute.return_value = {"plan_id": "plan-123"}
 
             result = await unified_client.plan_task("Create report", {"format": "pdf"})
@@ -297,28 +321,30 @@ class TestUnifiedKeiAgentClientRefactored:
             mock_execute.assert_called_once_with(
                 "plan",
                 {"objective": "Create report", "context": {"format": "pdf"}},
-                None
+                None,
             )
 
     @pytest.mark.asyncio
     async def test_execute_action_high_level_api(self, unified_client):
         """Testet High-Level Execute-Action API."""
-        with patch.object(unified_client, 'execute_agent_operation') as mock_execute:
+        with patch.object(unified_client, "execute_agent_operation") as mock_execute:
             mock_execute.return_value = {"action_id": "action-456"}
 
-            result = await unified_client.execute_action("generate_file", {"path": "/tmp/test.txt"})
+            result = await unified_client.execute_action(
+                "generate_file", {"path": "/tmp/test.txt"}
+            )
 
             assert result["action_id"] == "action-456"
             mock_execute.assert_called_once_with(
                 "act",
                 {"action": "generate_file", "parameters": {"path": "/tmp/test.txt"}},
-                None
+                None,
             )
 
     @pytest.mark.asyncio
     async def test_send_agent_message_high_level_api(self, unified_client):
         """Testet High-Level Agent-Message API."""
-        with patch.object(unified_client, 'execute_agent_operation') as mock_execute:
+        with patch.object(unified_client, "execute_agent_operation") as mock_execute:
             mock_execute.return_value = {"message_id": "msg-789"}
 
             result = await unified_client.send_agent_message(
@@ -338,11 +364,11 @@ class TestUnifiedKeiAgentClientRefactored:
     @pytest.mark.asyncio
     async def test_discover_available_tools_high_level_api(self, unified_client):
         """Testet High-Level Tool-Discovery API."""
-        with patch.object(unified_client, 'execute_agent_operation') as mock_execute:
+        with patch.object(unified_client, "execute_agent_operation") as mock_execute:
             mock_execute.return_value = {
                 "tools": [
                     {"name": "calculator", "description": "Math tool"},
-                    {"name": "file_reader", "description": "File tool"}
+                    {"name": "file_reader", "description": "File tool"},
                 ]
             }
 
@@ -358,7 +384,7 @@ class TestUnifiedKeiAgentClientRefactored:
     @pytest.mark.asyncio
     async def test_use_tool_high_level_api(self, unified_client):
         """Testet High-Level Tool-Use API."""
-        with patch.object(unified_client, 'execute_agent_operation') as mock_execute:
+        with patch.object(unified_client, "execute_agent_operation") as mock_execute:
             mock_execute.return_value = {"result": 42, "status": "completed"}
 
             result = await unified_client.use_tool("calculator", expression="6*7")
@@ -374,19 +400,21 @@ class TestUnifiedKeiAgentClientRefactored:
         """Testet Streaming-Session-Start."""
         unified_client._stream_client = AsyncMock()
 
-        with patch.object(unified_client, 'is_protocol_available') as mock_available:
+        with patch.object(unified_client, "is_protocol_available") as mock_available:
             mock_available.return_value = True
 
             callback = AsyncMock()
             await unified_client.start_streaming_session(callback)
 
             unified_client._stream_client.connect.assert_called_once()
-            unified_client._stream_client.subscribe.assert_called_once_with("agent_events", callback)
+            unified_client._stream_client.subscribe.assert_called_once_with(
+                "agent_events", callback
+            )
 
     @pytest.mark.asyncio
     async def test_start_streaming_session_not_available(self, unified_client):
         """Testet Streaming-Session-Start wenn nicht verfügbar."""
-        with patch.object(unified_client, 'is_protocol_available') as mock_available:
+        with patch.object(unified_client, "is_protocol_available") as mock_available:
             mock_available.return_value = False
 
             with pytest.raises(ProtocolError, match="Stream-Protokoll nicht verfügbar"):
@@ -395,7 +423,7 @@ class TestUnifiedKeiAgentClientRefactored:
     @pytest.mark.asyncio
     async def test_health_check_high_level_api(self, unified_client):
         """Testet High-Level Health-Check API."""
-        with patch.object(unified_client, 'execute_agent_operation') as mock_execute:
+        with patch.object(unified_client, "execute_agent_operation") as mock_execute:
             mock_execute.return_value = {"status": "healthy", "version": "1.0.0"}
 
             result = await unified_client.health_check()
@@ -406,11 +434,17 @@ class TestUnifiedKeiAgentClientRefactored:
     @pytest.mark.asyncio
     async def test_register_agent_high_level_api(self, unified_client):
         """Testet High-Level Agent-Registration API."""
-        with patch.object(unified_client, 'execute_agent_operation') as mock_execute:
-            mock_execute.return_value = {"agent_id": "registered-agent", "status": "registered"}
+        with patch.object(unified_client, "execute_agent_operation") as mock_execute:
+            mock_execute.return_value = {
+                "agent_id": "registered-agent",
+                "status": "registered",
+            }
 
             result = await unified_client.register_agent(
-                "Test Agent", "1.0.0", "Test description", ["capability1", "capability2"]
+                "Test Agent",
+                "1.0.0",
+                "Test description",
+                ["capability1", "capability2"],
             )
 
             assert result["agent_id"] == "registered-agent"

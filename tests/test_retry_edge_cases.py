@@ -1,4 +1,5 @@
 """Edge-Case-Tests für RetryPolicy-Verhalten."""
+
 from __future__ import annotations
 
 import asyncio
@@ -13,10 +14,13 @@ from unified_client import UnifiedKeiAgentClient
 
 class AlwaysFailRPC:
     """Hilfsklasse: schlägt immer fehl."""
+
     async def __aenter__(self):
         return self
+
     async def __aexit__(self, exc_type, exc, tb):
         return False
+
     async def _rpc_call(self, op: str, payload):
         raise RuntimeError("fail")
 
@@ -38,8 +42,13 @@ async def test_max_delay_cap(monkeypatch):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "rpc": RetryConfig(max_attempts=4, base_delay=10.0, max_delay=5.0, jitter=False,
-                                strategy=RetryStrategy.FIXED_DELAY)
+            "rpc": RetryConfig(
+                max_attempts=4,
+                base_delay=10.0,
+                max_delay=5.0,
+                jitter=False,
+                strategy=RetryStrategy.FIXED_DELAY,
+            )
         },
     )
     client = UnifiedKeiAgentClient(cfg)
@@ -70,8 +79,13 @@ async def test_exponential_base_edge_cases(monkeypatch):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "rpc": RetryConfig(max_attempts=4, base_delay=0.5, exponential_base=1.0, jitter=False,
-                                strategy=RetryStrategy.EXPONENTIAL_BACKOFF)
+            "rpc": RetryConfig(
+                max_attempts=4,
+                base_delay=0.5,
+                exponential_base=1.0,
+                jitter=False,
+                strategy=RetryStrategy.EXPONENTIAL_BACKOFF,
+            )
         },
     )
     c1 = UnifiedKeiAgentClient(cfg1)
@@ -88,8 +102,13 @@ async def test_exponential_base_edge_cases(monkeypatch):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "rpc": RetryConfig(max_attempts=4, base_delay=0.5, exponential_base=10.0, jitter=False,
-                                strategy=RetryStrategy.EXPONENTIAL_BACKOFF)
+            "rpc": RetryConfig(
+                max_attempts=4,
+                base_delay=0.5,
+                exponential_base=10.0,
+                jitter=False,
+                strategy=RetryStrategy.EXPONENTIAL_BACKOFF,
+            )
         },
     )
     c2 = UnifiedKeiAgentClient(cfg2)
@@ -117,8 +136,12 @@ async def test_jitter_behavior(monkeypatch):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "rpc": RetryConfig(max_attempts=4, base_delay=1.0, jitter=True,
-                                strategy=RetryStrategy.FIXED_DELAY)
+            "rpc": RetryConfig(
+                max_attempts=4,
+                base_delay=1.0,
+                jitter=True,
+                strategy=RetryStrategy.FIXED_DELAY,
+            )
         },
     )
     c = UnifiedKeiAgentClient(cfg)
@@ -141,8 +164,12 @@ async def test_max_attempts_boundaries(monkeypatch):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "rpc": RetryConfig(max_attempts=1, base_delay=1.0, jitter=False,
-                                strategy=RetryStrategy.FIXED_DELAY)
+            "rpc": RetryConfig(
+                max_attempts=1,
+                base_delay=1.0,
+                jitter=False,
+                strategy=RetryStrategy.FIXED_DELAY,
+            )
         },
     )
     c1 = UnifiedKeiAgentClient(cfg1)
@@ -152,9 +179,11 @@ async def test_max_attempts_boundaries(monkeypatch):
 
     # max_attempts=100 → viele Retries; wir prüfen, dass mind. 3 Delays erzeugt werden
     delays: List[float] = []
+
     async def fake_sleep(delay: float):
         delays.append(delay)
         return None
+
     monkeypatch.setattr(asyncio, "sleep", fake_sleep)
 
     cfg2 = AgentClientConfig(
@@ -163,8 +192,12 @@ async def test_max_attempts_boundaries(monkeypatch):
         agent_id="a",
         tracing=TracingConfig(enabled=False),
         protocol_retry_policies={
-            "rpc": RetryConfig(max_attempts=100, base_delay=0.01, jitter=False,
-                                strategy=RetryStrategy.FIXED_DELAY)
+            "rpc": RetryConfig(
+                max_attempts=100,
+                base_delay=0.01,
+                jitter=False,
+                strategy=RetryStrategy.FIXED_DELAY,
+            )
         },
     )
     c2 = UnifiedKeiAgentClient(cfg2)

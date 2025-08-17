@@ -15,11 +15,14 @@ from protocol_clients import (
     KEIRPCClient,
     KEIStreamClient,
     KEIBusClient,
-    KEIMCPClient
+    KEIMCPClient,
 )
 from security_manager import SecurityManager
 from protocol_types import SecurityConfig, AuthType
 from exceptions import ProtocolError, CommunicationError
+
+# Markiere alle Tests in dieser Datei als Protokoll-Tests
+pytestmark = pytest.mark.protocol
 
 
 class TestBaseProtocolClient:
@@ -28,10 +31,7 @@ class TestBaseProtocolClient:
     @pytest.fixture
     def security_manager(self):
         """Erstellt Mock Security Manager."""
-        config = SecurityConfig(
-            auth_type=AuthType.BEARER,
-            api_token="test-token"
-        )
+        config = SecurityConfig(auth_type=AuthType.BEARER, api_token="test-token")
         return SecurityManager(config)
 
     def test_initialization(self, security_manager):
@@ -40,8 +40,11 @@ class TestBaseProtocolClient:
         # Aber wir können die __init__ Methode testen
 
         class TestClient(BaseProtocolClient):
-            async def __aenter__(self): pass
-            async def __aexit__(self, exc_type, exc_val, exc_tb): pass
+            async def __aenter__(self):
+                pass
+
+            async def __aexit__(self, exc_type, exc_val, exc_tb):
+                pass
 
         client = TestClient("https://test.com", security_manager)
 
@@ -50,9 +53,13 @@ class TestBaseProtocolClient:
 
     def test_base_url_normalization(self, security_manager):
         """Testet URL-Normalisierung (entfernt trailing slash)."""
+
         class TestClient(BaseProtocolClient):
-            async def __aenter__(self): pass
-            async def __aexit__(self, exc_type, exc_val, exc_tb): pass
+            async def __aenter__(self):
+                pass
+
+            async def __aexit__(self, exc_type, exc_val, exc_tb):
+                pass
 
         client = TestClient("https://test.com/", security_manager)
         assert client.base_url == "https://test.com"
@@ -60,9 +67,13 @@ class TestBaseProtocolClient:
     @pytest.mark.asyncio
     async def test_get_auth_headers_success(self, security_manager):
         """Testet erfolgreichen Auth-Header-Abruf."""
+
         class TestClient(BaseProtocolClient):
-            async def __aenter__(self): pass
-            async def __aexit__(self, exc_type, exc_val, exc_tb): pass
+            async def __aenter__(self):
+                pass
+
+            async def __aexit__(self, exc_type, exc_val, exc_tb):
+                pass
 
         client = TestClient("https://test.com", security_manager)
 
@@ -72,14 +83,20 @@ class TestBaseProtocolClient:
     @pytest.mark.asyncio
     async def test_get_auth_headers_error(self, security_manager):
         """Testet Auth-Header-Abruf mit Fehler."""
+
         class TestClient(BaseProtocolClient):
-            async def __aenter__(self): pass
-            async def __aexit__(self, exc_type, exc_val, exc_tb): pass
+            async def __aenter__(self):
+                pass
+
+            async def __aexit__(self, exc_type, exc_val, exc_tb):
+                pass
 
         client = TestClient("https://test.com", security_manager)
 
         # Mock Security Manager um Fehler zu werfen
-        with patch.object(security_manager, 'get_auth_headers', side_effect=Exception("Auth error")):
+        with patch.object(
+            security_manager, "get_auth_headers", side_effect=Exception("Auth error")
+        ):
             with pytest.raises(ProtocolError, match="Authentifizierung fehlgeschlagen"):
                 await client._get_auth_headers()
 
@@ -90,10 +107,7 @@ class TestKEIRPCClient:
     @pytest.fixture
     def security_manager(self):
         """Erstellt Security Manager für Tests."""
-        config = SecurityConfig(
-            auth_type=AuthType.BEARER,
-            api_token="test-token"
-        )
+        config = SecurityConfig(auth_type=AuthType.BEARER, api_token="test-token")
         return SecurityManager(config)
 
     @pytest.fixture
@@ -106,10 +120,10 @@ class TestKEIRPCClient:
         """Testet Async Context Manager."""
         async with rpc_client as client:
             assert client._client is not None
-            assert hasattr(client._client, 'post')
+            assert hasattr(client._client, "post")
 
     @pytest.mark.asyncio
-    @patch('httpx.AsyncClient')
+    @patch("httpx.AsyncClient")
     async def test_plan_operation_success(self, mock_client, rpc_client):
         """Testet erfolgreiche Plan-Operation."""
         # Mock HTTP-Response
@@ -117,7 +131,7 @@ class TestKEIRPCClient:
         mock_response.json.return_value = {
             "plan_id": "plan-123",
             "steps": ["step1", "step2", "step3"],
-            "status": "created"
+            "status": "created",
         }
         mock_response.raise_for_status.return_value = None
 
@@ -138,14 +152,14 @@ class TestKEIRPCClient:
         assert "/api/v1/rpc/plan" in str(call_args)
 
     @pytest.mark.asyncio
-    @patch('httpx.AsyncClient')
+    @patch("httpx.AsyncClient")
     async def test_act_operation_success(self, mock_client, rpc_client):
         """Testet erfolgreiche Act-Operation."""
         mock_response = MagicMock()
         mock_response.json.return_value = {
             "action_id": "action-456",
             "result": "completed",
-            "output": {"file_path": "/tmp/report.pdf"}
+            "output": {"file_path": "/tmp/report.pdf"},
         }
         mock_response.raise_for_status.return_value = None
 
@@ -160,14 +174,14 @@ class TestKEIRPCClient:
         assert result["result"] == "completed"
 
     @pytest.mark.asyncio
-    @patch('httpx.AsyncClient')
+    @patch("httpx.AsyncClient")
     async def test_observe_operation_success(self, mock_client, rpc_client):
         """Testet erfolgreiche Observe-Operation."""
         mock_response = MagicMock()
         mock_response.json.return_value = {
             "observation_id": "obs-789",
             "type": "environment",
-            "data": {"cpu_usage": 45.2, "memory_usage": 67.8}
+            "data": {"cpu_usage": 45.2, "memory_usage": 67.8},
         }
         mock_response.raise_for_status.return_value = None
 
@@ -182,7 +196,7 @@ class TestKEIRPCClient:
         assert result["type"] == "environment"
 
     @pytest.mark.asyncio
-    @patch('httpx.AsyncClient')
+    @patch("httpx.AsyncClient")
     async def test_explain_operation_success(self, mock_client, rpc_client):
         """Testet erfolgreiche Explain-Operation."""
         mock_response = MagicMock()
@@ -190,7 +204,7 @@ class TestKEIRPCClient:
             "explanation_id": "exp-101",
             "query": "Why did the action fail?",
             "explanation": "The action failed due to insufficient permissions.",
-            "reasoning": ["Permission check failed", "User lacks admin role"]
+            "reasoning": ["Permission check failed", "User lacks admin role"],
         }
         mock_response.raise_for_status.return_value = None
 
@@ -199,7 +213,9 @@ class TestKEIRPCClient:
         mock_client.return_value = mock_client_instance
 
         async with rpc_client as client:
-            result = await client.explain("Why did the action fail?", {"action_id": "action-456"})
+            result = await client.explain(
+                "Why did the action fail?", {"action_id": "action-456"}
+            )
 
         assert result["explanation_id"] == "exp-101"
         assert "insufficient permissions" in result["explanation"]
@@ -211,7 +227,7 @@ class TestKEIRPCClient:
             await rpc_client._rpc_call("plan", {})
 
     @pytest.mark.asyncio
-    @patch('httpx.AsyncClient')
+    @patch("httpx.AsyncClient")
     async def test_rpc_call_http_error(self, mock_client, rpc_client):
         """Testet RPC-Call mit HTTP-Fehler."""
         import httpx
@@ -230,7 +246,7 @@ class TestKEIRPCClient:
                 await client.plan("Test objective")
 
     @pytest.mark.asyncio
-    @patch('httpx.AsyncClient')
+    @patch("httpx.AsyncClient")
     async def test_rpc_call_network_error(self, mock_client, rpc_client):
         """Testet RPC-Call mit Netzwerkfehler."""
         import httpx
@@ -250,10 +266,7 @@ class TestKEIStreamClient:
     @pytest.fixture
     def security_manager(self):
         """Erstellt Security Manager für Tests."""
-        config = SecurityConfig(
-            auth_type=AuthType.BEARER,
-            api_token="test-token"
-        )
+        config = SecurityConfig(auth_type=AuthType.BEARER, api_token="test-token")
         return SecurityManager(config)
 
     @pytest.fixture
@@ -264,8 +277,8 @@ class TestKEIStreamClient:
     @pytest.mark.asyncio
     async def test_context_manager(self, stream_client):
         """Testet Async Context Manager."""
-        with patch.object(stream_client, 'connect') as mock_connect:
-            with patch.object(stream_client, 'disconnect') as mock_disconnect:
+        with patch.object(stream_client, "connect") as mock_connect:
+            with patch.object(stream_client, "disconnect") as mock_disconnect:
                 async with stream_client:
                     pass
 
@@ -278,7 +291,9 @@ class TestKEIStreamClient:
         mock_websocket = AsyncMock()
 
         # Mock websockets.connect direkt
-        with patch('protocol_clients.websockets.connect', new_callable=AsyncMock) as mock_connect:
+        with patch(
+            "protocol_clients.websockets.connect", new_callable=AsyncMock
+        ) as mock_connect:
             mock_connect.return_value = mock_websocket
 
             await stream_client.connect()
@@ -288,7 +303,7 @@ class TestKEIStreamClient:
             mock_connect.assert_called_once()
 
     @pytest.mark.asyncio
-    @patch('websockets.connect')
+    @patch("websockets.connect")
     async def test_connect_error(self, mock_connect, stream_client):
         """Testet WebSocket-Verbindungsfehler."""
         mock_connect.side_effect = Exception("Connection failed")
@@ -348,10 +363,7 @@ class TestKEIBusClient:
     @pytest.fixture
     def security_manager(self):
         """Erstellt Security Manager für Tests."""
-        config = SecurityConfig(
-            auth_type=AuthType.BEARER,
-            api_token="test-token"
-        )
+        config = SecurityConfig(auth_type=AuthType.BEARER, api_token="test-token")
         return SecurityManager(config)
 
     @pytest.fixture
@@ -360,14 +372,14 @@ class TestKEIBusClient:
         return KEIBusClient("https://test.com", security_manager)
 
     @pytest.mark.asyncio
-    @patch('httpx.AsyncClient')
+    @patch("httpx.AsyncClient")
     async def test_publish_success(self, mock_client, bus_client):
         """Testet erfolgreiches Message-Publish."""
         mock_response = MagicMock()
         mock_response.json.return_value = {
             "message_id": "msg-123",
             "status": "published",
-            "timestamp": "2024-01-01T12:00:00Z"
+            "timestamp": "2024-01-01T12:00:00Z",
         }
         mock_response.raise_for_status.return_value = None
 
@@ -378,7 +390,7 @@ class TestKEIBusClient:
         message = {
             "type": "agent_message",
             "target": "agent-456",
-            "payload": {"action": "process_data"}
+            "payload": {"action": "process_data"},
         }
 
         async with bus_client as client:
@@ -388,14 +400,14 @@ class TestKEIBusClient:
         assert result["status"] == "published"
 
     @pytest.mark.asyncio
-    @patch('httpx.AsyncClient')
+    @patch("httpx.AsyncClient")
     async def test_subscribe_success(self, mock_client, bus_client):
         """Testet erfolgreiches Topic-Subscribe."""
         mock_response = MagicMock()
         mock_response.json.return_value = {
             "subscription_id": "sub-789",
             "topic": "agent_events",
-            "status": "subscribed"
+            "status": "subscribed",
         }
         mock_response.raise_for_status.return_value = None
 
@@ -416,10 +428,7 @@ class TestKEIMCPClient:
     @pytest.fixture
     def security_manager(self):
         """Erstellt Security Manager für Tests."""
-        config = SecurityConfig(
-            auth_type=AuthType.BEARER,
-            api_token="test-token"
-        )
+        config = SecurityConfig(auth_type=AuthType.BEARER, api_token="test-token")
         return SecurityManager(config)
 
     @pytest.fixture
@@ -428,7 +437,7 @@ class TestKEIMCPClient:
         return KEIMCPClient("https://test.com", security_manager)
 
     @pytest.mark.asyncio
-    @patch('httpx.AsyncClient')
+    @patch("httpx.AsyncClient")
     async def test_discover_tools_success(self, mock_client, mcp_client):
         """Testet erfolgreiche Tool-Discovery."""
         mock_response = MagicMock()
@@ -436,13 +445,13 @@ class TestKEIMCPClient:
             {
                 "name": "calculator",
                 "description": "Mathematical calculator tool",
-                "parameters": {"expression": "string"}
+                "parameters": {"expression": "string"},
             },
             {
                 "name": "file_reader",
                 "description": "Read file contents",
-                "parameters": {"path": "string"}
-            }
+                "parameters": {"path": "string"},
+            },
         ]
         mock_response.raise_for_status.return_value = None
 
@@ -458,7 +467,7 @@ class TestKEIMCPClient:
         assert tools[1]["name"] == "file_reader"
 
     @pytest.mark.asyncio
-    @patch('httpx.AsyncClient')
+    @patch("httpx.AsyncClient")
     async def test_use_tool_success(self, mock_client, mcp_client):
         """Testet erfolgreiche Tool-Ausführung."""
         mock_response = MagicMock()
@@ -466,7 +475,7 @@ class TestKEIMCPClient:
             "tool_execution_id": "exec-456",
             "tool_name": "calculator",
             "result": 42,
-            "status": "completed"
+            "status": "completed",
         }
         mock_response.raise_for_status.return_value = None
 
