@@ -97,40 +97,51 @@ jobs:
 
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-          # Pre-Release Check
-          if [[ "$VERSION" =~ (alpha|beta|rc) ]]; then
-            echo "is_prerelease=true" >> $GITHUB_OUTPUT
-            echo "🔖 Pre-Release Version: $VERSION"
-          else
-            echo "is_prerelease=false" >> $GITHUB_OUTPUT
-            echo "🔖 Release Version: $VERSION"
-          fi
+          # Pre-Release Check über packaging (PEP 440)
+          export VERSION
+          python - <<'PY'
+import os
+from packaging.version import Version
+
+v = os.environ.get('VERSION', '').strip()
+is_pr = Version(v).is_prerelease
+print(f"🔖 Pre-Release Version: {v}" if is_pr else f"🔖 Release Version: {v}")
+with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+    f.write(f"is_prerelease={'true' if is_pr else 'false'}\n")
+PY
 
       # Version in pyproject.toml validieren
       - name: ✅ Validate Version
         run: |
           # Python 3.11+ hat tomllib, für ältere Versionen verwenden wir toml
-          PYPROJECT_VERSION=$(python -c "
-          try:
-              import tomllib
-              with open('pyproject.toml', 'rb') as f:
-                  data = tomllib.load(f)
-          except ImportError:
-              import toml
-              data = toml.load('pyproject.toml')
-          print(data['project']['version'])
-          ")
-          TAG_VERSION="${{ steps.version.outputs.version }}"
+          export TAG_VERSION="${{ steps.version.outputs.version }}"
+          python - <<'PY'
+import os, sys
+try:
+    import tomllib
+    with open('pyproject.toml', 'rb') as f:
+        data = tomllib.load(f)
+except Exception:
+    import toml
+    data = toml.load('pyproject.toml')
 
-          echo "📋 pyproject.toml Version: $PYPROJECT_VERSION"
-          echo "📋 Tag Version: $TAG_VERSION"
+py_ver = data['project']['version']
+tag_ver = os.environ['TAG_VERSION']
 
-          if [[ "$PYPROJECT_VERSION" != "$TAG_VERSION" ]]; then
-            echo "❌ Version-Mismatch zwischen pyproject.toml ($PYPROJECT_VERSION) und Tag ($TAG_VERSION)"
-            exit 1
-          fi
+from packaging.version import Version
+py_norm = Version(py_ver)
+tag_norm = Version(tag_ver)
 
-          echo "✅ Version validiert: $TAG_VERSION"
+print(f"📋 pyproject.toml Version: {py_ver}")
+print(f"📋 Tag Version: {tag_ver}")
+print(f"📋 Normalisiert (PEP 440): pyproject={py_norm}, tag={tag_norm}")
+
+if py_norm != tag_norm:
+    print(f"❌ Version-Mismatch zwischen pyproject.toml ({py_ver}) und Tag ({tag_ver})", file=sys.stderr)
+    sys.exit(1)
+
+print(f"✅ Version validiert: {tag_norm}")
+PY
 
       # Qualitätsprüfungen
       - name: 🔍 Quality Checks
@@ -216,7 +227,7 @@ jobs:
 
     environment:
       name: test-pypi
-      url: https://test.pypi.org/project/kei-agent-sdk/
+      url: https://test.pypi.org/project/kei_agent_py_sdk/
 
     steps:
       # Build-Artefakte herunterladen
@@ -240,7 +251,7 @@ jobs:
           echo "✅ Teste Installation von TestPyPI..."
           python -m pip install --index-url https://test.pypi.org/simple/ \
             --extra-index-url https://pypi.org/simple/ \
-            kei-agent-sdk==${{ needs.validate-release.outputs.version }}
+            kei_agent_py_sdk==${{ needs.validate-release.outputs.version }}
 
           # Basis-Import testen
           python -c "import kei_agent; print(f'✅ Import erfolgreich: {kei_agent.__version__}')"
@@ -258,7 +269,7 @@ jobs:
 
     environment:
       name: pypi
-      url: https://pypi.org/project/kei-agent-sdk/
+      url: https://pypi.org/project/kei_agent_py_sdk/
 
     steps:
       # Build-Artefakte herunterladen
@@ -280,7 +291,7 @@ jobs:
         run: |
           echo "✅ Teste Installation von PyPI..."
           sleep 60  # Warten bis Package verfügbar ist
-          python -m pip install kei-agent-sdk==${{ needs.validate-release.outputs.version }}
+          python -m pip install kei_agent_py_sdk==${{ needs.validate-release.outputs.version }}
 
           # Basis-Import testen
           python -c "import kei_agent; print(f'✅ Import erfolgreich: {kei_agent.__version__}')"
@@ -345,8 +356,8 @@ jobs:
 
           ## 🔗 Links
 
-          - [PyPI Package](https://pypi.org/project/kei-agent-sdk/$VERSION/)
-          - [GitHub Repository](https://github.com/oscharko/kei-agent-python-sdk)
+          - [PyPI Package](https://pypi.org/project/kei_agent_py_sdk/$VERSION/)
+          - [GitHub Repository](https://github.com/oscharko-dev/kei-agent-py-sdk)
           EOF
 
           echo "release_notes_file=release_notes.md" >> $GITHUB_OUTPUT
