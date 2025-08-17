@@ -6,42 +6,42 @@ name: 🔄 Continuous Integration
 on:
   # Trigger bei Push auf main/master Branch
   push:
-    branches: [ main, master, develop ]
+    branches: [main, master, develop]
     paths-ignore:
-      - 'docs/**'
-      - '*.md'
-      - 'LICENSE'
-      - '.gitignore'
-      - 'mkdocs.yml'
+      - "docs/**"
+      - "*.md"
+      - "LICENSE"
+      - ".gitignore"
+      - "mkdocs.yml"
 
   # Trigger bei Pull Requests
   pull_request:
-    branches: [ main, master, develop ]
+    branches: [main, master, develop]
     paths-ignore:
-      - 'docs/**'
-      - '*.md'
-      - 'LICENSE'
-      - '.gitignore'
+      - "docs/**"
+      - "*.md"
+      - "LICENSE"
+      - ".gitignore"
 
   # Manueller Trigger
   workflow_dispatch:
     inputs:
       run_performance_tests:
-        description: 'Run performance tests'
+        description: "Run performance tests"
         required: false
         default: false
         type: boolean
       python_version:
-        description: 'Python version for manual run'
+        description: "Python version for manual run"
         required: false
-        default: '3.11'
+        default: "3.11"
         type: choice
         options:
-          - '3.8'
-          - '3.9'
-          - '3.10'
-          - '3.11'
-          - '3.12'
+          - "3.8"
+          - "3.9"
+          - "3.10"
+          - "3.11"
+          - "3.12"
 
 # Berechtigungen
 permissions:
@@ -71,8 +71,8 @@ jobs:
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-          cache: 'pip'
+          python-version: "3.11"
+          cache: "pip"
 
       # Dependencies installieren
       - name: 📦 Install Dependencies
@@ -122,7 +122,7 @@ jobs:
         run: |
           echo "🛡️ Führe Security-Scan aus..."
           make security-scan
-        continue-on-error: true  # Security-Warnungen sollen Build nicht stoppen
+        continue-on-error: true # Security-Warnungen sollen Build nicht stoppen
 
       # Upload Security Report
       - name: 📤 Upload Security Report
@@ -143,17 +143,17 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         exclude:
           # Windows und macOS nur für LTS-Versionen testen
           - os: windows-latest
-            python-version: '3.9'
+            python-version: "3.9"
           - os: windows-latest
-            python-version: '3.10'
+            python-version: "3.10"
           - os: macos-latest
-            python-version: '3.9'
+            python-version: "3.9"
           - os: macos-latest
-            python-version: '3.10'
+            python-version: "3.10"
 
     steps:
       # Repository auschecken
@@ -165,7 +165,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'pip'
+          cache: "pip"
 
       # Dependencies installieren
       - name: 📦 Install Dependencies
@@ -212,8 +212,8 @@ jobs:
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-          cache: 'pip'
+          python-version: "3.11"
+          cache: "pip"
 
       # Dependencies installieren
       - name: 📦 Install Dependencies
@@ -280,7 +280,7 @@ jobs:
       - name: 📤 Upload Coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
-          file: ./coverage.xml
+          files: ./coverage.xml
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
@@ -307,7 +307,7 @@ jobs:
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       # Safety Check für Dependencies
       - name: 🔒 Safety Check
@@ -341,8 +341,8 @@ jobs:
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-          cache: 'pip'
+          python-version: "3.11"
+          cache: "pip"
 
       # Dependencies installieren
       - name: 📦 Install Dependencies
@@ -379,7 +379,14 @@ jobs:
   ci-summary:
     name: 📋 CI Summary
     runs-on: ubuntu-latest
-    needs: [code-quality, test-matrix, comprehensive-tests, dependency-security, build-test]
+    needs:
+      [
+        code-quality,
+        test-matrix,
+        comprehensive-tests,
+        dependency-security,
+        build-test,
+      ]
     if: always()
 
     steps:
