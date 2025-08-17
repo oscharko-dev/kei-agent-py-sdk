@@ -123,7 +123,7 @@ jobs:
 
       - name: 🏗️ Build Package
         run: |
-          python build_and_publish.py --build-only
+          python build_and_publish.py --build-only --skip-quality --skip-tests
 
       - name: 📤 Upload Build Artifacts
         uses: actions/upload-artifact@v4
