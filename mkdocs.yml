@@ -97,9 +97,6 @@ plugins:
       minify_js: true
       htmlmin_opts:
         remove_comments: true
-  - redirects:
-      redirect_maps:
-        "README.md": "index.md"
 
 # Markdown-Extensions
 markdown_extensions:
