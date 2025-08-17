@@ -14,6 +14,9 @@ from client import AgentClientConfig
 from protocol_types import ProtocolType, ProtocolConfig, SecurityConfig, AuthType
 from exceptions import KeiSDKError, ProtocolError
 
+# Markiere alle Tests in dieser Datei als Refactored-Tests
+pytestmark = pytest.mark.refactored
+
 
 class TestUnifiedKeiAgentClientRefactored:
     """Tests für refactored UnifiedKeiAgentClient."""
