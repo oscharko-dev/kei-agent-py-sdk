@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import List
 import json
 import time
+import os
 
 # Basis-Verzeichnis
 BASE_DIR = Path(__file__).parent.absolute()
@@ -230,7 +231,10 @@ def validate_package_metadata():
 
     # Version aus pyproject.toml extrahieren
     try:
-        import tomli
+        try:
+            import tomllib as tomli  # type: ignore[attr-defined]
+        except Exception:
+            import tomli  # type: ignore[no-redef]
 
         with open(pyproject_file, "rb") as f:
             pyproject_data = tomli.load(f)
@@ -279,14 +283,22 @@ def check_package():
         print("❌ Keine Distribution-Dateien gefunden")
         return False
 
-    # Twine Check (temporär deaktiviert wegen License-Metadaten-Problem)
-    # result = run_command(
-    #     ["python3", "-m", "twine", "check"] + [str(f) for f in dist_files],
-    #     "Twine Package Check",
-    # )
-
-    print("✅ Package Check übersprungen (Twine-License-Problem)")
-    return True  # result.returncode == 0
+    # Twine Check – robust gegen fehlendes/defektes Twine
+    try:
+        result = run_command(
+            ["python3", "-m", "twine", "check"] + [str(f) for f in dist_files],
+            "Twine Package Check",
+            check=False,
+        )
+        if result.returncode != 0:
+            print(
+                "⚠️ Twine Package Check meldet Probleme – wird ignoriert (nicht blockierend)"
+            )
+        else:
+            print("✅ Twine Package Check erfolgreich")
+    except Exception as e:
+        print(f"⚠️ Twine Check übersprungen: {e}")
+    return True
 
 
 def create_build_report():
@@ -303,7 +315,10 @@ def create_build_report():
 
     # Package-Info
     try:
-        import tomli
+        try:
+            import tomllib as tomli  # type: ignore[attr-defined]
+        except Exception:
+            import tomli  # type: ignore[no-redef]
 
         with open(BASE_DIR / "pyproject.toml", "rb") as f:
             pyproject_data = tomli.load(f)
@@ -361,15 +376,18 @@ def publish_to_testpypi():
         return False
 
 
-def publish_to_pypi():
+def publish_to_pypi(skip_confirm: bool = False) -> bool:
     """Veröffentlicht auf PyPI."""
     print("\n🚀 Veröffentliche auf PyPI...")
     print("⚠️ WARNUNG: Dies veröffentlicht das Package auf dem produktiven PyPI!")
 
-    confirm = input("Sind Sie sicher? Geben Sie 'yes' ein um fortzufahren: ")
-    if confirm.lower() != "yes":
-        print("❌ Veröffentlichung abgebrochen")
-        return False
+    # In CI-Umgebungen oder wenn 'skip_confirm' True ist, keine Abfrage
+    is_ci = os.environ.get("CI") == "true" or os.environ.get("GITHUB_ACTIONS") == "true"
+    if not skip_confirm and not is_ci:
+        confirm = input("Sind Sie sicher? Geben Sie 'yes' ein um fortzufahren: ")
+        if confirm.lower() != "yes":
+            print("❌ Veröffentlichung abgebrochen")
+            return False
 
     dist_files = list(DIST_DIR.glob("*"))
     if not dist_files:
@@ -407,6 +425,9 @@ def main():
     )
     parser.add_argument(
         "--publish-prod", action="store_true", help="Auf PyPI veröffentlichen"
+    )
+    parser.add_argument(
+        "--yes", action="store_true", help="Nicht interaktiv bestätigen (für CI)"
     )
 
     args = parser.parse_args()
@@ -454,7 +475,7 @@ def main():
         elif args.publish_test:
             publish_to_testpypi()
         elif args.publish_prod:
-            publish_to_pypi()
+            publish_to_pypi(skip_confirm=args.yes)
         else:
             print("\n✅ Build erfolgreich abgeschlossen!")
             print("📦 Distribution-Packages bereit für Veröffentlichung")
