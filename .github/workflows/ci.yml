@@ -75,6 +75,7 @@ jobs:
 
       # Dependencies installieren
       - name: 📦 Install Dependencies
+        shell: bash
         run: |
           set -x
           python -m pip install --upgrade pip
@@ -167,6 +168,7 @@ jobs:
 
       # Dependencies installieren
       - name: 📦 Install Dependencies
+        shell: bash
         run: |
           set -x
           python -m pip install --upgrade pip
@@ -214,6 +216,7 @@ jobs:
 
       # Dependencies installieren
       - name: 📦 Install Dependencies
+        shell: bash
         run: |
           set -x
           python -m pip install --upgrade pip
@@ -342,6 +345,7 @@ jobs:
 
       # Dependencies installieren
       - name: 📦 Install Dependencies
+        shell: bash
         run: |
           set -x
           python -m pip install --upgrade pip
