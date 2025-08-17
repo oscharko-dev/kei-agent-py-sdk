@@ -1,36 +1,41 @@
 # MkDocs-Konfiguration für KEI-Agent Python SDK
 site_name: KEI-Agent Python SDK
-site_description: Enterprise-Grade Python SDK für KEI-Agent Framework mit Multi-Protocol Support
-site_author: KEI-Agent-Framework Team
-site_url: https://docs.kei-framework.com
+site_description: Enterprise-Grade Python SDK für Keiko-Personal-Assistant mit Multi-Protocol Support
+site_author: Keiko-Personal-Assistant Developer Team
+site_url: https://oscharko-dev.github.io/kei-agent-py-sdk/
 
 # Repository-Informationen
-repo_name: kei-framework/kei-agent
-repo_url: https://github.com/kei-framework/kei-agent
+repo_name: kei-agent-py-sdk
+repo_url: https://github.com/oscharko-dev/kei-agent-py-sdk
 edit_uri: edit/main/sdk/python/kei_agent/docs/
 
 # Copyright
-copyright: Copyright &copy; 2024 KEI-Agent-Framework Team
+copyright: Copyright &copy; 2025 Keiko-Personal-Assistant Developer Team
 
 # Konfiguration
 theme:
   name: material
   language: de
   palette:
-    # Palette toggle for light mode
-    - scheme: default
-      primary: blue
-      accent: blue
+  palette:
+    - media: "(prefers-color-scheme)"
       toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-    # Palette toggle for dark mode
-    - scheme: slate
-      primary: blue
-      accent: blue
-      toggle:
-        icon: material/brightness-4
+        icon: material/link
         name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch-off
+        name: Switch to system preference
   font:
     text: Roboto
     code: Roboto Mono
@@ -51,10 +56,10 @@ theme:
     - content.tooltips
     - toc.follow
     - toc.integrate
+  favicon: assets/Logo_GainAI_Keiko_DCFF4A.png
+  logo: assets/Logo_GainAI_Keiko_DCFF4A.png
   icon:
-    repo: fontawesome/brands/github
-    edit: material/pencil
-    view: material/eye
+    logo: logo
 
 # Plugins
 plugins:
@@ -146,24 +151,24 @@ markdown_extensions:
 nav:
   - Startseite: index.md
   - Erste Schritte:
-    - getting-started/index.md
-    - Installation: getting-started/installation.md
-    - Quick Start: getting-started/quickstart.md
-    - Konfiguration: getting-started/configuration.md
+      - getting-started/index.md
+      - Installation: getting-started/installation.md
+      - Quick Start: getting-started/quickstart.md
+      - Konfiguration: getting-started/configuration.md
   - Benutzerhandbuch:
-    - user-guide/index.md
-    - Basis-Konzepte: user-guide/concepts.md
+      - user-guide/index.md
+      - Basis-Konzepte: user-guide/concepts.md
   - Enterprise Features:
-    - enterprise/index.md
+      - enterprise/index.md
   - API-Referenz:
-    - api/index.md
-    - Unified Client: api/unified-client.md
+      - api/index.md
+      - Unified Client: api/unified-client.md
   - Architektur:
-    - architecture/index.md
+      - architecture/index.md
   - Beispiele:
-    - examples/index.md
+      - examples/index.md
   - Troubleshooting:
-    - troubleshooting/index.md
+      - troubleshooting/index.md
 
 # Extra CSS und JavaScript
 extra_css:

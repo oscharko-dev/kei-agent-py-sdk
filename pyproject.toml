@@ -1,5 +1,4 @@
 # pyproject.toml für KEI-Agent Python SDK
-# Moderne Python Package-Konfiguration nach PEP 518/621
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
@@ -12,11 +11,11 @@ description = "Enterprise-Grade Python SDK for KEI Agent Framework with Multi-Pr
 readme = "README.md"
 license = "MIT"
 authors = [
-    {name = "KEI-Agent-Framework Team", email = "dev@kei-agent-framework.com"},
-    {name = "Oliver Scharkowski", email = "o.scharkowski@oscharko.de"}
+    { name = "KEI-Agent-Framework Team", email = "dev@kei-agent-framework.com" },
+    { name = "Oliver Scharkowski", email = "o.scharkowski@oscharko.de" }
 ]
 maintainers = [
-    {name = "Oliver Scharkowski", email = "o.scharkowski@oscharko.de"}
+    { name = "Oliver Scharkowski", email = "o.scharkowski@oscharko.de" }
 ]
 keywords = [
     "ai", "agent", "multi-agent", "framework", "rpc", "stream", "bus", "mcp",
@@ -47,31 +46,25 @@ dependencies = [
     "aiohttp>=3.8.0,<4.0.0",
     "httpx>=0.24.0,<1.0.0",
     "websockets>=11.0.0,<12.0.0",
-
     # Async und Utilities
     "pydantic>=2.0.0,<3.0.0",
     "typing-extensions>=4.0.0",
-
     # Tracing und Monitoring
     "opentelemetry-api>=1.20.0,<2.0.0",
     "opentelemetry-sdk>=1.20.0,<2.0.0",
     "opentelemetry-exporter-jaeger>=1.20.0,<2.0.0",
     "opentelemetry-exporter-zipkin-json>=1.20.0,<2.0.0",
     "opentelemetry-propagator-b3>=1.20.0,<2.0.0",
-
     # Retry und Circuit Breaker
     "tenacity>=8.2.0,<9.0.0",
-
     # Serialization
     "msgpack>=1.0.0,<2.0.0",
-
     # Utilities
     "packaging>=21.0",
     "python-dateutil>=2.8.0",
-
     # Enterprise Features
-    "psutil>=5.9.0,<8.0.0",  # System monitoring
-    "structlog>=23.1.0,<26.0.0",  # Structured logging
+    "psutil>=5.9.0,<8.0.0", # System monitoring
+    "structlog>=23.1.0,<26.0.0", # Structured logging
 ]
 
 [project.optional-dependencies]
@@ -86,11 +79,11 @@ dev = [
     "pytest-cov>=4.1.0,<5.0.0",
     "pytest-mock>=3.11.0,<4.0.0",
     "pytest-benchmark>=4.0.0,<6.0.0",
-    "ruff>=0.1.0,<1.0.0",  # Modern linter/formatter
+    "ruff>=0.1.0,<1.0.0", # Modern linter/formatter
     "mypy>=1.5.0,<2.0.0",
-    "bandit>=1.7.0,<2.0.0",  # Security linting
+    "bandit>=1.7.0,<2.0.0", # Security linting
     "pre-commit>=3.4.0,<4.0.0",
-    "twine>=4.0.0,<5.0.0",  # Package publishing
+    "twine>=4.0.0,<5.0.0", # Package publishing
     "build>=0.10.0,<2.0.0"  # Package building
 ]
 docs = [
