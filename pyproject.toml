@@ -97,7 +97,7 @@ docs = [
     "mkdocs-redirects>=1.2.0,<2.0.0"
 ]
 all = [
-    "kei-agent-sdk[security,dev,docs]"
+    "kei_agent_py_sdk[security,dev,docs]"
 ]
 
 [project.scripts]
