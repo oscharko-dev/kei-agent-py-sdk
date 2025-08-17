@@ -108,6 +108,24 @@ test-fast: ## Führt schnelle Tests aus (ohne Coverage)
 	$(PYTHON) run_tests.py --unit --no-coverage
 
 # =====================================================================
+# Coverage
+# =====================================================================
+
+coverage-report: ## Erstellt Coverage-Report
+	@echo "$(BLUE)Erstelle Coverage-Report...$(RESET)"
+	$(PYTHON) run_tests.py --coverage-report
+
+coverage-html: ## Erstellt HTML-Coverage-Report
+	@echo "$(BLUE)Erstelle HTML-Coverage-Report...$(RESET)"
+	$(PYTHON) run_tests.py --coverage-html
+	@echo "$(GREEN)✅ HTML-Coverage-Report verfügbar unter htmlcov/index.html$(RESET)"
+
+test-cov: ## Führt Tests mit Coverage aus
+	@echo "$(BLUE)Führe Tests mit Coverage aus...$(RESET)"
+	$(PYTHON) run_tests.py --all --verbose
+	$(PYTHON) run_tests.py --coverage-report
+
+# =====================================================================
 # Code-Qualität
 # =====================================================================
 
