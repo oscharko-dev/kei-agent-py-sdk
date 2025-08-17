@@ -60,7 +60,7 @@ class SetupValidator:
     def validate_python_version(self) -> bool:
         """Validiert Python-Version."""
         version = sys.version_info
-        required_major, required_minor = 3, 9
+        required_major, required_minor = 3, 8
 
         if version.major >= required_major and version.minor >= required_minor:
             self.add_result(
@@ -182,16 +182,15 @@ class SetupValidator:
             "README.md",
             "LICENSE",
             "MANIFEST.in",
-            "kei_agent/__init__.py",
-            "kei_agent/unified_client_refactored.py",
-            "kei_agent/protocol_types.py",
-            "kei_agent/security_manager.py",
-            "kei_agent/protocol_clients.py",
-            "kei_agent/protocol_selector.py",
-            "kei_agent/enterprise_logging.py",
-            "kei_agent/health_checks.py",
-            "kei_agent/input_validation.py",
-            "tests/conftest.py",
+            "__init__.py",
+            "unified_client_refactored.py",
+            "protocol_types.py",
+            "security_manager.py",
+            "protocol_clients.py",
+            "protocol_selector.py",
+            "enterprise_logging.py",
+            "health_checks.py",
+            "input_validation.py",
             "docs/index.md",
             "mkdocs.yml",
         ]
@@ -335,38 +334,30 @@ class SetupValidator:
         # Pytest ausführen (nur Syntax-Check)
         try:
             result = subprocess.run(
-                ["python", "-m", "pytest", "--collect-only", "-q"],
+                ["python", "-m", "pytest", "-q"],
                 cwd=BASE_DIR,
                 capture_output=True,
                 text=True,
-                timeout=30,
+                timeout=300,
             )
 
             if result.returncode == 0:
-                # Anzahl Tests extrahieren
-                output_lines = result.stdout.split("\n")
-                test_count = 0
-                for line in output_lines:
-                    if "collected" in line:
-                        try:
-                            test_count = int(line.split()[0])
-                        except (ValueError, IndexError):
-                            pass
-
                 self.add_result(
                     "Tests",
                     True,
-                    f"Test-Suite gültig ({test_count} Tests in {len(test_files)} Dateien)",
+                    "Test-Suite erfolgreich ausgeführt",
                 )
                 return True
             else:
                 self.add_result(
-                    "Tests", False, f"Test-Collection fehlgeschlagen: {result.stderr}"
+                    "Tests",
+                    False,
+                    f"Tests fehlgeschlagen: {result.stdout or result.stderr}",
                 )
                 return False
 
         except subprocess.TimeoutExpired:
-            self.add_result("Tests", False, "Test-Collection Timeout")
+            self.add_result("Tests", False, "Test-Ausführung Timeout")
             return False
         except FileNotFoundError:
             self.add_result("Tests", False, "Pytest nicht installiert")

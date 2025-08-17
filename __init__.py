@@ -153,15 +153,15 @@ from utils import (
 )
 
 # Version Information
-__version__ = "0.1.0-beta.1"
+__version__ = "0.1.0b1"
 __author__ = "KEI-Agent-Framework Team"
 __email__ = "dev@kei-agent-framework.com"
 __license__ = "MIT"
 
 # Package Metadata
-__title__ = "KEI Agent SDK"
+__title__ = "kei_agent_py_sdk"
 __description__ = "Enterprise-Grade Python SDK für KEI-Agent-Framework"
-__url__ = "https://github.com/kei-agent-framework/python-sdk"
+__url__ = "https://github.com/oscharko-dev/kei-agent-py-sdk"
 
 # Compatibility Information
 __python_requires__ = ">=3.8"
@@ -283,12 +283,12 @@ __all__ = [
 ]
 
 # Version Information
-__version__ = "0.1.0-beta.1"
+__version__ = "0.1.0b1"
 __author__ = "KEI-Agent-Framework Team"
 __license__ = "MIT"
-__title__ = "kei-agent-sdk"
+__title__ = "kei_agent_py_sdk"
 __description__ = "KEI-Agent Python SDK - Enterprise-Grade Multi-Agent Framework"
-__url__ = "https://github.com/oscharko/keiko-personal-assistant"
+__url__ = "https://github.com/oscharko-dev/kei-agent-py-sdk"
 __email__ = "dev@kei-agent-framework.com"
 
 

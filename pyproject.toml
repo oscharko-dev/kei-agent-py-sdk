@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kei_agent_py_sdk"
-version = "0.1.0-beta.1"
+version = "0.1.0b1"
 description = "Enterprise-Grade Python SDK for Keiko-Personal-Assistant Platform with Multi-Protocol Support and Comprehensive Documentation"
 readme = "README.md"
 license = "MIT"
@@ -64,6 +64,9 @@ dependencies = [
     # Enterprise Features
     "psutil>=5.9.0,<8.0.0", # System monitoring
     "structlog>=23.1.0,<26.0.0", # Structured logging
+    # CLI
+    "click>=8.0,<9.0",
+    "rich>=13.0,<14.0",
 ]
 
 [project.optional-dependencies]

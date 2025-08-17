@@ -1,9 +1,9 @@
 # KEI-Agent Python SDK
 
-[![PyPI version](https://badge.fury.io/py/kei-agent-sdk.svg)](https://badge.fury.io/py/kei-agent-sdk)
-[![Python Support](https://img.shields.io/pypi/pyversions/kei-agent-sdk.svg)](https://pypi.org/project/kei-agent-sdk/)
+[![PyPI version](https://img.shields.io/pypi/v/kei_agent_py_sdk.svg)](https://pypi.org/project/kei_agent_py_sdk/)
+[![Python Support](https://img.shields.io/pypi/pyversions/kei_agent_py_sdk.svg)](https://pypi.org/project/kei_agent_py_sdk/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://docs.kei-framework.com)
+[![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://oscharko-dev.github.io/kei-agent-py-sdk/)
 
 **Enterprise-Grade Python SDK für KEI-Agent Framework mit Multi-Protocol Support**
 
@@ -12,24 +12,28 @@ Das KEI-Agent Python SDK bietet eine einheitliche, typisierte API für die Entwi
 ## 🚀 Features
 
 ### Multi-Protocol Support
+
 - **KEI-RPC**: Synchrone Request-Response Operationen
 - **KEI-Stream**: Bidirektionale Real-time Kommunikation
 - **KEI-Bus**: Asynchrone Message-Bus Integration
 - **KEI-MCP**: Model Context Protocol für Tool-Integration
 
 ### Enterprise Security
+
 - **Multi-Auth**: Bearer Token, OIDC, mTLS
 - **Input Validation**: Umfassende Sanitization und XSS/SQL-Injection-Schutz
 - **Audit Logging**: Vollständige Nachverfolgbarkeit aller Operationen
 - **RBAC**: Role-Based Access Control Integration
 
 ### Production Monitoring
+
 - **Structured Logging**: JSON-Format mit Correlation-IDs
 - **Health Checks**: Database, API, Memory, Custom Checks
 - **Performance Metrics**: Built-in Timing und Resource-Monitoring
 - **Distributed Tracing**: OpenTelemetry-Integration
 
 ### Developer Experience
+
 - **Type Safety**: 100% Type Hints für vollständige IntelliSense
 - **Deutsche Dokumentation**: Umfassende Guides und API-Referenz
 - **Auto-Protocol Selection**: Intelligente Protokoll-Auswahl
@@ -40,20 +44,20 @@ Das KEI-Agent Python SDK bietet eine einheitliche, typisierte API für die Entwi
 ### Standard-Installation
 
 ```bash
-pip install kei-agent-sdk
+pip install kei_agent_py_sdk
 ```
 
 ### Mit Enterprise-Features
 
 ```bash
-pip install "kei-agent-sdk[security,docs]"
+pip install "kei_agent_py_sdk[security,docs]"
 ```
 
 ### Development-Installation
 
 ```bash
-git clone https://github.com/kei-framework/kei-agent.git
-cd kei-agent/sdk/python/kei_agent
+git clone https://github.com/oscharko-dev/kei-agent-py-sdk.git
+cd kei-agent-py-sdk
 pip install -e ".[dev,docs,security]"
 ```
 
@@ -217,13 +221,7 @@ kei_agent/
 
 ## 📚 Dokumentation
 
-- **[Vollständige Dokumentation](https://docs.kei-framework.com)** - Umfassende Guides und API-Referenz
-- **[Installation Guide](https://docs.kei-framework.com/getting-started/installation/)** - Schritt-für-Schritt Setup
-- **[Quick Start](https://docs.kei-framework.com/getting-started/quickstart/)** - Erste Schritte in 5 Minuten
-- **[API-Referenz](https://docs.kei-framework.com/api/)** - Vollständige API-Dokumentation
-- **[Enterprise Features](https://docs.kei-framework.com/enterprise/)** - Production-Features
-- **[Beispiele](https://docs.kei-framework.com/examples/)** - Praktische Code-Beispiele
-- **[Migration Guide](https://docs.kei-framework.com/migration/)** - Upgrade von Legacy-Versionen
+- **[Vollständige Dokumentation](https://oscharko-dev.github.io/kei-agent-py-sdk/)** - Umfassende Guides und API-Referenz
 
 ## 🔧 Konfiguration
 
@@ -328,11 +326,10 @@ Dieses Projekt ist unter der [MIT-Lizenz](LICENSE) lizenziert.
 
 ## 🔗 Links
 
-- **GitHub Repository**: [kei-framework/kei-agent](https://github.com/kei-framework/kei-agent)
-- **PyPI Package**: [kei-agent-sdk](https://pypi.org/project/kei-agent-sdk/)
-- **Dokumentation**: [docs.kei-framework.com](https://docs.kei-framework.com)
-- **Issues**: [GitHub Issues](https://github.com/kei-framework/kei-agent/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/kei-framework/kei-agent/discussions)
+- **GitHub Repository**: [oscharko-dev/kei-agent-py-sdk](https://github.com/oscharko-dev/kei-agent-py-sdk)
+- **PyPI Package**: [kei_agent_py_sdk](https://pypi.org/project/kei_agent_py_sdk/)
+- **Dokumentation**: [GitHub Pages](https://oscharko-dev.github.io/kei-agent-py-sdk/)
+- **Issues**: [GitHub Issues](https://github.com/oscharko-dev/kei-agent-py-sdk/issues)
 
 ## 📊 Status
 

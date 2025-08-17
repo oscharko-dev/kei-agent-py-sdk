@@ -369,7 +369,7 @@ def publish_to_testpypi():
 
     if result.returncode == 0:
         print("✅ Erfolgreich auf TestPyPI veröffentlicht!")
-        print("🔗 TestPyPI: https://test.pypi.org/project/kei-agent-sdk/")
+        print("🔗 TestPyPI: https://test.pypi.org/project/kei_agent_py_sdk/")
         return True
     else:
         print("❌ TestPyPI-Veröffentlichung fehlgeschlagen")
@@ -402,7 +402,7 @@ def publish_to_pypi(skip_confirm: bool = False) -> bool:
 
     if result.returncode == 0:
         print("✅ Erfolgreich auf PyPI veröffentlicht!")
-        print("🔗 PyPI: https://pypi.org/project/kei-agent-sdk/")
+        print("🔗 PyPI: https://pypi.org/project/kei_agent_py_sdk/")
         return True
     else:
         print("❌ PyPI-Veröffentlichung fehlgeschlagen")
