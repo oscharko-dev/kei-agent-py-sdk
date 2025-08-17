@@ -1,7 +1,7 @@
 # KEI-Agent Python SDK
 
-[![PyPI version](https://img.shields.io/pypi/v/kei_agent_py_sdk.svg)](https://pypi.org/project/kei_agent_py_sdk/)
-[![Python Support](https://img.shields.io/pypi/pyversions/kei_agent_py_sdk.svg)](https://pypi.org/project/kei_agent_py_sdk/)
+[![TestPyPI](https://img.shields.io/badge/TestPyPI-available-brightgreen.svg)](https://test.pypi.org/project/kei-agent-py-sdk/)
+[![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://test.pypi.org/project/kei-agent-py-sdk/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://oscharko-dev.github.io/kei-agent-py-sdk/)
 
@@ -40,6 +40,20 @@ Das KEI-Agent Python SDK bietet eine einheitliche, typisierte API für die Entwi
 - **Async-First**: Non-blocking I/O für maximale Performance
 
 ## 📦 Installation
+
+### Installation von TestPyPI (Pre-Release)
+
+```bash
+pip install -i https://test.pypi.org/simple/ kei-agent-py-sdk
+```
+
+Mit Extras (und Fallback auf PyPI für Abhängigkeiten):
+
+```bash
+pip install -i https://test.pypi.org/simple/ \
+  --extra-index-url https://pypi.org/simple/ \
+  "kei-agent-py-sdk[security,docs]"
+```
 
 ### Standard-Installation
 
@@ -327,7 +341,7 @@ Dieses Projekt ist unter der [MIT-Lizenz](LICENSE) lizenziert.
 ## 🔗 Links
 
 - **GitHub Repository**: [oscharko-dev/kei-agent-py-sdk](https://github.com/oscharko-dev/kei-agent-py-sdk)
-- **PyPI Package**: [kei_agent_py_sdk](https://pypi.org/project/kei_agent_py_sdk/)
+- **TestPyPI Package**: [kei-agent-py-sdk](https://test.pypi.org/project/kei-agent-py-sdk/)
 - **Dokumentation**: [GitHub Pages](https://oscharko-dev.github.io/kei-agent-py-sdk/)
 - **Issues**: [GitHub Issues](https://github.com/oscharko-dev/kei-agent-py-sdk/issues)
 
