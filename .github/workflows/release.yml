@@ -4,13 +4,17 @@
 name: 🚀 Release & Publish
 
 on:
-  # Trigger bei Git-Tags (v*.*.*)
+  # Trigger bei Git-Tags (sowohl v*.*.* als auch *.*.*)
   push:
     tags:
       - 'v*.*.*'
       - 'v*.*.*-alpha.*'
       - 'v*.*.*-beta.*'
       - 'v*.*.*-rc.*'
+      - '*.*.*'
+      - '*.*.*-alpha.*'
+      - '*.*.*-beta.*'
+      - '*.*.*-rc.*'
 
   # Manueller Trigger für Testing
   workflow_dispatch:
@@ -78,7 +82,9 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             VERSION="${{ github.event.inputs.version }}"
           else
-            VERSION=${GITHUB_REF#refs/tags/v}
+            # Tag ohne v Präfix extrahieren (sowohl v0.1.0 als auch 0.1.0 unterstützen)
+            VERSION=${GITHUB_REF#refs/tags/}
+            VERSION=${VERSION#v}  # Entfernt v falls vorhanden
           fi
 
           echo "version=$VERSION" >> $GITHUB_OUTPUT
