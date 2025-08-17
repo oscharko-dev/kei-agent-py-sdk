@@ -106,9 +106,11 @@ def calculate_backoff(
 
     # Füge Jitter hinzu um Thundering Herd zu vermeiden
     if jitter:
-        import random
+        import secrets
 
-        delay = delay * (0.5 + random.random() * 0.5)
+        # Verwende kryptographisch sicheren Random für Jitter
+        jitter_factor = 0.5 + (secrets.randbelow(500) / 1000.0)  # 0.5 bis 1.0
+        delay = delay * jitter_factor
 
     return delay
 

@@ -9,7 +9,6 @@ und Dead Letter Queue für robuste Agent-Kommunikation.
 from __future__ import annotations
 
 import asyncio
-import random
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -121,8 +120,12 @@ class RetryPolicy:
 
         # Jitter hinzufügen
         if self.jitter:
+            import secrets
+
             jitter_range = delay * 0.1  # 10% Jitter
-            delay += random.uniform(-jitter_range, jitter_range)
+            # Verwende kryptographisch sicheren Random für Jitter
+            jitter_factor = (secrets.randbelow(2000) - 1000) / 10000.0  # -0.1 bis 0.1
+            delay += jitter_range * jitter_factor
 
         return max(0.0, delay)
 
