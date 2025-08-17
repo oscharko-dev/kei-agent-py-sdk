@@ -100,18 +100,18 @@ jobs:
 
           # Pre-Release Check und Normalisierung über packaging (PEP 440)
           export VERSION GITHUB_OUTPUT
-          python - <<'PY'
-import os
-from packaging.version import Version
+          python - <<-'PY'
+	import os
+	from packaging.version import Version
 
-v = os.environ.get('VERSION', '').strip()
-is_pr = Version(v).is_prerelease
-print(f"🔖 Pre-Release Version: {v}" if is_pr else f"🔖 Release Version: {v}")
-norm = str(Version(v))
-with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-    f.write(f"is_prerelease={'true' if is_pr else 'false'}\n")
-    f.write(f"normalized_version={norm}\n")
-PY
+	v = os.environ.get('VERSION', '').strip()
+	is_pr = Version(v).is_prerelease
+	print(f"🔖 Pre-Release Version: {v}" if is_pr else f"🔖 Release Version: {v}")
+	norm = str(Version(v))
+	with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+	    f.write(f"is_prerelease={'true' if is_pr else 'false'}\n")
+	    f.write(f"normalized_version={norm}\n")
+	PY
 
       # Version in pyproject.toml validieren
       - name: ✅ Validate Version
