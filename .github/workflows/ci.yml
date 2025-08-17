@@ -76,19 +76,22 @@ jobs:
       # Dependencies installieren
       - name: 📦 Install Dependencies
         run: |
+          set -x
           python -m pip install --upgrade pip
-          echo "📋 Installiere Development Dependencies..."
-          pip install -e ".[dev]" || {
-            echo "❌ Installation fehlgeschlagen"
-            echo "📋 pyproject.toml Inhalt:"
-            cat pyproject.toml | head -20
-            exit 1
-          }
+          echo "📋 Installiere Projekt inkl. Dev-Extras aus pyproject.toml..."
+          pip install -e ".[dev]"
           echo "✅ Dependencies erfolgreich installiert"
-          pip list | grep -E "(ruff|mypy|bandit|pytest)"
+          echo "📋 Installierte Haupt-Dependencies:"
+          pip list | grep -E "(httpx|aiohttp|websockets|pydantic|tenacity)" || true
+          echo "📋 Installierte Dev-Dependencies:"
+          pip list | grep -E "(ruff|mypy|bandit|pytest)" || true
 
           # Test basic import
           python -c "import kei_agent; print(f'✅ KEI-Agent SDK importiert: {kei_agent.__version__ if hasattr(kei_agent, \"__version__\") else \"unknown\"}')" || echo "⚠️ Import-Test fehlgeschlagen"
+
+          # Test kritische Dependencies
+          python -c "import httpx; print('✅ httpx verfügbar')" || echo "❌ httpx fehlt"
+          python -c "import aiohttp; print('✅ aiohttp verfügbar')" || echo "❌ aiohttp fehlt"
 
       # Ruff Linting
       - name: 🔍 Ruff Linting
@@ -162,8 +165,12 @@ jobs:
       # Dependencies installieren
       - name: 📦 Install Dependencies
         run: |
+          set -x
           python -m pip install --upgrade pip
+          echo "📋 Installiere Projekt inkl. Dev-Extras aus pyproject.toml..."
           pip install -e ".[dev]"
+          echo "✅ Dependencies installiert"
+          python -c "import httpx, aiohttp; print('✅ Kritische Dependencies verfügbar')"
 
       # Schnelle Tests (Unit Tests)
       - name: 🚀 Fast Tests
@@ -204,8 +211,12 @@ jobs:
       # Dependencies installieren
       - name: 📦 Install Dependencies
         run: |
+          set -x
           python -m pip install --upgrade pip
+          echo "📋 Installiere Projekt inkl. Dev- und Security-Extras aus pyproject.toml..."
           pip install -e ".[dev,security]"
+          echo "✅ Dependencies installiert"
+          python -c "import httpx, aiohttp; print('✅ Kritische Dependencies verfügbar')"
 
       # Unit Tests mit Coverage
       - name: 🧪 Unit Tests
@@ -322,8 +333,11 @@ jobs:
       # Dependencies installieren
       - name: 📦 Install Dependencies
         run: |
+          set -x
           python -m pip install --upgrade pip
+          echo "📋 Installiere Projekt inkl. Dev-Extras aus pyproject.toml..."
           pip install -e ".[dev]"
+          echo "✅ Dependencies installiert"
 
       # Package Build testen
       - name: 🏗️ Test Package Build
