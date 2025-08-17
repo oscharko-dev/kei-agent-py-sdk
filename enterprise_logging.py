@@ -39,10 +39,10 @@ def _get_package_version() -> str:
         Package-Version oder Fallback-Version
     """
     try:
-        return version("kei-agent-sdk")
-    except PackageNotFoundError:
+        return version("kei_agent_py_sdk")
+    except (PackageNotFoundError, Exception):
         # Fallback wenn Package nicht installiert ist (z.B. Development)
-        return "0.1.0-dev"
+        return "0.1.0-beta.1"
 
 
 @dataclass

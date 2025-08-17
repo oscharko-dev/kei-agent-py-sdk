@@ -153,7 +153,7 @@ from utils import (
 )
 
 # Version Information
-__version__ = "1.0.0"
+__version__ = "0.1.0-beta.1"
 __author__ = "KEI-Agent-Framework Team"
 __email__ = "dev@kei-agent-framework.com"
 __license__ = "MIT"
@@ -283,7 +283,7 @@ __all__ = [
 ]
 
 # Version Information
-__version__ = "1.0.0"
+__version__ = "0.1.0-beta.1"
 __author__ = "KEI-Agent-Framework Team"
 __license__ = "MIT"
 __title__ = "kei-agent-sdk"
