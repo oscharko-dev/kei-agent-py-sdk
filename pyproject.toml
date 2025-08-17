@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kei-agent-sdk"
-version = "0.1.0"
+version = "v0.1.0-beta.1"
 description = "Enterprise-Grade Python SDK for KEI Agent Framework with Multi-Protocol Support and Comprehensive Documentation"
 readme = "README.md"
 license = "MIT"
