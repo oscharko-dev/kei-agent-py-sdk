@@ -35,7 +35,7 @@ def run_command(
     Returns:
         CompletedProcess-Objekt
     """
-    print(f"\n🔄 {description}")
+    print(f"\n[RUN] {description}")
     print(f"Kommando: {' '.join(cmd)}")
     print("-" * 60)
 
@@ -51,9 +51,9 @@ def run_command(
             print(f"STDERR: {result.stderr}")
 
         if result.returncode == 0:
-            print(f"✅ {description} erfolgreich")
+            print(f"[OK] {description} erfolgreich")
         else:
-            print(f"❌ {description} fehlgeschlagen (Code: {result.returncode})")
+            print(f"[FAIL] {description} fehlgeschlagen (Code: {result.returncode})")
 
         return result
 
@@ -71,7 +71,7 @@ def run_command(
 
 def clean_build_artifacts():
     """Räumt Build-Artefakte auf."""
-    print("\n🧹 Räume Build-Artefakte auf...")
+    print("\n[CLEAN] Räume Build-Artefakte auf...")
 
     # Verzeichnisse zum Löschen
     dirs_to_clean = [
@@ -107,7 +107,7 @@ def clean_build_artifacts():
     for pyc_file in BASE_DIR.rglob("*.pyc"):
         pyc_file.unlink(missing_ok=True)
 
-    print("✅ Build-Artefakte aufgeräumt")
+    print("[OK] Build-Artefakte aufgeräumt")
 
 
 def run_quality_checks() -> bool:
@@ -116,7 +116,7 @@ def run_quality_checks() -> bool:
     Returns:
         True wenn alle Checks erfolgreich, False sonst
     """
-    print("\n🔍 Führe Code-Qualitätsprüfungen aus...")
+    print("\n[QUALITY] Führe Code-Qualitätsprüfungen aus...")
 
     checks = [
         (["python3", "-m", "ruff", "check", "."], "Ruff Linting"),
@@ -161,7 +161,7 @@ def run_quality_checks() -> bool:
         print(f"\n❌ Fehlgeschlagene Qualitätsprüfungen: {failed_checks}")
         return False
     else:
-        print("\n✅ Alle Qualitätsprüfungen erfolgreich!")
+        print("\n[SUCCESS] Alle Qualitätsprüfungen erfolgreich!")
         return True
 
 
@@ -410,7 +410,7 @@ def main():
 
     args = parser.parse_args()
 
-    print("🚀 KEI-Agent SDK Build und Publish Tool")
+    print("[BUILD] KEI-Agent SDK Build und Publish Tool")
     print("=" * 60)
 
     try:

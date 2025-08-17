@@ -12,6 +12,9 @@ from protocol_selector import ProtocolSelector
 from protocol_types import ProtocolType, ProtocolConfig
 from exceptions import ProtocolError
 
+# Markiere alle Tests in dieser Datei als Protokoll-Tests
+pytestmark = pytest.mark.protocol
+
 
 class TestProtocolSelector:
     """Tests für ProtocolSelector Klasse."""

@@ -10,6 +10,9 @@ import pytest
 
 from protocol_types import ProtocolType, AuthType, ProtocolConfig, SecurityConfig
 
+# Markiere alle Tests in dieser Datei als Protokoll-Tests
+pytestmark = pytest.mark.protocol
+
 
 class TestProtocolType:
     """Tests für ProtocolType Enum."""

@@ -15,6 +15,9 @@ import logging
 
 import pytest
 
+# Markiere alle Tests in dieser Datei als Protokoll-Tests
+pytestmark = pytest.mark.protocol
+
 # Erzeuge Dummy-OpenTelemetry-Module, um Importfehler zu vermeiden
 # Dies muss VOR dem Import von kei_agent erfolgen
 

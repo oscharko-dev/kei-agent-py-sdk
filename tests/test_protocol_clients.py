@@ -21,6 +21,9 @@ from security_manager import SecurityManager
 from protocol_types import SecurityConfig, AuthType
 from exceptions import ProtocolError, CommunicationError
 
+# Markiere alle Tests in dieser Datei als Protokoll-Tests
+pytestmark = pytest.mark.protocol
+
 
 class TestBaseProtocolClient:
     """Tests für BaseProtocolClient abstrakte Klasse."""
