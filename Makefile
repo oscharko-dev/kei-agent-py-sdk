@@ -131,23 +131,32 @@ test-cov: ## Führt Tests mit Coverage aus
 
 lint: ## Führt Linting aus
 	@echo "$(BLUE)Führe Linting aus...$(RESET)"
-	ruff check *.py
+	ruff check . --exclude=venv --exclude=.venv --exclude=htmlcov
 
 lint-fix: ## Führt Linting mit Auto-Fix aus
 	@echo "$(BLUE)Führe Linting mit Auto-Fix aus...$(RESET)"
-	ruff check --fix *.py
+	ruff check --fix . --exclude=venv --exclude=.venv --exclude=htmlcov
 
 format: ## Formatiert Code
 	@echo "$(BLUE)Formatiere Code...$(RESET)"
-	ruff format *.py
+	ruff format . --exclude=venv --exclude=.venv --exclude=htmlcov
 
 format-check: ## Prüft Code-Formatierung
 	@echo "$(BLUE)Prüfe Code-Formatierung...$(RESET)"
-	ruff format --check *.py
+	ruff format --check . --exclude=venv --exclude=.venv --exclude=htmlcov
 
 type-check: ## Führt Type-Checking aus
 	@echo "$(BLUE)Führe Type-Checking aus...$(RESET)"
-	python3 -m mypy *.py --ignore-missing-imports --no-strict-optional
+	@if [ -d src ]; then \
+		python3 -m mypy src/ --ignore-missing-imports --no-strict-optional; \
+	elif [ -d kei_agent ]; then \
+		python3 -m mypy kei_agent/ --ignore-missing-imports --no-strict-optional; \
+	elif [ -f run_tests.py ]; then \
+		python3 -m mypy run_tests.py --ignore-missing-imports --no-strict-optional; \
+		echo "$(GREEN)✅ Type-Checking für Projekt-Scripts abgeschlossen$(RESET)"; \
+	else \
+		echo "$(YELLOW)Keine Python-Dateien für Type-Checking gefunden.$(RESET)"; \
+	fi
 
 security-scan: ## Führt Security-Scan aus
 	@echo "$(BLUE)Führe Security-Scan aus...$(RESET)"
@@ -160,21 +169,7 @@ quality: lint format-check type-check security-scan ## Führt alle Qualitätspr�
 quality-fix: lint-fix format ## Führt Auto-Fixes für Code-Qualität aus
 	@echo "$(GREEN)Code-Qualität Auto-Fixes abgeschlossen!$(RESET)"
 
-# =====================================================================
-# Coverage & Reports
-# =====================================================================
 
-coverage-report: ## Zeigt Coverage-Report an
-	@echo "$(BLUE)Erstelle Coverage-Report...$(RESET)"
-	$(PYTHON) run_tests.py --coverage-report
-
-coverage-html: ## Öffnet HTML-Coverage-Report
-	@echo "$(BLUE)Öffne HTML-Coverage-Report...$(RESET)"
-	@if [ -f htmlcov/index.html ]; then \
-		open htmlcov/index.html || xdg-open htmlcov/index.html || echo "$(YELLOW)HTML-Report verfügbar: htmlcov/index.html$(RESET)"; \
-	else \
-		echo "$(RED)HTML-Coverage-Report nicht gefunden. Führe zuerst Tests aus.$(RESET)"; \
-	fi
 
 # =====================================================================
 # Build & Deployment
