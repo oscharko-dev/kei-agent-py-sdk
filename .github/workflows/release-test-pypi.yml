@@ -1,6 +1,6 @@
 # GitHub Actions Workflow – nur TestPyPI
 
-name: Release & Publish to TestPyPi
+name: 🚀 Release & Publish to TestPyPi
 
 on:
   push:

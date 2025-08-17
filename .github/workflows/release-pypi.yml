@@ -1,6 +1,6 @@
 # GitHub Actions Workflow – nur PyPI
 
-name: Release & Publish to PyPi
+name: 🚀 Release & Publish to PyPi
 
 on:
   push:
