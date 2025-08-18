@@ -8,8 +8,8 @@ from typing import List
 
 import pytest
 
-from client import AgentClientConfig, RetryConfig, RetryStrategy, TracingConfig
-from unified_client import UnifiedKeiAgentClient
+from kei_agent.client import AgentClientConfig, RetryConfig, RetryStrategy, TracingConfig
+from kei_agent.unified_client import UnifiedKeiAgentClient
 
 
 class AlwaysFailRPC:

@@ -11,9 +11,9 @@ import pytest
 import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from security_manager import SecurityManager
-from protocol_types import SecurityConfig, AuthType
-from exceptions import SecurityError
+from kei_agent.security_manager import SecurityManager
+from kei_agent.protocol_types import SecurityConfig, AuthType
+from kei_agent.exceptions import SecurityError
 
 # Markiere alle Tests in dieser Datei als Security-Tests
 pytestmark = pytest.mark.security

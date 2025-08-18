@@ -9,10 +9,10 @@ Architektur, vollständigen Type Hints und Enterprise-Features.
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from unified_client_refactored import UnifiedKeiAgentClient
-from client import AgentClientConfig
-from protocol_types import ProtocolType, ProtocolConfig, SecurityConfig, AuthType
-from exceptions import KeiSDKError, ProtocolError
+from kei_agent.unified_client_refactored import UnifiedKeiAgentClient
+from kei_agent.client import AgentClientConfig
+from kei_agent.protocol_types import ProtocolType, ProtocolConfig, SecurityConfig, AuthType
+from kei_agent.exceptions import KeiSDKError, ProtocolError
 
 # Markiere alle Tests in dieser Datei als Refactored-Tests
 pytestmark = pytest.mark.refactored
@@ -91,7 +91,7 @@ class TestUnifiedKeiAgentClientRefactored:
                     unified_client, "_initialize_enterprise_features"
                 ) as mock_enterprise_init:
                     with patch(
-                        "unified_client_refactored.KeiAgentClient"
+                        "kei_agent.unified_client_refactored.KeiAgentClient"
                     ) as mock_legacy_client:
                         mock_legacy_instance = AsyncMock()
                         mock_legacy_client.return_value = mock_legacy_instance

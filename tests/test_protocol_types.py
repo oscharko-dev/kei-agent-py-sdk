@@ -8,7 +8,7 @@ mit vollständiger Validierung und Edge Cases.
 
 import pytest
 
-from protocol_types import ProtocolType, AuthType, ProtocolConfig, SecurityConfig
+from kei_agent.protocol_types import ProtocolType, AuthType, ProtocolConfig, SecurityConfig
 
 # Markiere alle Tests in dieser Datei als Protokoll-Tests
 pytestmark = pytest.mark.protocol

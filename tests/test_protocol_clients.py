@@ -10,16 +10,16 @@ import json
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from protocol_clients import (
+from kei_agent.protocol_clients import (
     BaseProtocolClient,
     KEIRPCClient,
     KEIStreamClient,
     KEIBusClient,
     KEIMCPClient,
 )
-from security_manager import SecurityManager
-from protocol_types import SecurityConfig, AuthType
-from exceptions import ProtocolError, CommunicationError
+from kei_agent.security_manager import SecurityManager
+from kei_agent.protocol_types import SecurityConfig, AuthType
+from kei_agent.exceptions import ProtocolError, CommunicationError
 
 # Markiere alle Tests in dieser Datei als Protokoll-Tests
 pytestmark = pytest.mark.protocol
@@ -292,7 +292,7 @@ class TestKEIStreamClient:
 
         # Mock websockets.connect direkt
         with patch(
-            "protocol_clients.websockets.connect", new_callable=AsyncMock
+            "kei_agent.protocol_clients.websockets.connect", new_callable=AsyncMock
         ) as mock_connect:
             mock_connect.return_value = mock_websocket
 
