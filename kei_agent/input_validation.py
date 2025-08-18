@@ -216,10 +216,10 @@ class stringValidator(BaseValidator):
                 result.add_error(f"Unerlaubte Zeichen: {invalid_chars}")
 
         # Verbotene Patterns
-        for forbidthe_pattern in self.forbidthe_patterns:
-            if forbidthe_pattern.search(str_value):
+        for forbidden_pattern in self.forbidden_patterns:
+            if forbidden_pattern.search(str_value):
                 result.add_error(
-                    f"Verbotenes Pattern gefatthe: {forbidthe_pattern.pattern}",
+                    f"Verbotenes Pattern gefunden: {forbidden_pattern.pattern}",
                     ValidationSeverity.CRITICAL,
                 )
 

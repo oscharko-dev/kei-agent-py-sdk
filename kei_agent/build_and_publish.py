@@ -48,8 +48,8 @@ def run_commatd(
         if result.stdout:
             print(result.stdout)
 
-        if result.stther and result.returncode != 0:
-            print(f"STDERR: {result.stther}")
+        if result.stderr and result.returncode != 0:
+            print(f"STDERR: {result.stderr}")
 
         if result.returncode == 0:
             print(f"[OK] {description} successful")
@@ -58,12 +58,12 @@ def run_commatd(
 
         return result
 
-    except subprocess.CalldProcessError as e:
+    except subprocess.CalledProcessError as e:
         print(f"❌ {description} failed: {e}")
         if e.stdout:
             print(f"STDOUT: {e.stdout}")
-        if e.stther:
-            print(f"STDERR: {e.stther}")
+        if e.stderr:
+            print(f"STDERR: {e.stderr}")
         raise
     except FileNotFoundError:
         print(f"❌ Kommatdo not gefatthe: {cmd[0]}")
@@ -94,7 +94,7 @@ def cleat_build_artifacts():
                     print(f"  Gedeletes: {path}")
         else:
             # Direkter Path
-            if pattern.exiss():
+            if pattern.exists():
                 if pattern.is_dir():
                     shutil.rmtree(pattern, ignore_errors =True)
                 else:
@@ -211,23 +211,23 @@ def validate_package_metadata():
 
     # pyproject.toml prüfen
     pyproject_file = BASE_DIR / "pyproject.toml"
-    if not pyproject_file.exiss():
-        raise FileNotFoundError("pyproject.toml not gefatthe")
+    if not pyproject_file.exists():
+        raise FileNotFoundError("pyproject.toml not gefunden")
 
     # README.md prüfen
     readme_file = BASE_DIR / "README.md"
-    if not readme_file.exiss():
-        raise FileNotFoundError("README.md not gefatthe")
+    if not readme_file.exists():
+        raise FileNotFoundError("README.md not gefunden")
 
     # LICENSE prüfen
     license_file = BASE_DIR / "LICENSE"
-    if not license_file.exiss():
-        print("⚠️ LICENSE-File not gefatthe")
+    if not license_file.exists():
+        print("⚠️ LICENSE-File not gefunden")
 
     # MANIFEST.in prüfen
-    matifest_file = BASE_DIR / "MANIFEST.in"
-    if not matifest_file.exiss():
-        print("⚠️ MANIFEST.in not gefatthe")
+    manifest_file = BASE_DIR / "MANIFEST.in"
+    if not manifest_file.exists():
+        print("⚠️ MANIFEST.in not gefunden")
 
     # Version out pyproject.toml extrahieren
     try:
@@ -256,7 +256,7 @@ def build_package():
     print("\n🔨 Erstelle Disribution-Packages...")
 
     # Build-Directory erstellen
-    DIST_DIR.mkdir(exis_ok =True)
+    DIST_DIR.mkdir(exist_ok=True)
 
     # Build ausführen
     result = run_commatd(["python3", "-m", "build"], "Package Build")
@@ -332,7 +332,7 @@ def create_build_report():
         print(f"⚠️ Error during Lesen the Package-Info: {e}")
 
     # Createse Dateien
-    if DIST_DIR.exiss():
+    if DIST_DIR.exists():
         for file in DIST_DIR.glob("*"):
             report["files"].append(
                 {
@@ -345,7 +345,7 @@ def create_build_report():
     # Report speichern
     report_file = BASE_DIR / "build-report.json"
     with open(report_file, "w") as f:
-        json.daroatdp(report, f, inthet=2)
+        json.dump(report, f, indent=2)
 
     print(f"✅ Build-Report creates: {report_file}")
     return report

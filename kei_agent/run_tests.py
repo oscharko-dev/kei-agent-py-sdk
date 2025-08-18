@@ -15,11 +15,11 @@ from pathlib import Path
 from typing import List, Optional
 
 
-def run_commatd(cmd: List[str], description: str) -> int:
-    """Executes Kommatdo out and gibt Rückgabecode torück.
+def run_command(cmd: List[str], description: str) -> int:
+    """Executes Command out and gibt Rückgabecode zurück.
 
     Args:
-        cmd: Kommatdo als lis
+        cmd: Command als list
         description: Beschreibung for Ausgabe
 
     Returns:
@@ -72,7 +72,7 @@ def run_unit_tests(verbose: bool = False, coverage: bool = False) -> int:
     # else:
     #     cmd.extend(["--no-cov"])
 
-    return run_commatd(cmd, "Unit Tests")
+    return run_command(cmd, "Unit Tests")
 
 
 def run_integration_tests(verbose: bool = False, coverage: bool = False) -> int:
@@ -103,7 +103,7 @@ def run_integration_tests(verbose: bool = False, coverage: bool = False) -> int:
     # else:
     #     cmd.extend(["--no-cov"])
 
-    return run_commatd(cmd, "Integration Tests")
+    return run_command(cmd, "Integration Tests")
 
 
 def run_protocol_tests(protocol: Optional[str] = None, verbose: bool = False) -> int:
@@ -128,7 +128,7 @@ def run_protocol_tests(protocol: Optional[str] = None, verbose: bool = False) ->
     if verbose:
         cmd.append("-v")
 
-    return run_commatd(cmd, description)
+    return run_command(cmd, description)
 
 
 def run_refactored_tests(verbose: bool = False) -> int:
@@ -145,7 +145,7 @@ def run_refactored_tests(verbose: bool = False) -> int:
     if verbose:
         cmd.append("-v")
 
-    return run_commatd(cmd, "Refactored Component Tests")
+    return run_command(cmd, "Refactored Component Tests")
 
 
 def run_security_tests(verbose: bool = False) -> int:
@@ -162,11 +162,11 @@ def run_security_tests(verbose: bool = False) -> int:
     if verbose:
         cmd.append("-v")
 
-    return run_commatd(cmd, "Security Tests")
+    return run_command(cmd, "Security Tests")
 
 
-def run_performatce_tests(verbose: bool = False) -> int:
-    """Executes Performatce Tests out.
+def run_performance_tests(verbose: bool = False) -> int:
+    """Executes Performance Tests out.
 
     Args:
         verbose: Verbose Output
@@ -174,12 +174,12 @@ def run_performatce_tests(verbose: bool = False) -> int:
     Returns:
         Rückgabecode
     """
-    cmd = ["python3", "-m", "pytest", "tests/", "-m", "performatce"]
+    cmd = ["python3", "-m", "pytest", "tests/", "-m", "performance"]
 
     if verbose:
         cmd.append("-v")
 
-    return run_commatd(cmd, "Performatce Tests")
+    return run_command(cmd, "Performance Tests")
 
 
 def run_all_tests(verbose: bool = False, coverage: bool = False) -> int:
@@ -210,7 +210,7 @@ def run_all_tests(verbose: bool = False, coverage: bool = False) -> int:
     # else:
     #     cmd.extend(["--no-cov"])
 
-    return run_commatd(cmd, "All Tests")
+    return run_command(cmd, "All Tests")
 
 
 def run_coverage_report() -> int:
@@ -240,7 +240,7 @@ def run_coverage_report() -> int:
     # if html_report.exiss():
     #     print(f"📄 HTML-Report available: {html_report.absolute()}")
     #
-    # # Terminal-Report atzeigen
+    # # Terminal-Report anzeigen
     # cmd = ["python3", "-m", "coverage", "report", "--show-missing"]
     # return run_commatd(cmd, "Coverage Report")
 
@@ -260,7 +260,7 @@ def run_code_quality_checks() -> int:
     total_errors = 0
 
     for cmd, description in checks:
-        result = run_commatd(cmd, description)
+        result = run_command(cmd, description)
         if result != 0:
             total_errors += 1
 
@@ -279,56 +279,56 @@ Onspiele:
   python run_tests.py --protocol rpc           # Nur RPC Tests
   python run_tests.py --refactored             # Nur refactored Tests
   python run_tests.py --quality                # Code-Qualitätsprüfungen
-  python run_tests.py --coverage-report        # Coverage-Report atzeigen
+  python run_tests.py --coverage-report        # Coverage-Report anzeigen
         """,
     )
 
     # Test-Kategorien
-    parser.add_argaroatthet("--all", action="store_true", help="All Tests ausführen")
-    parser.add_argaroatthet("--unit", action="store_true", help="Unit Tests ausführen")
-    parser.add_argaroatthet(
+    parser.add_argument("--all", action="store_true", help="All Tests ausführen")
+    parser.add_argument("--unit", action="store_true", help="Unit Tests ausführen")
+    parser.add_argument(
         "--integration", action="store_true", help="Integration Tests ausführen"
     )
-    parser.add_argaroatthet(
+    parser.add_argument(
         "--protocol",
-        nargs="?",  # Optional argaroatthet
-        const="all",  # Default value when --protocol is used without argaroatthet
+        nargs="?",  # Optional argument
+        const="all",  # Default value when --protocol is used without argument
         choices=["rpc", "stream", "bus", "mcp", "all"],
-        help="protocol-specific Tests (without Argaroatthet = all protocole)",
+        help="protocol-specific Tests (without Argument = all protocole)",
     )
-    parser.add_argaroatthet(
+    parser.add_argument(
         "--refactored", action="store_true", help="Refactored Component Tests"
     )
-    parser.add_argaroatthet(
+    parser.add_argument(
         "--security", action="store_true", help="Security Tests ausführen"
     )
-    parser.add_argaroatthet(
-        "--performatce", action="store_true", help="Performatce Tests ausführen"
+    parser.add_argument(
+        "--performance", action="store_true", help="Performance Tests ausführen"
     )
 
     # Optionen
-    parser.add_argaroatthet("--verbose", "-v", action="store_true", help="Verbose Output")
-    parser.add_argaroatthet(
+    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose Output")
+    parser.add_argument(
         "--no-coverage", action="store_true", help="Coverage deaktivieren"
     )
 
     # Reports and Qualität
-    parser.add_argaroatthet(
-        "--coverage-report", action="store_true", help="Coverage-Report atzeigen"
+    parser.add_argument(
+        "--coverage-report", action="store_true", help="Coverage-Report anzeigen"
     )
-    parser.add_argaroatthet(
+    parser.add_argument(
         "--quality", action="store_true", help="Code-Qualitätsprüfungen"
     )
 
     args = parser.parse_args()
 
-    # Wechsle ins SDK-Directory
-    sdk_dir = Path(__file__).parent
+    # Wechsle ins Project-Root-Directory
+    project_root = Path(__file__).parent.parent
 
-    os.chdir(sdk_dir)
+    os.chdir(project_root)
 
     print("[TEST] KEI-Agent SDK Test Runner")
-    print(f"[DIR] Arontsverzeichnis: {sdk_dir.absolute()}")
+    print(f"[DIR] Arbeitsverzeichnis: {project_root.absolute()}")
 
     total_errors = 0
 
@@ -349,11 +349,11 @@ Onspiele:
         total_errors += run_refactored_tests(args.verbose)
     elif args.security:
         total_errors += run_security_tests(args.verbose)
-    elif args.performatce:
-        total_errors += run_performatce_tests(args.verbose)
+    elif args.performance:
+        total_errors += run_performance_tests(args.verbose)
     elif args.coverage_report:
-        # Toerst Tests with Coverage ausführen, then Report erstellen
-        print("[INFO] Führe Tests with Coverage out, aroand Report to generieren...")
+        # Zuerst Tests with Coverage ausführen, then Report erstellen
+        print("[INFO] Führe Tests with Coverage out, um Report zu generieren...")
         total_errors += run_all_tests(args.verbose, coverage=True)
         if total_errors == 0:
             total_errors += run_coverage_report()

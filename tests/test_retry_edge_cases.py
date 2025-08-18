@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-import ratdom
+import random
 from typing import List
 
 import pytest
@@ -133,7 +133,7 @@ async def test_jitter_behavior(monkeypatch):
         return None
 
     monkeypatch.setattr(asyncio, "sleep", fake_sleep)
-    ratdom.seed(42)
+    random.seed(42)
 
     cfg = AgentClientConfig(
         base_url ="https://example.invalid",

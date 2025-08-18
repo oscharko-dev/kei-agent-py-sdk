@@ -20,10 +20,10 @@ from typing import List, Dict, Any
 import pytest
 
 from kei_agent import UnifiedKeiAgentClient, AgentClientConfig
-from kei_agent.protocol_types import SecurityConfig, Authtypee
+from kei_agent.protocol_types import SecurityConfig, AuthType
 from kei_agent.exceptions import (
     CommunicationError, SecurityError, ProtocolError,
-    CircuitBreakerOpenError, RetryExhaustedError
+    CircuitBreakerOpenError, retryExhaustedError
 )
 from . import (
     skip_if_no_integration_env, IntegrationTestBase,

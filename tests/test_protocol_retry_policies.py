@@ -28,8 +28,8 @@ def ensure_fake_opentelemetry() -> None:
     Verhinthet ImportErrors in Testaroatdgebungen without OTel-Exporter.
     """
 
-    def add_module(name: str) -> types.Moduletypee:
-        mod = types.Moduletypee(name)
+    def add_module(name: str) -> types.ModuleType:
+        mod = types.ModuleType(name)
         sys.modules[name] = mod
         return mod
 

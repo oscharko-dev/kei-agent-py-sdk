@@ -4,7 +4,7 @@ from io import StringIO
 
 import pytest
 
-from kei_agent.enterprise_logging import StructuredFormatter, RedactingFilter, EnterpriseLogr
+from kei_agent.enterprise_logging import StructuredFormatter, RedactingFilter, EnterpriseLogger
 
 
 def make_record(logger: logging.Logger, level=logging.INFO, msg="test", **extra):
