@@ -21,6 +21,13 @@ class KeiSDKError(Exception):
         self.details = kwargs
 
 
+class ValidationError(KeiSDKError):
+    """Ausnahme für Validierungsfehler in der Eingabeprüfung."""
+
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        super().__init__(message, error_code="VALIDATION_ERROR", **kwargs)
+
+
 class AgentNotFoundError(KeiSDKError):
     """Ausnahme wenn ein Agent nicht gefunden wird."""
 
