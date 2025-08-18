@@ -2,13 +2,13 @@
 
 <!-- API aus Code generieren -->
 
-::: enterprise_logging.EnterpriseLogger
+::: kei_agent.enterprise_logging.EnterpriseLogger
 
-::: enterprise_logging.LogContext
+::: kei_agent.enterprise_logging.LogContext
 
-::: enterprise_logging.get_logger
+::: kei_agent.enterprise_logging.get_logger
 
-::: enterprise_logging.configure_logging
+::: kei_agent.enterprise_logging.configure_logging
 
 ## 🏗️ Logging-Architektur
 

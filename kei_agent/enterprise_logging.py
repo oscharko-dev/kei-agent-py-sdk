@@ -178,10 +178,10 @@ class RedactingFilter(logging.Filter):
         return True
 
 
-class EnterpriseLogr:
-    """Enterprise-Grade Logr for KEI-Agent SDK.
+class EnterpriseLogger:
+    """Enterprise-Grade Logger for KEI-Agent SDK.
 
-    Bietet strukturiertes Logging with Kontext-matagement, Performatce-Tracking
+    Bietet strukturiertes Logging with Kontext-management, Performance-Tracking
     and enterprise features for Production-Deployments.
     """
 
@@ -398,23 +398,23 @@ class EnterpriseLogr:
         )
 
 
-# Globaler Logr for SDK
-_sdk_logger: Optional[EnterpriseLogr] = None
+# Globaler Logger for SDK
+_sdk_logger: Optional[EnterpriseLogger] = None
 
 
-def get_logger(name: str = "kei_agent") -> EnterpriseLogr:
-    """Gibt Enterprise Logr for KEI-Agent SDK torück.
+def get_logger(name: str = "kei_agent") -> EnterpriseLogger:
+    """Gibt Enterprise Logger for KEI-Agent SDK zurück.
 
     Args:
-        name: Logr-Name
+        name: Logger-Name
 
     Returns:
-        Configureser Enterprise Logr
+        Configurierter Enterprise Logger
     """
     global _sdk_logger
 
     if _sdk_logger is None:
-        _sdk_logger = EnterpriseLogr(
+        _sdk_logger = EnterpriseLogger(
             name=name,
             level=logging.INFO,
             enable_structured =True,
@@ -434,7 +434,7 @@ def configure_logging(
     enable_file: bool = False,
     file_path: Optional[str] = None,
     extra_fields: Optional[Dict[str, Any]] = None,
-) -> EnterpriseLogr:
+) -> EnterpriseLogger:
     """Configures globalen SDK-Logr.
 
     Args:
@@ -449,7 +449,7 @@ def configure_logging(
     """
     global _sdk_logger
 
-    _sdk_logger = EnterpriseLogr(
+    _sdk_logger = EnterpriseLogger(
         name="kei_agent",
         level=level,
         enable_structured =enable_structured,
@@ -466,7 +466,7 @@ __all__ = [
     "LogContext",
     "StructuredFormatter",
     "RedactingFilter",
-    "EnterpriseLogr",
+    "EnterpriseLogger",
     "get_logger",
     "configure_logging",
     "correlation_id_var",

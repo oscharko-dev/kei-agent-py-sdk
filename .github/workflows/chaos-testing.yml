@@ -131,7 +131,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: chaos-test-results-${{ matrix.test-category }}
           path: |
@@ -141,7 +141,7 @@ jobs:
 
       - name: Upload chaos test report
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: chaos-report-${{ matrix.test-category }}
           path: test-artifacts/chaos-report-${{ matrix.test-category }}.json
@@ -188,7 +188,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Download all test artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: all-test-results/
 
@@ -315,7 +315,7 @@ jobs:
             });
 
       - name: Upload aggregated report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: aggregated-chaos-report
           path: aggregated-chaos-report.json

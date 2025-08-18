@@ -80,7 +80,7 @@ jobs:
           --include-sbom
 
     - name: 📦 Upload Security Reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: security-reports
         path: |
@@ -216,7 +216,7 @@ jobs:
         "
 
     - name: 📦 Upload License Reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: license-reports
         path: |
@@ -316,7 +316,7 @@ jobs:
 
     - name: 📦 Upload Compatibility Issues
       if: failure()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: compatibility-issues-${{ matrix.python-version }}
         path: compatibility-issues.txt
