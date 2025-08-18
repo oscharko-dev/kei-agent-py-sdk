@@ -88,7 +88,7 @@ class ProtocolConfig:
     auto_protocol_selection: bool = True
     protocol_fallback_enabled: bool = True
 
-    def get_enabled_protocols(self) -> lis[Protocoltypee]:
+    def get_enabled_protocols(self) -> list[Protocoltypee]:
         """Gibt lis the enablethe protocole torück.
 
         Returns:

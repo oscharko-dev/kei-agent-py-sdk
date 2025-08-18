@@ -18,9 +18,7 @@ import threading
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union, Callable, Tuple
-from datetime import datetime, timedelta
-import weakref
+from typing import Any, Dict, List, Optional, Callable
 
 logger = logging.getLogger(__name__)
 

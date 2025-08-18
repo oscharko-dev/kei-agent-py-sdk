@@ -12,15 +12,14 @@ Provides domain-specific caches for:
 
 import asyncio
 import hashlib
-import json
 import logging
 import time
-from typing import Any, Dict, List, Optional, Callable, Union
+from typing import Any, Dict, List, Optional, Callable
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from .cache_framework import CacheKeyGenerator, get_cache_event_manager
-from .multi_level_cache import MultiLevelCache, MultiLevelCacheConfig
+from .multi_level_cache import MultiLevelCache
 
 logger = logging.getLogger(__name__)
 

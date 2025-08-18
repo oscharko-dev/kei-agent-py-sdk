@@ -11,8 +11,7 @@ This module provides:
 """
 
 import time
-import asyncio
-from typing import Dict, Any, Optional, List, Callable
+from typing import Dict, Any, Optional, Callable
 from dataclasses import dataclass, field
 from contextlib import asynccontextmanager
 import logging
@@ -20,8 +19,8 @@ import logging
 # Prometheus metrics
 try:
     from prometheus_client import (
-        Counter, Histogram, Gauge, Summary, Info,
-        CollectorRegistry, generate_latest, CONTENT_TYPE_LATEST
+        Counter, Histogram, Gauge, Info,
+        CollectorRegistry, generate_latest
     )
     PROMETHEUS_AVAILABLE = True
 except ImportError:
@@ -29,12 +28,10 @@ except ImportError:
 
 # OpenTelemetry tracing
 try:
-    from opentelemetry import trace, metrics as otel_metrics
+    from opentelemetry import trace
     from opentelemetry.trace import Status, StatusCode
     from opentelemetry.metrics import get_meter
     from opentelemetry.sdk.trace import TracerProvider
-    from opentelemetry.sdk.metrics import MeterProvider
-    from opentelemetry.exporter.prometheus import PrometheusMetricReader
     OPENTELEMETRY_AVAILABLE = True
 except ImportError:
     OPENTELEMETRY_AVAILABLE = False

@@ -281,7 +281,7 @@ class MCPIntegration:
         """
         try:
             supported_versions = ["1.0.0", "1.1.0"]
-            return aty(
+            return any(
                 version.parse(mcp_version) >= version.parse(v)
                 for v in supported_versions
             )

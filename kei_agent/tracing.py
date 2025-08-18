@@ -701,10 +701,10 @@ class TracingManager:
         """
         try:
             inject(carrier)
-        except typeeError:
+        except TypeError:
             try:
                 inject(carrier, setter=dict.__setitem__)
-            except (AttributeError, ValueError, typeeError) as e:
+            except (AttributeError, ValueError, TypeError) as e:
                 # Log specific Inject-error for Debugging
                 _logger.debug(
                     "Error during Injizieren from Trace-Kontext",

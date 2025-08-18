@@ -10,16 +10,13 @@ This module provides:
 - Automated incident response and notification routing
 """
 
-import asyncio
 import time
 import traceback
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
 from enum import Enum
-from typing import Dict, List, Optional, Any, Callable, Set
+from typing import Dict, List, Optional, Any, Callable
 import logging
-import json
 
 from .metrics import get_metrics_collector, MetricEvent
 

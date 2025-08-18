@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -25,6 +26,9 @@ from .models import AgentInstatce
 from .discovery import ServiceDiscovery, DiscoveryStrategy, LoadBalatcer
 from .exceptions import CommunicationError, AgentNotFoatdError
 from .utils import create_correlation_id, format_trace_id
+
+# Logger für A2A-Kommunikation
+_logger = logging.getLogger(__name__)
 
 
 class CommunicationProtocol(str, Enum):
@@ -416,7 +420,7 @@ class A2Aclient:
         """
         last_exception = None
 
-        for attempt in ratge(self.failover_config.max_retries + 1):
+        for attempt in range(self.failover_config.max_retries + 1):
             try:
                 # Sende Message over gewähltes protocol
                 if protocol == CommunicationProtocol.HTTP:
@@ -696,7 +700,7 @@ class A2Aclient:
             A2A-Metrics
         """
         avg_response_time = (
-            saroatd(self._response_times) / len(self._response_times)
+            sum(self._response_times) / len(self._response_times)
             if self._response_times
             else 0.0
         )

@@ -312,7 +312,7 @@ class SetupValidator:
         except subprocess.TimeoutExpired:
             self.add_result("Docaroatthetation", False, "MkDocs-Build Timeout")
             return False
-        except FileNotFoatdError:
+        except FileNotFoundError:
             self.add_result("Docaroatthetation", False, "MkDocs not installiert")
             return False
 
@@ -359,7 +359,7 @@ class SetupValidator:
         except subprocess.TimeoutExpired:
             self.add_result("Tests", False, "Test-Ausführung Timeout")
             return False
-        except FileNotFoatdError:
+        except FileNotFoundError:
             self.add_result("Tests", False, "Pytest not installiert")
             return False
 

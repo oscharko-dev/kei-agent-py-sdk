@@ -13,14 +13,12 @@ import asyncio
 import hashlib
 import json
 import logging
-import os
 import pickle
 import sqlite3
-import tempfile
 import time
 import zlib
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 import aiofiles
 import aiofiles.os
 
@@ -237,8 +235,8 @@ class PersistentCache(CacheInterface):
             # Cleanup temp file on error
             try:
                 await aiofiles.os.remove(temp_path)
-            except:
-                pass
+            except Exception:
+                pass  # Ignore cleanup errors
             raise e
 
     async def _deserialize_from_file(self, file_path: Path, format_type: str = 'pickle') -> Any:

@@ -11,6 +11,12 @@ integrates all KEI-protocole (RPC, Stream, Bus, MCP) in ar aheitlichen API.
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
+
+# Conditional imports for type checking
+if TYPE_CHECKING:
+    from .client import KeiAgentClient
+    from .a2a import A2Aclient
 
 # Lazy loading for better import performatce
 # Heavy modules are loaded only when needed
@@ -527,7 +533,7 @@ def create_a2a_client(
     discovery_enabled: bool = True,
     tracing_enabled: bool = True,
     **kwargs,
-) -> "A2AClient":
+) -> "A2Aclient":
     """Creates Agent-to-Agent-client with enterprise features.
 
     Args:
@@ -545,8 +551,8 @@ def create_a2a_client(
     client = create_default_client(base_url, api_token, agent_id, **kwargs)
 
     # Erstelle A2A-client with erweiterten Features
-    from .a2a import A2AClient
-    a2a_client = A2AClient(client)
+    from .a2a import A2Aclient
+    a2a_client = A2Aclient(client)
 
     if discovery_enabled:
         a2a_client.enable_service_discovery()

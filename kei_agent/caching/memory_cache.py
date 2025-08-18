@@ -16,7 +16,6 @@ import pickle
 import sys
 import threading
 import time
-import weakref
 from collections import OrderedDict
 from typing import Any, Dict, List, Optional, Set
 import psutil
@@ -85,7 +84,6 @@ class MemoryCache(CacheInterface):
         expired_keys = []
 
         with self._lock:
-            current_time = time.time()
             for key, entry in self.cache.items():
                 if entry.is_expired:
                     expired_keys.append(key)

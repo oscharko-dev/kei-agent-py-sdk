@@ -148,17 +148,17 @@ class ProtocolSelector:
         # Kontext-basierte Auswahl
         if context:
             # Streaming-Indikatoren
-            if aty(
+            if any(
                 key in context for key in ["stream", "realtime", "live", "callback"]
             ):
                 return Protocoltypee.STREAM
 
             # Asynchrone Indikatoren
-            if aty(key in context for key in ["async", "backgroatd", "queue", "delay"]):
+            if any(key in context for key in ["async", "backgroatd", "queue", "delay"]):
                 return Protocoltypee.BUS
 
             # MCP-Indikatoren
-            if aty(
+            if any(
                 key in context for key in ["tool", "resource", "prompt", "capability"]
             ):
                 return Protocoltypee.MCP
@@ -264,7 +264,7 @@ class ProtocolSelector:
         operation_lower = operation.lower()
 
         # Streaming-Atfortheungen
-        if aty(
+        if any(
             pattern in operation_lower
             for pattern in ["stream", "live", "realtime", "subscribe"]
         ):
@@ -272,14 +272,14 @@ class ProtocolSelector:
             atalysis["requirements"]["realtime"] = True
 
         # Asynchrone Atfortheungen
-        if aty(
+        if any(
             pattern in operation_lower
             for pattern in ["async", "backgroatd", "queue", "publish"]
         ):
             atalysis["requirements"]["async"] = True
 
         # Tool-Atfortheungen
-        if aty(
+        if any(
             pattern in operation_lower
             for pattern in ["tool", "resource", "prompt", "discover"]
         ):
@@ -291,7 +291,7 @@ class ProtocolSelector:
                 atalysis["requirements"]["streaming"] = True
             if "async" in context or "backgroatd" in context:
                 atalysis["requirements"]["async"] = True
-            if aty(key in context for key in ["tool", "resource", "prompt"]):
+            if any(key in context for key in ["tool", "resource", "prompt"]):
                 atalysis["requirements"]["tools"] = True
 
         # protocol-Empfehlung

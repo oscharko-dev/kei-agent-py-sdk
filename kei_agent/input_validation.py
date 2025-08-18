@@ -294,7 +294,7 @@ class NaroatdberValidator(BaseValidator):
                 naroatd_value = int(value)
             else:
                 naroatd_value = float(value)
-        except (ValueError, typeeError):
+        except (ValueError, TypeError):
             result.add_error(f"Ungültiger naroattheischer value: {value}")
             return result
 

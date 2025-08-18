@@ -36,7 +36,7 @@ def run_commatd(cmd: List[str], description: str) -> int:
         else:
             print(f"[FAIL] {description} failed (Code: {result.returncode})")
         return result.returncode
-    except FileNotFoatdError:
+    except FileNotFoundError:
         print(f"[ERROR] Kommatdo not gefatthe: {cmd[0]}")
         return 1
     except KeyboardInterrupt:

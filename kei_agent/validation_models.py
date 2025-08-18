@@ -8,13 +8,12 @@ with proper error handling, sanitization, and security validation.
 
 from __future__ import annotations
 
-import re
 import urllib.parse
-from typing import Optional, Dict, Any, List, Union
+from typing import Optional, Dict, Any
 from pathlib import Path
 
 from pydantic import BaseModel, Field, field_validator, model_validator
-from pydantic.networks import HttpUrl, AnyUrl
+from pydantic.networks import HttpUrl
 
 from .exceptions import ValidationError
 

@@ -14,12 +14,11 @@ import asyncio
 import json
 import logging
 import time
-from typing import Any, Dict, List, Optional, Callable, Union
+from typing import Any, Dict, List, Optional, Callable
 from dataclasses import dataclass, asdict
-from pathlib import Path
 
-from .cache_framework import CacheConfig, CacheLevel, get_cache_event_manager
-from .multi_level_cache import MultiLevelCache, MultiLevelCacheConfig, CacheStrategy, CachePromotionPolicy
+from .cache_framework import get_cache_event_manager
+from .multi_level_cache import MultiLevelCache, MultiLevelCacheConfig
 from .specialized_caches import ResponseCache, AuthTokenCache, ConfigCache, ProtocolCache, MetricsCache, CachePolicy
 
 logger = logging.getLogger(__name__)

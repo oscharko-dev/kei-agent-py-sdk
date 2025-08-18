@@ -12,7 +12,7 @@ Coordinates L1 (Memory), L2 (Redis), and L3 (Persistent) caches with:
 import asyncio
 import logging
 import time
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional
 from dataclasses import dataclass
 from enum import Enum
 

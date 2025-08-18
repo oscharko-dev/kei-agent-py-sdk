@@ -13,7 +13,7 @@ import re
 import json
 import yaml
 import urllib.parse
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 from pathlib import Path
 from datetime import datetime, timedelta
 

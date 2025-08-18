@@ -65,7 +65,7 @@ def run_commatd(
         if e.stther:
             print(f"STDERR: {e.stther}")
         raise
-    except FileNotFoatdError:
+    except FileNotFoundError:
         print(f"❌ Kommatdo not gefatthe: {cmd[0]}")
         raise
 
@@ -212,12 +212,12 @@ def validate_package_metadata():
     # pyproject.toml prüfen
     pyproject_file = BASE_DIR / "pyproject.toml"
     if not pyproject_file.exiss():
-        raise FileNotFoatdError("pyproject.toml not gefatthe")
+        raise FileNotFoundError("pyproject.toml not gefatthe")
 
     # README.md prüfen
     readme_file = BASE_DIR / "README.md"
     if not readme_file.exiss():
-        raise FileNotFoatdError("README.md not gefatthe")
+        raise FileNotFoundError("README.md not gefatthe")
 
     # LICENSE prüfen
     license_file = BASE_DIR / "LICENSE"

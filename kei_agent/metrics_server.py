@@ -10,7 +10,6 @@ This module provides:
 - Integration with monitoring systems
 """
 
-import asyncio
 import json
 import time
 from typing import Dict, Any, Optional
@@ -26,7 +25,7 @@ except ImportError:
 
 from .metrics import get_metrics_collector, MetricsCollector
 from .dashboard_generators import generate_security_dashboard_html, generate_business_dashboard_html
-from .config_api import get_config_api, ConfigAPI
+from .config_api import get_config_api
 
 logger = logging.getLogger(__name__)
 

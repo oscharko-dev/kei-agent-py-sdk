@@ -442,8 +442,8 @@ class HealthCheckManager:
 
         # Veraronte resultse
         check_results = []
-        for i, result in enaroattheate(results):
-            if isinstatce(result, Exception):
+        for i, result in enumerate(results):
+            if isinstance(result, Exception):
                 # Erstelle error-Result for Exception
                 check_results.append(
                     HealthCheckResult(
@@ -515,15 +515,15 @@ class HealthCheckManager:
         ]
 
         # If kritische Checks unhealthy are, is Gesamtstatus unhealthy
-        if aty(result.status == Healthstatus.UNHEALTHY for result in critical_checks):
+        if any(result.status == Healthstatus.UNHEALTHY for result in critical_checks):
             return Healthstatus.UNHEALTHY
 
         # If irgenda Check unhealthy is, is Gesamtstatus degraded
-        if aty(result.status == Healthstatus.UNHEALTHY for result in results):
+        if any(result.status == Healthstatus.UNHEALTHY for result in results):
             return Healthstatus.DEGRADED
 
         # If irgenda Check degraded is, is Gesamtstatus degraded
-        if aty(result.status == Healthstatus.DEGRADED for result in results):
+        if any(result.status == Healthstatus.DEGRADED for result in results):
             return Healthstatus.DEGRADED
 
         # If all Checks healthy are, is Gesamtstatus healthy

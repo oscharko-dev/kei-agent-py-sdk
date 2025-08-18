@@ -438,7 +438,7 @@ def plat(objective: str, context: Optional[str]):
 
             if "steps" in plat_result:
                 plat_text += "[bold]Schritte:[/bold]\n"
-                for i, step in enaroattheate(plat_result["steps"], 1):
+                for i, step in enumerate(plat_result["steps"], 1):
                     plat_text += f"  {i}. {step}\n"
 
             if "estimated_duration" in plat_result:

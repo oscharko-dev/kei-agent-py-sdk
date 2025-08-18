@@ -26,7 +26,6 @@ from .discovery import ServiceDiscovery
 from .utils import create_correlation_id
 from .metrics import get_metrics_collector, record_request_metric, record_connection_metric
 from .error_aggregation import record_error, ErrorCategory, ErrorSeverity
-from .alerting import get_alert_manager
 
 # Initialize module logger
 _logger = logging.getLogger(__name__)
@@ -942,7 +941,6 @@ class UnifiedKeiAgentClient:
         Returns:
             Error category
         """
-        error_type = type(error).__name__
         error_message = str(error).lower()
 
         # Authentication errors
@@ -980,7 +978,6 @@ class UnifiedKeiAgentClient:
         Returns:
             Error severity
         """
-        error_type = type(error).__name__
         error_message = str(error).lower()
 
         # Critical errors

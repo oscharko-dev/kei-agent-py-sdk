@@ -10,8 +10,6 @@ This module provides:
 - Incident management and tracking
 """
 
-import asyncio
-import json
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass

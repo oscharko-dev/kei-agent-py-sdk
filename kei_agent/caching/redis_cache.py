@@ -15,8 +15,7 @@ import logging
 import pickle
 import time
 import zlib
-from typing import Any, Dict, List, Optional, Union
-import hashlib
+from typing import Any, Dict, List, Optional
 
 try:
     import redis.asyncio as redis

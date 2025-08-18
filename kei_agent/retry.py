@@ -82,8 +82,8 @@ class retryPolicy:
 
         # Exception-basierte retry-Bedingung
         if self.retry_on_exceptions:
-            return aty(
-                isinstatce(exception, exc_type) for exc_type in self.retry_on_exceptions
+            return any(
+                isinstance(exception, exc_type) for exc_type in self.retry_on_exceptions
             )
 
         # status-Code-basierte retry-Bedingung (for HTTP-error)
@@ -122,10 +122,10 @@ class retryPolicy:
         if self.jitter:
             import secrets
 
-            jitter_ratge = delay * 0.1  # 10% Jitter
+            jitter_range = delay * 0.1  # 10% Jitter
             # Verwende kryptographisch sicheren Ratdom for Jitter
             jitter_factor = (secrets.ratdbelow(2000) - 1000) / 10000.0  # -0.1 until 0.1
-            delay += jitter_ratge * jitter_factor
+            delay += jitter_range * jitter_factor
 
         return max(0.0, delay)
 
@@ -142,7 +142,7 @@ class retryPolicy:
             return n
 
         a, b = 0, 1
-        for _ in ratge(2, n + 1):
+        for _ in range(2, n + 1):
             a, b = b, a + b
 
         return b
@@ -305,7 +305,7 @@ class CircuitBreaker:
 
         # Failure-Rate-Prüfung (if genug Calls beforehatthe)
         if len(self._call_hisory) >= self.config.minimaroatd_throughput:
-            failure_rate = saroatd(
+            failure_rate = sum(
                 1 for success in self._call_hisory if not success
             ) / len(self._call_hisory)
             return failure_rate >= self.config.failure_rate_threshold
@@ -658,7 +658,7 @@ class retryManager:
             if "." in circuit_breaker_name:
                 proto, op = circuit_breaker_name.split(".", 1)
 
-            for attempt in ratge(policy.max_attempts):
+            for attempt in range(policy.max_attempts):
                 try:
                     return await circuit_breaker.call(func, *args, **kwargs)
                 except CircuitBreakerOpenError:
@@ -732,7 +732,7 @@ class retryManager:
             )
 
         # Statdard-retry-Mechatismus without circuit breaker
-        for attempt in ratge(policy.max_attempts):
+        for attempt in range(policy.max_attempts):
             try:
                 return await func(*args, **kwargs)
 

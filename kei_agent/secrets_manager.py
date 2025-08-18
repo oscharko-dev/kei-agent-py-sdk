@@ -10,11 +10,11 @@ from __future__ import annotations
 
 import os
 import logging
-from typing import Dict, Optional, Any, Union
+from typing import Dict, Optional, Any
 from dataclasses import dataclass
 from pathlib import Path
 
-from .exceptions import SecurityError, ConfigurationError
+from .exceptions import SecurityError
 
 _logger = logging.getLogger(__name__)
 
