@@ -275,7 +275,10 @@ ProtocolError: Stream-Verbindung fehlgeschlagen: Connection refused
 import time
 
 start_time = time.time()
-result = await client.plan_task("objective")
+result = await client.plan_task(
+    objective="System-Health-Check durchführen",
+    context={"scope": "basic"}
+)
 duration = time.time() - start_time
 print(f"Response time: {duration:.2f}s")
 ```
@@ -285,11 +288,13 @@ print(f"Response time: {duration:.2f}s")
 1. **Timeout anpassen**
 
    ```python
+   from kei_agent import ConnectionConfig
+
    config = AgentClientConfig(
        base_url="https://api.kei-framework.com",
        api_token="your-token",
        agent_id="agent",
-       timeout=60  # Erhöhter Timeout
+       connection=ConnectionConfig(timeout=60.0)  # Erhöhter Timeout
    )
    ```
 

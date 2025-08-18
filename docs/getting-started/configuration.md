@@ -9,28 +9,27 @@ Lernen Sie, wie Sie das KEI-Agent SDK für verschiedene Umgebungen und Anwendung
 Die `AgentClientConfig` ist die Hauptkonfigurationsklasse für den Client:
 
 ```python
-from kei_agent import AgentClientConfig
+from kei_agent import AgentClientConfig, ConnectionConfig, RetryConfig
 
 config = AgentClientConfig(
     base_url="https://api.kei-framework.com",
     api_token="your-api-token",
     agent_id="my-agent",
-    timeout=30,
-    max_retries=3,
-    retry_delay=1.0
+    connection=ConnectionConfig(timeout=30.0),
+    retry=RetryConfig(max_attempts=3, base_delay=1.0)
 )
 ```
 
 #### Parameter-Referenz
 
-| Parameter | Typ | Standard | Beschreibung |
-|-----------|-----|----------|--------------|
-| `base_url` | `str` | **Erforderlich** | Basis-URL der KEI-API |
-| `api_token` | `str` | **Erforderlich** | API-Token für Authentifizierung |
-| `agent_id` | `str` | **Erforderlich** | Eindeutige Agent-ID |
-| `timeout` | `float` | `30.0` | Request-Timeout in Sekunden |
-| `max_retries` | `int` | `3` | Maximale Anzahl Wiederholungen |
-| `retry_delay` | `float` | `1.0` | Verzögerung zwischen Wiederholungen |
+| Parameter     | Typ     | Standard         | Beschreibung                    |
+| ------------- | ------- | ---------------- | ------------------------------- |
+| `base_url`    | `str`   | **Erforderlich** | Basis-URL der KEI-API           |
+| `api_token`   | `str`   | **Erforderlich** | API-Token für Authentifizierung |
+| `agent_id`    | `str`   | **Erforderlich** | Eindeutige Agent-ID             |
+| `connection`  | `ConnectionConfig` | `ConnectionConfig()` | HTTP-Verbindungseinstellungen |
+| `retry`       | `RetryConfig` | `RetryConfig()` | Retry-Mechanismen und Circuit Breaker |
+| `tracing`     | `TracingConfig` | `TracingConfig()` | Distributed Tracing Konfiguration |
 
 ## 🔌 Protokoll-Konfiguration
 

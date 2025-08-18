@@ -111,14 +111,15 @@ protocol_config = ProtocolConfig(
     protocol_fallback_enabled=True
 )
 
-# Agent konfigurieren
+# Agent konfigurieren - Korrekte Konfigurationsstruktur
+from kei_agent import ConnectionConfig, RetryConfig
+
 agent_config = AgentClientConfig(
     base_url="https://api.kei-framework.com",
     api_token="production-token",
     agent_id="enterprise-agent-001",
-    timeout=30,
-    max_retries=5,
-    retry_delay=2.0
+    connection=ConnectionConfig(timeout=30.0),
+    retry=RetryConfig(max_attempts=5, base_delay=2.0)
 )
 
 # Enterprise Client erstellen
@@ -127,8 +128,11 @@ async with UnifiedKeiAgentClient(
     protocol_config=protocol_config,
     security_config=security_config
 ) as client:
-    # Production-ready Agent-Operationen
-    plan = await client.plan_task("Enterprise task")
+    # Production-ready Agent-Operationen - Korrekte API-Signatur
+    plan = await client.plan_task(
+        objective="Führe Enterprise-System-Check durch",
+        context={"scope": "production", "include_metrics": True}
+    )
 ```
 
 ### Health Monitoring Setup
@@ -138,7 +142,8 @@ from kei_agent import (
     get_health_manager,
     APIHealthCheck,
     DatabaseHealthCheck,
-    MemoryHealthCheck
+    MemoryHealthCheck,
+    HealthStatus
 )
 
 # Health Manager konfigurieren
@@ -170,10 +175,10 @@ async def continuous_monitoring():
     while True:
         summary = await health_manager.run_all_checks()
 
-        if summary.overall_status != "healthy":
+        if summary.overall_status != HealthStatus.HEALTHY:
             logger.error(
                 "System health degraded",
-                overall_status=summary.overall_status,
+                overall_status=summary.overall_status.value,
                 unhealthy_count=summary.unhealthy_count,
                 checks=[check.name for check in summary.checks if check.status != "healthy"]
             )
@@ -246,15 +251,15 @@ def validate_enterprise_input(data: Dict[str, Any]) -> Dict[str, Any]:
 ### Structured Logging
 
 ```python
+import time
 from kei_agent import get_logger, LogContext
 
 # Enterprise Logger
 logger = get_logger("enterprise_agent")
 
-# Request-Context setzen
+# Request-Context setzen - create_correlation_id() setzt bereits den Kontext
 correlation_id = logger.create_correlation_id()
 logger.set_context(LogContext(
-    correlation_id=correlation_id,
     user_id="enterprise-user-123",
     agent_id="enterprise-agent-001",
     operation="quarterly_report_generation",

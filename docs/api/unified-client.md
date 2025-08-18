@@ -533,4 +533,4 @@ except ProtocolError as e:
 
 - [ProtocolTypes →](protocol-types.md) - Konfigurationsklassen
 - [Enterprise Logging →](enterprise-logging.md) - Logging-Integration
-- [Examples →](../examples/basic-usage.md) - Praktische Beispiele
+- [Examples →](../examples/index.md) - Praktische Beispiele

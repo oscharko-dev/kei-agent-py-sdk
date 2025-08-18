@@ -34,6 +34,7 @@ graph TD
 Das KEI-Agent SDK unterstützt vier Hauptprotokolle:
 
 ### 1. RPC (Remote Procedure Call)
+
 - **Synchrone** Request-Response-Kommunikation
 - Ideal für **direkte Agent-Aufrufe**
 - HTTP-basiert mit JSON-Payloads
@@ -44,17 +45,21 @@ result = await client.plan_task("Analysiere Daten")
 ```
 
 ### 2. Stream (WebSocket)
+
 - **Bidirektionale** Echtzeit-Kommunikation
 - Ideal für **kontinuierliche Datenströme**
 - WebSocket-basiert
 
 ```python
 # Stream-Beispiel
-async for message in client.start_streaming_session():
+async def on_event(message):
     print(f"Empfangen: {message}")
+
+await client.start_streaming_session(callback=on_event)
 ```
 
 ### 3. Bus (Message Bus)
+
 - **Asynchrone** Publish-Subscribe-Kommunikation
 - Ideal für **Event-basierte Architekturen**
 - Entkoppelte Agent-Kommunikation
@@ -65,6 +70,7 @@ await client.send_agent_message("target-agent", "task_request", data)
 ```
 
 ### 4. MCP (Model Context Protocol)
+
 - **Tool-Discovery** und -Verwendung
 - Ideal für **KI-Model-Integration**
 - Standardisierte Tool-Schnittstelle
@@ -82,6 +88,7 @@ result = await client.use_tool("calculator", expression="2+2")
 Das SDK unterstützt drei Authentifizierungsmethoden:
 
 #### Bearer Token
+
 ```python
 config = AgentClientConfig(
     api_token="your-bearer-token",
@@ -90,6 +97,7 @@ config = AgentClientConfig(
 ```
 
 #### OIDC (OpenID Connect)
+
 ```python
 config = SecurityConfig(
     auth_type=AuthType.OIDC,
@@ -100,6 +108,7 @@ config = SecurityConfig(
 ```
 
 #### mTLS (Mutual TLS)
+
 ```python
 config = SecurityConfig(
     auth_type=AuthType.MTLS,
@@ -220,11 +229,12 @@ logger.info("Operation started", extra={
 ### Health Checks
 
 ```python
-from kei_agent import get_health_manager
+from kei_agent import get_health_manager, APIHealthCheck
 
 health = get_health_manager()
-status = await health.check_health()
-print(f"System Health: {status}")
+health.register_check(APIHealthCheck(name="kei_api", url="https://api.kei-framework.com/health"))
+summary = await health.run_all_checks()
+print(f"System Health: {summary.overall_status}")
 ```
 
 ### Tracing
@@ -239,21 +249,25 @@ async with client.trace_operation("complex-task") as span:
 ## 🎯 Best Practices
 
 ### 1. Konfiguration
+
 - Verwenden Sie **Umgebungsvariablen** für Deployment-spezifische Werte
 - Nutzen Sie **Type-Hints** für bessere IDE-Unterstützung
 - Implementieren Sie **Konfigurationsvalidierung**
 
 ### 2. Fehlerbehandlung
+
 - Verwenden Sie **spezifische Exception-Types**
 - Implementieren Sie **Retry-Strategien**
 - Nutzen Sie **Circuit Breaker** für externe Services
 
 ### 3. Performance
+
 - Verwenden Sie **Connection Pooling**
 - Implementieren Sie **Caching** wo sinnvoll
 - Nutzen Sie **Batch-Operationen** für mehrere Requests
 
 ### 4. Sicherheit
+
 - **Rotieren Sie Tokens** regelmäßig
 - Verwenden Sie **mTLS** in produktiven Umgebungen
 - Aktivieren Sie **Audit-Logging**

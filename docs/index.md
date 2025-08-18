@@ -15,29 +15,53 @@ Das KEI-Agent Python SDK bietet eine einheitliche, typisierte API für die Entwi
 ## ⚡ Quick Start
 
 ```python
-from kei_agent import UnifiedKeiAgentClient, AgentClientConfig
+import asyncio
+import httpx
+from kei_agent import UnifiedKeiAgentClient, AgentClientConfig, CapabilityManager, CapabilityProfile
 
-# Konfiguration
+# 1) Agent Erstellen
 config = AgentClientConfig(
     base_url="https://api.kei-framework.com",
-    api_token="your-api-token",
-    agent_id="my-agent"
+    api_token="your-token",
+    agent_id="blogpost-agent"
 )
 
-# Client verwenden
-async with UnifiedKeiAgentClient(config=config) as client:
-    # Plan erstellen
-    plan = await client.plan_task("Erstelle einen Quartalsbericht")
+# 2) Agent Definition
+async def main():
+    async with UnifiedKeiAgentClient(config=config) as client:
 
-    # Aktion ausführen
-    result = await client.execute_action("generate_report", {
-        "format": "pdf",
-        "quarter": "Q4-2024"
-    })
+        # 3) Tool erstellen
+        async def web_search_tool(query: str) -> dict:
+            async with httpx.AsyncClient() as http:
+                response = await http.get(f"https://api.duckduckgo.com/?q={query}&format=json")
+                data = response.json()
+                return {"results": data.get("RelatedTopics", [])[:3]}
 
-    # Health Check
-    health = await client.health_check()
-    print(f"System Status: {health['status']}")
+        # 4) Tool Zugriff für Agent realisieren
+        capability_manager = CapabilityManager(client._legacy_client)
+        await capability_manager.register_capability(
+            CapabilityProfile(
+                name="web_search",
+                version="1.0.0",
+                description="Web-Suche"
+            ),
+            handler=web_search_tool
+        )
+
+        # 5) Aufgabe für den Agent Definieren
+        task = await client.plan_task(
+            objective="Erstelle Blogpost über KI",
+            context={"topic": "Künstliche Intelligenz"}
+        )
+
+        # 6) Ausführung Agent Starten
+        search_result = await client.use_tool("web_search", **{"query": "KI Trends 2024"})
+
+        # 7) Agent liefert die Response
+        print(f"Gefunden: {len(search_result['results'])} Ergebnisse")
+        return search_result
+
+asyncio.run(main())
 ```
 
 ## 🏗️ Architektur-Highlights

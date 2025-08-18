@@ -84,35 +84,110 @@ pip install -e ".[dev,docs,security]"
 
 ```python
 import asyncio
-from kei_agent import UnifiedKeiAgentClient, AgentClientConfig
+import psutil
+import requests
+from kei_agent import (
+    UnifiedKeiAgentClient,
+    AgentClientConfig,
+    CapabilityManager,
+    CapabilityProfile
+)
+
+# 1. TOOL-IMPLEMENTIERUNG: System-Monitor
+async def system_monitor_tool(target: str, metrics: list) -> dict:
+    """Echte Implementierung für System-Metriken mit psutil."""
+    result = {}
+
+    if "cpu" in metrics:
+        result["cpu_percent"] = psutil.cpu_percent(interval=1)
+    if "memory" in metrics:
+        memory = psutil.virtual_memory()
+        result["memory_percent"] = memory.percent
+    if "disk" in metrics:
+        disk = psutil.disk_usage('/')
+        result["disk_percent"] = (disk.used / disk.total) * 100
+
+    return {
+        "target": target,
+        "metrics": result,
+        "status": "healthy" if all(v < 80 for v in result.values()) else "warning"
+    }
+
+# 2. TOOL-IMPLEMENTIERUNG: API Health Check
+async def api_health_tool(endpoint: str) -> dict:
+    """Prüft API-Endpunkt Erreichbarkeit."""
+    try:
+        response = requests.get(endpoint, timeout=5)
+        return {
+            "endpoint": endpoint,
+            "status_code": response.status_code,
+            "response_time_ms": response.elapsed.total_seconds() * 1000,
+            "status": "healthy" if response.status_code == 200 else "unhealthy"
+        }
+    except Exception as e:
+        return {
+            "endpoint": endpoint,
+            "error": str(e),
+            "status": "unhealthy"
+        }
 
 async def main():
-    # Konfiguration
     config = AgentClientConfig(
         base_url="https://api.kei-framework.com",
         api_token="your-api-token",
         agent_id="my-agent"
     )
 
-    # Client verwenden
     async with UnifiedKeiAgentClient(config=config) as client:
-        # Plan erstellen
+        # 3. TOOLS REGISTRIEREN
+        capability_manager = CapabilityManager(client._legacy_client)
+
+        # System-Monitor Tool registrieren
+        await capability_manager.register_capability(
+            CapabilityProfile(
+                name="system_monitor",
+                version="1.0.0",
+                description="Sammelt CPU, Memory, Disk Metriken",
+                methods={"get_metrics": {"parameters": ["target", "metrics"]}}
+            ),
+            handler=system_monitor_tool
+        )
+
+        # API Health Tool registrieren
+        await capability_manager.register_capability(
+            CapabilityProfile(
+                name="api_health_checker",
+                version="1.0.0",
+                description="Prüft API-Endpunkt Erreichbarkeit",
+                methods={"check_endpoint": {"parameters": ["endpoint"]}}
+            ),
+            handler=api_health_tool
+        )
+
+        # 4. VOLLSTÄNDIGE IMPLEMENTIERUNG VERWENDEN
+        # Plan mit konkreten Tools
         plan = await client.plan_task(
-            objective="Erstelle einen Quartalsbericht",
-            context={"format": "pdf", "quarter": "Q4-2024"}
+            objective="Führe vollständige System-Diagnose durch",
+            context={"tools": ["system_monitor", "api_health_checker"]}
         )
         print(f"Plan erstellt: {plan['plan_id']}")
 
-        # Aktion ausführen
-        result = await client.execute_action(
-            action="generate_report",
-            parameters={"template": "quarterly", "data_source": "financial_db"}
+        # System-Metriken über registriertes Tool abrufen
+        system_data = await client.use_tool(
+            "system_monitor",
+            **{
+                "target": "localhost",
+                "metrics": ["cpu", "memory", "disk"]
+            }
         )
-        print(f"Report generiert: {result['action_id']}")
+        print(f"System-Metriken: {system_data}")
 
-        # Health Check
-        health = await client.health_check()
-        print(f"System Status: {health['status']}")
+        # API-Health über registriertes Tool prüfen
+        api_data = await client.use_tool(
+            "api_health_checker",
+            **{"endpoint": "https://api.kei-framework.com/health"}
+        )
+        print(f"API-Status: {api_data['status']}")
 
 asyncio.run(main())
 ```
@@ -120,6 +195,8 @@ asyncio.run(main())
 ### Multi-Protocol Features
 
 ```python
+import asyncio
+import time
 from kei_agent import ProtocolType
 
 async def multi_protocol_example():
@@ -130,25 +207,44 @@ async def multi_protocol_example():
     )
 
     async with UnifiedKeiAgentClient(config=config) as client:
-        # Automatische Protokoll-Auswahl
-        plan = await client.plan_task("Synchrone Planung")  # → RPC
-
-        # Real-time Streaming
-        await client.execute_agent_operation(
-            "stream_data_processing",
-            {"data": "real-time-feed"}  # → STREAM
+        # Automatische Protokoll-Auswahl (RPC) - Korrekte API-Signatur
+        plan = await client.plan_task(
+            objective="Entdecke verfügbare Tools",
+            context={"category": "monitoring", "max_results": 5}
         )
+        print(f"Plan: {plan}")
 
-        # Asynchrone Nachrichten
-        await client.send_agent_message(
-            target_agent="data-processor",
-            message_type="task_request",
-            payload={"task": "analyze_data"}  # → BUS
+        # Streaming: Verwende execute_agent_operation für Stream-Operationen
+        stream_result = await client.execute_agent_operation(
+            "stream_monitoring",
+            {"data": "real-time-feed", "callback": True},
+            protocol=ProtocolType.STREAM
         )
+        print(f"Stream-Result: {stream_result}")
 
-        # Tool-Integration
-        tools = await client.discover_available_tools("math")  # → MCP
-        result = await client.use_tool("calculator", expression="100 * 1.08")
+        # Tool-Discovery über MCP - Konkrete implementierbare Tools
+        tools = await client.discover_available_tools("monitoring")
+        print(f"Verfügbare Tools: {len(tools)}")
+
+        # Verwende verfügbares Tool (falls vorhanden)
+        if tools:
+            tool_result = await client.use_tool(
+                tools[0]["name"],
+                **{"target": "system", "check_type": "basic"}
+            )
+            print(f"Tool-Result: {tool_result}")
+
+        # Asynchrone Bus-Operation - Konkrete Implementierung
+        bus_result = await client.execute_agent_operation(
+            "async_health_check",
+            {
+                "target_agent": "monitoring-agent",
+                "message_type": "health_check_request",
+                "payload": {"scope": "basic", "timeout": 30}
+            },
+            protocol=ProtocolType.BUS
+        )
+        print(f"Bus-Result: {bus_result}")
 
 asyncio.run(multi_protocol_example())
 ```
@@ -156,18 +252,21 @@ asyncio.run(multi_protocol_example())
 ### Enterprise Features
 
 ```python
+import time
 from kei_agent import (
     get_logger,
     get_health_manager,
     LogContext,
     APIHealthCheck,
-    MemoryHealthCheck
+    MemoryHealthCheck,
+    HealthStatus
 )
 
 # Structured Logging
 logger = get_logger("enterprise_agent")
+# create_correlation_id() setzt bereits den Kontext
+correlation_id = logger.create_correlation_id()
 logger.set_context(LogContext(
-    correlation_id=logger.create_correlation_id(),
     user_id="user-123",
     agent_id="enterprise-agent"
 ))
@@ -193,19 +292,22 @@ async def enterprise_example():
     async with UnifiedKeiAgentClient(config=config) as client:
         # Operation mit Logging
         operation_id = logger.log_operation_start("business_process")
+        start_time = time.time()
 
         try:
             result = await client.plan_task("Enterprise task")
-            logger.log_operation_end("business_process", operation_id, time.time(), success=True)
+            logger.log_operation_end("business_process", operation_id, start_time, success=True)
 
             # Health Check
             summary = await health_manager.run_all_checks()
-            logger.info("Health check completed",
-                       overall_status=summary.overall_status,
-                       healthy_count=summary.healthy_count)
+            logger.info(
+                "Health check completed",
+                overall_status=summary.overall_status.value,
+                healthy_count=summary.healthy_count,
+            )
 
         except Exception as e:
-            logger.log_operation_end("business_process", operation_id, time.time(), success=False)
+            logger.log_operation_end("business_process", operation_id, start_time, success=False)
             logger.error("Business process failed", error=str(e))
             raise
 

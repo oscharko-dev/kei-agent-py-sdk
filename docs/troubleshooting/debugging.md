@@ -49,34 +49,16 @@ curl -X POST http://localhost:8000/debug/enable \
 
 ```python
 # logging_config.py
-import structlog
-from keiko.logging import configure_logging
+from kei_agent import get_logger
 
-# Logger konfigurieren
-logger = structlog.get_logger(__name__)
-
-# Strukturierte Log-Nachrichten
+logger = get_logger("debug")
 logger.info(
     "Agent-Task gestartet",
     agent_id="agent-123",
     task_id="task-456",
     task_type="text_processing",
     user_id="user-789",
-    correlation_id="corr-abc123"
 )
-
-# Error-Logging mit Context
-try:
-    result = await agent.execute_task(task)
-except Exception as e:
-    logger.error(
-        "Task-Ausführung fehlgeschlagen",
-        agent_id=task.agent_id,
-        task_id=task.id,
-        error_type=type(e).__name__,
-        error_message=str(e),
-        exc_info=True
-    )
 ```
 
 ### Request-Tracing
@@ -202,34 +184,14 @@ async def execute_task_with_tracing(self, task: Task) -> TaskResult:
 ### Interactive Debugger
 
 ```python
-# debug/interactive.py
+# debug/interactive.py (vereinfachtes Beispiel)
 import asyncio
-import IPython
-from keiko.core import get_application_context
+from kei_agent import get_logger
 
 async def start_debug_session():
-    """Startet interaktive Debug-Session."""
+    logger = get_logger("debug-session")
+    logger.info("Debug-Session gestartet")
 
-    # Application-Context laden
-    context = await get_application_context()
-
-    # Verfügbare Objekte
-    debug_context = {
-        'app': context.app,
-        'db': context.database,
-        'redis': context.redis,
-        'agent_service': context.agent_service,
-        'task_service': context.task_service,
-        'logger': context.logger
-    }
-
-    print("Keiko Debug-Session gestartet")
-    print("Verfügbare Objekte:", list(debug_context.keys()))
-
-    # IPython-Session starten
-    IPython.embed(user_ns=debug_context)
-
-# Debug-Session starten
 if __name__ == "__main__":
     asyncio.run(start_debug_session())
 ```
@@ -425,29 +387,19 @@ def performance_profile(func):
 ### Debug-API-Endpunkte
 
 ```python
-# api/debug.py
-from fastapi import APIRouter, Depends, HTTPException
-from keiko.auth import require_admin
+# api/debug.py (Ausschnitt)
+from fastapi import APIRouter
+from datetime import datetime
+from kei_agent import get_health_manager, APIHealthCheck
 
 debug_router = APIRouter(prefix="/debug", tags=["debug"])
 
 @debug_router.get("/health")
 async def debug_health():
-    """Detaillierte Health-Informationen."""
-
-    health_info = {
-        'timestamp': datetime.utcnow().isoformat(),
-        'version': get_version(),
-        'uptime_seconds': get_uptime(),
-        'memory_usage': get_memory_usage(),
-        'cpu_usage': get_cpu_usage(),
-        'database': await check_database_health(),
-        'redis': await check_redis_health(),
-        'agents': await get_agent_status_summary(),
-        'tasks': await get_task_status_summary()
-    }
-
-    return health_info
+    health = get_health_manager()
+    health.register_check(APIHealthCheck(name="kei_api", url="https://api.kei-framework.com/health"))
+    summary = await health.run_all_checks()
+    return {"timestamp": datetime.utcnow().isoformat(), "overall_status": summary.overall_status}
 
 @debug_router.get("/metrics")
 async def debug_metrics():
@@ -529,34 +481,21 @@ async def debug_agent(agent_id: str):
 ### Debug-CLI-Tools
 
 ```python
-# cli/debug.py
+# cli/debug.py (vereinfachtes Beispiel)
 import click
-import asyncio
-from keiko.debug import DebugSession
+from kei_agent import get_logger
 
 @click.group()
 def debug():
-    """Debug-CLI für Keiko."""
     pass
 
 @debug.command()
-@click.option('--agent-id', help='Agent-ID für Debug-Session')
-@click.option('--task-id', help='Task-ID für Debug-Session')
-def session(agent_id, task_id):
-    """Startet interaktive Debug-Session."""
+def ping():
+    logger = get_logger("debug-cli")
+    logger.info("Debug CLI ping")
 
-    async def start_session():
-        session = DebugSession()
-
-        if agent_id:
-            await session.load_agent(agent_id)
-
-        if task_id:
-            await session.load_task(task_id)
-
-        await session.start_interactive()
-
-    asyncio.run(start_session())
+if __name__ == '__main__':
+    debug()
 
 @debug.command()
 @click.option('--duration', default=60, help='Profiling-Dauer in Sekunden')
@@ -615,65 +554,15 @@ if __name__ == '__main__':
 ### Unit-Test-Debugging
 
 ```python
-# tests/debug_test.py
+# tests/debug_test.py (Beispielstruktur)
 import pytest
-import asyncio
-from keiko.testing import DebugTestCase
 
-class TestAgentDebugging(DebugTestCase):
-    """Debug-Tests für Agenten."""
-
-    @pytest.mark.asyncio
-    async def test_agent_execution_with_debugging(self):
-        """Testet Agent-Ausführung mit Debugging."""
-
-        # Debug-Modus aktivieren
-        self.enable_debug_mode()
-
-        # Agent erstellen
-        agent = await self.create_test_agent()
-
-        # Task mit Debug-Informationen ausführen
-        task = self.create_test_task()
-
-        with self.debug_context() as debug:
-            result = await agent.execute_task(task)
-
-            # Debug-Informationen prüfen
-            assert debug.get_call_count('execute_task') == 1
-            assert debug.get_execution_time('execute_task') < 5.0
-            assert len(debug.get_log_entries()) > 0
-
-        assert result.success
-
-    @pytest.mark.asyncio
-    async def test_memory_leak_detection(self):
-        """Testet Memory-Leak-Detection."""
-
-        initial_memory = self.get_memory_usage()
-
-        # Viele Tasks ausführen
-        for i in range(100):
-            agent = await self.create_test_agent()
-            task = self.create_test_task()
-            await agent.execute_task(task)
-
-        final_memory = self.get_memory_usage()
-        memory_increase = final_memory - initial_memory
-
-        # Memory-Increase sollte begrenzt sein
-        assert memory_increase < 100  # MB
+@pytest.mark.asyncio
+async def test_plan_task_happy_path():
+    assert True
 ```
 
-!!! tip "Debug-Best-Practices"
-    - Verwenden Sie strukturiertes Logging für bessere Nachverfolgbarkeit
-    - Aktivieren Sie Tracing nur bei Bedarf (Performance-Impact)
-    - Nutzen Sie Memory-Profiling bei Verdacht auf Memory-Leaks
-    - Implementieren Sie umfassende Debug-Endpunkte für Production-Debugging
+!!! tip "Debug-Best-Practices" - Verwenden Sie strukturiertes Logging für bessere Nachverfolgbarkeit - Aktivieren Sie Tracing nur bei Bedarf (Performance-Impact) - Nutzen Sie Memory-Profiling bei Verdacht auf Memory-Leaks - Implementieren Sie umfassende Debug-Endpunkte für Production-Debugging
 
 !!! warning "Production-Debugging"
-    Seien Sie vorsichtig beim Aktivieren von Debug-Modi in Production:
-    - Begrenzen Sie Debug-Sessions zeitlich
-    - Beschränken Sie Zugriff auf Admin-Benutzer
-    - Überwachen Sie Performance-Impact
-    - Deaktivieren Sie Debug-Modi nach Problemlösung
+Seien Sie vorsichtig beim Aktivieren von Debug-Modi in Production: - Begrenzen Sie Debug-Sessions zeitlich - Beschränken Sie Zugriff auf Admin-Benutzer - Überwachen Sie Performance-Impact - Deaktivieren Sie Debug-Modi nach Problemlösung

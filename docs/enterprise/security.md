@@ -47,12 +47,12 @@ graph TB
 
 #### Unterstützte Faktoren
 
-| Faktor | Typ | Beschreibung | Sicherheitslevel |
-|--------|-----|--------------|------------------|
-| **Passwort** | Wissen | Starke Passwort-Richtlinien | Basis |
-| **TOTP** | Besitz | Time-based One-Time Password | Hoch |
-| **Hardware-Token** | Besitz | FIDO2/WebAuthn | Sehr hoch |
-| **Biometrie** | Eigenschaft | Fingerabdruck/Gesichtserkennung | Hoch |
+| Faktor             | Typ         | Beschreibung                    | Sicherheitslevel |
+| ------------------ | ----------- | ------------------------------- | ---------------- |
+| **Passwort**       | Wissen      | Starke Passwort-Richtlinien     | Basis            |
+| **TOTP**           | Besitz      | Time-based One-Time Password    | Hoch             |
+| **Hardware-Token** | Besitz      | FIDO2/WebAuthn                  | Sehr hoch        |
+| **Biometrie**      | Eigenschaft | Fingerabdruck/Gesichtserkennung | Hoch             |
 
 #### MFA-Konfiguration
 
@@ -104,51 +104,58 @@ roles:
 #### Berechtigungsprüfung
 
 ```python
-from keiko.security import require_permission
+# Beispiel-RBAC-Check (vereinfachtes Muster)
+from fastapi import HTTPException
+
+def require_permission(permission: str):
+    def decorator(func):
+        async def wrapper(*args, **kwargs):
+            # Hier würde der tatsächliche RBAC-Check stehen
+            allowed = True
+            if not allowed:
+                raise HTTPException(403, "Forbidden")
+            return await func(*args, **kwargs)
+        return wrapper
+    return decorator
 
 @require_permission("agents:execute")
 async def execute_agent_task(agent_id: str, task: dict):
     """Führt eine Agent-Task aus (erfordert agents:execute Berechtigung)."""
-    # Implementation
-    pass
+    return {"status": "ok"}
 ```
 
 ## 🔑 Kryptographie & Verschlüsselung
 
 ### Verschlüsselungsstandards
 
-| Komponente | Algorithmus | Schlüssellänge | Verwendung |
-|------------|-------------|----------------|------------|
-| **Datenübertragung** | TLS 1.3 | 256-bit | HTTPS/WSS |
-| **Daten-at-Rest** | AES-256-GCM | 256-bit | Datenbank/Storage |
-| **JWT-Signierung** | RS256 | 2048-bit | Token-Authentifizierung |
-| **Passwort-Hashing** | Argon2id | - | Benutzer-Passwörter |
+| Komponente           | Algorithmus | Schlüssellänge | Verwendung              |
+| -------------------- | ----------- | -------------- | ----------------------- |
+| **Datenübertragung** | TLS 1.3     | 256-bit        | HTTPS/WSS               |
+| **Daten-at-Rest**    | AES-256-GCM | 256-bit        | Datenbank/Storage       |
+| **JWT-Signierung**   | RS256       | 2048-bit       | Token-Authentifizierung |
+| **Passwort-Hashing** | Argon2id    | -              | Benutzer-Passwörter     |
 
 ### Schlüsselverwaltung
 
 #### Azure Key Vault Integration
 
 ```python
-from keiko.security import KeyVaultManager
+# Azure Key Vault Beispiel mit Azure SDK
+from azure.identity import DefaultAzureCredential
+from azure.keyvault.secrets import SecretClient
 
-# Schlüssel-Manager initialisieren
-key_manager = KeyVaultManager(
-    vault_url="https://keiko-vault.vault.azure.net/",
-    credential=DefaultAzureCredential()
-)
+credential = DefaultAzureCredential()
+client = SecretClient(vault_url="https://keiko-vault.vault.azure.net/", credential=credential)
 
-# Verschlüsselungsschlüssel abrufen
-encryption_key = await key_manager.get_secret("data-encryption-key")
-
-# Automatische Schlüsselrotation
-await key_manager.rotate_key("data-encryption-key", schedule="monthly")
+secret = client.get_secret("data-encryption-key")
+print(secret.value)
 ```
 
 #### Schlüsselrotation
 
 ```yaml
 key_rotation:
-  schedule: "0 2 1 * *"  # Monatlich um 2:00 Uhr
+  schedule: "0 2 1 * *" # Monatlich um 2:00 Uhr
   keys:
     - name: "jwt-signing-key"
       type: "rsa"
@@ -214,7 +221,7 @@ network_policies:
     ingress:
       - from: "service_tier"
         ports: [5432, 6379]
-    egress: []  # Keine ausgehenden Verbindungen
+    egress: [] # Keine ausgehenden Verbindungen
 ```
 
 ## 📊 Security Monitoring
@@ -223,31 +230,25 @@ network_policies:
 
 #### Event-Kategorien
 
-| Kategorie | Ereignisse | Schweregrad | Aktion |
-|-----------|------------|-------------|--------|
-| **Authentifizierung** | Login-Versuche, MFA-Fehler | INFO/WARN | Logging |
-| **Autorisierung** | Zugriffsverweigerung | WARN | Alert |
-| **Anomalien** | Ungewöhnliche API-Nutzung | WARN | Investigation |
-| **Angriffe** | SQL-Injection, XSS | CRITICAL | Block + Alert |
+| Kategorie             | Ereignisse                 | Schweregrad | Aktion        |
+| --------------------- | -------------------------- | ----------- | ------------- |
+| **Authentifizierung** | Login-Versuche, MFA-Fehler | INFO/WARN   | Logging       |
+| **Autorisierung**     | Zugriffsverweigerung       | WARN        | Alert         |
+| **Anomalien**         | Ungewöhnliche API-Nutzung  | WARN        | Investigation |
+| **Angriffe**          | SQL-Injection, XSS         | CRITICAL    | Block + Alert |
 
 #### Security Information and Event Management (SIEM)
 
 ```python
-from keiko.security import SecurityEventLogger
-
-# Sicherheitsereignis protokollieren
-security_logger = SecurityEventLogger()
-
-await security_logger.log_event(
-    event_type="authentication_failure",
-    severity="WARNING",
+# Logging mit SDK-Logger
+from kei_agent import get_logger
+logger = get_logger("security")
+logger.warning(
+    "authentication_failure",
     user_id="user123",
     ip_address="192.168.1.100",
-    details={
-        "reason": "invalid_password",
-        "attempts": 3,
-        "user_agent": "Mozilla/5.0..."
-    }
+    reason="invalid_password",
+    attempts=3,
 )
 ```
 
@@ -282,52 +283,41 @@ ANOMALY_RULES = {
 #### Audit-Ereignisse
 
 ```python
-from keiko.audit import AuditLogger
-
-audit_logger = AuditLogger()
-
-# Kritische Aktion protokollieren
-await audit_logger.log_action(
-    action="agent_task_execution",
+from kei_agent import get_logger
+logger = get_logger("audit")
+logger.info(
+    "agent_task_execution",
     user_id="user123",
     resource_id="agent_456",
-    details={
-        "task_type": "data_processing",
-        "data_classification": "confidential",
-        "approval_required": True,
-        "approver": "manager789"
-    }
+    task_type="data_processing",
+    data_classification="confidential",
+    approval_required=True,
+    approver="manager789",
 )
 ```
 
 #### Compliance-Standards
 
-| Standard | Abdeckung | Status | Zertifizierung |
-|----------|-----------|--------|----------------|
-| **ISO 27001** | Informationssicherheit | ✅ Implementiert | Geplant |
-| **SOC 2 Type II** | Service-Sicherheit | ✅ Implementiert | In Arbeit |
-| **GDPR** | Datenschutz | ✅ Implementiert | Konform |
-| **HIPAA** | Gesundheitsdaten | 🔄 In Entwicklung | Geplant |
+| Standard          | Abdeckung              | Status            | Zertifizierung |
+| ----------------- | ---------------------- | ----------------- | -------------- |
+| **ISO 27001**     | Informationssicherheit | ✅ Implementiert  | Geplant        |
+| **SOC 2 Type II** | Service-Sicherheit     | ✅ Implementiert  | In Arbeit      |
+| **GDPR**          | Datenschutz            | ✅ Implementiert  | Konform        |
+| **HIPAA**         | Gesundheitsdaten       | 🔄 In Entwicklung | Geplant        |
 
 ### Datenschutz
 
 #### Datenklassifizierung
 
 ```python
-from keiko.security import DataClassifier
+# Beispielhafte Datenklassifizierung
+def classify(data: str) -> str:
+    return "confidential" if "secret" in data.lower() else "public"
 
-# Daten klassifizieren
-classifier = DataClassifier()
-
-classification = await classifier.classify_data(
-    data=user_input,
-    context="agent_task"
-)
-
-# Basierend auf Klassifizierung handeln
-if classification.level == "confidential":
-    await apply_enhanced_encryption(data)
-    await log_confidential_access(user_id, data_id)
+level = classify(user_input)
+if level == "confidential":
+    # Maßnahmen ergreifen
+    pass
 ```
 
 ## 🚨 Incident Response
@@ -336,32 +326,31 @@ if classification.level == "confidential":
 
 #### Incident-Kategorien
 
-| Kategorie | Beispiele | Response-Zeit | Eskalation |
-|-----------|-----------|---------------|------------|
-| **P1 - Kritisch** | Datenleck, System-Kompromittierung | < 15 Min | CISO |
-| **P2 - Hoch** | Authentifizierungs-Bypass | < 1 Std | Security Team |
-| **P3 - Mittel** | Anomale API-Nutzung | < 4 Std | Operations |
-| **P4 - Niedrig** | Policy-Verletzung | < 24 Std | Team Lead |
+| Kategorie         | Beispiele                          | Response-Zeit | Eskalation    |
+| ----------------- | ---------------------------------- | ------------- | ------------- |
+| **P1 - Kritisch** | Datenleck, System-Kompromittierung | < 15 Min      | CISO          |
+| **P2 - Hoch**     | Authentifizierungs-Bypass          | < 1 Std       | Security Team |
+| **P3 - Mittel**   | Anomale API-Nutzung                | < 4 Std       | Operations    |
+| **P4 - Niedrig**  | Policy-Verletzung                  | < 24 Std      | Team Lead     |
 
 #### Automatisierte Response
 
 ```python
-from keiko.security import IncidentResponse
+# Minimales Incident-Handler-Muster
+from typing import Callable, Dict
 
-# Incident-Response-System
-incident_response = IncidentResponse()
+handlers: Dict[str, Callable] = {}
 
-# Automatische Reaktion auf Sicherheitsereignis
-@incident_response.handler("authentication_attack")
+def incident_handler(event_type: str):
+    def register(func: Callable):
+        handlers[event_type] = func
+        return func
+    return register
+
+@incident_handler("authentication_attack")
 async def handle_auth_attack(event):
-    # IP-Adresse blockieren
-    await firewall.block_ip(event.source_ip)
-
-    # Benutzer benachrichtigen
-    await notify_security_team(event)
-
-    # Forensische Daten sammeln
-    await collect_forensic_data(event)
+    # Aktionen: blockieren, benachrichtigen, forensik sammeln
+    pass
 ```
 
 ## 📋 Security Checklist
@@ -389,7 +378,7 @@ async def handle_auth_attack(event):
 - [ ] **Mitarbeiter-Schulungen** durchgeführt
 
 !!! warning "Sicherheitshinweis"
-    Diese Dokumentation enthält allgemeine Sicherheitsrichtlinien. Für produktive Umgebungen sollten zusätzliche, umgebungsspezifische Sicherheitsmaßnahmen implementiert werden.
+Diese Dokumentation enthält allgemeine Sicherheitsrichtlinien. Für produktive Umgebungen sollten zusätzliche, umgebungsspezifische Sicherheitsmaßnahmen implementiert werden.
 
 !!! info "Weitere Informationen"
-    Detaillierte Sicherheitskonfigurationen finden Sie in der [Monitoring-Dokumentation](monitoring.md) und [Input-Validation-Dokumentation](input-validation.md).
+Detaillierte Sicherheitskonfigurationen finden Sie in der [Monitoring-Dokumentation](monitoring.md) und [Input-Validation-Dokumentation](input-validation.md).

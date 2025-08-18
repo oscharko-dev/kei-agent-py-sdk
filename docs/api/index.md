@@ -57,9 +57,15 @@ config = AgentClientConfig(
 )
 
 async with UnifiedKeiAgentClient(config=config) as client:
-    # Agent-Operationen
-    plan = await client.plan_task("Objective")
-    result = await client.execute_action("action", {"param": "value"})
+    # Agent-Operationen - Korrekte API-Signaturen
+    plan = await client.plan_task(
+        objective="System-Status prüfen",
+        context={"scope": "basic"}
+    )
+    result = await client.execute_action(
+        action="health_check",
+        parameters={"include_metrics": True}
+    )
     health = await client.health_check()
 ```
 

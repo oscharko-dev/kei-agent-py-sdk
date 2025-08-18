@@ -97,6 +97,8 @@ plugins:
       minify_js: true
       htmlmin_opts:
         remove_comments: true
+        remove_empty_space: true
+        reduce_boolean_attributes: true
 
 # Markdown-Extensions
 markdown_extensions:
@@ -156,6 +158,7 @@ nav:
       - Client-Verwendung: user-guide/client-usage.md
       - Protokolle: user-guide/protocols.md
       - Authentifizierung: user-guide/authentication.md
+      - Fehlerbehandlung: user-guide/error-handling.md
   - Enterprise Features:
       - enterprise/index.md
       - Logging: enterprise/logging.md
@@ -182,9 +185,11 @@ nav:
       - Design-Patterns: architecture/design-patterns.md
   - Beispiele:
       - examples/index.md
-      - Multi-Protocol: examples/multi-protocol.md
-      - Enterprise Setup: examples/enterprise-setup.md
-      - Performance Tuning: examples/performance-tuning.md
+  - Migration:
+      - migration/index.md
+      - Von Legacy: migration/from-legacy.md
+      - Breaking Changes: migration/breaking-changes.md
+      - Upgrade Guide: migration/upgrade-guide.md
   - Deployment:
       - deployment/index.md
   - Entwicklung:
@@ -216,9 +221,9 @@ extra:
       link: https://pypi.org/project/kei_agent_py_sdk/
     - icon: fontawesome/solid/globe
       link: https://oscharko-dev.github.io/kei-agent-py-sdk/
-  analytics:
-    provider: google
-    property: !ENV GOOGLE_ANALYTICS_KEY
+  # analytics:
+  #   provider: google
+  #   property: !ENV GOOGLE_ANALYTICS_KEY
   consent:
     title: Cookie-Einstellungen
     description: >-
@@ -230,5 +235,5 @@ extra:
 hooks:
   - docs/hooks/macros.py
 
-# Validation (temporär deaktiviert für CI - 43 Warnungen)
-strict: false
+# Validation aktiviert - alle Links und Referenzen werden überprüft
+strict: true
