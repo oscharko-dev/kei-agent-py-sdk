@@ -152,8 +152,19 @@ from utils import (
     calculate_backoff,
 )
 
-# Version Information
-__version__ = "0.1.0b1"
+# Version Information - Dynamisch aus Package-Metadaten geladen
+try:
+    from importlib.metadata import version, PackageNotFoundError
+except ImportError:
+    # Python < 3.8 Fallback
+    from importlib_metadata import version, PackageNotFoundError
+
+try:
+    __version__ = version("kei_agent_py_sdk")
+except PackageNotFoundError:
+    # Fallback für Development-Umgebung (nicht installiertes Package)
+    __version__ = "0.0.0-dev"
+
 __author__ = "KEI-Agent-Framework Team"
 __email__ = "dev@kei-agent-framework.com"
 __license__ = "MIT"
@@ -282,8 +293,8 @@ __all__ = [
     "__email__",
 ]
 
-# Version Information
-__version__ = "0.1.0b1"
+# Version Information - Bereits oben definiert, hier nur Referenz
+# __version__ wird oben dynamisch geladen
 __author__ = "KEI-Agent-Framework Team"
 __license__ = "MIT"
 __title__ = "kei_agent_py_sdk"

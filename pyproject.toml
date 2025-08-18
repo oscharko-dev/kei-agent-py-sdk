@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kei_agent_py_sdk"
-version = "0.1.0b1.post2"
+version = "0.1.0b1.post3"
 description = "Enterprise-Grade Python SDK for Keiko-Personal-Assistant Platform with Multi-Protocol Support and Comprehensive Documentation"
 readme = "README.md"
 license = "MIT"
@@ -48,6 +48,8 @@ dependencies = [
     # Async und Utilities
     "pydantic>=2.0.0,<3.0.0",
     "typing-extensions>=4.0.0",
+    # Version-Metadaten (Python < 3.8 Support)
+    "importlib-metadata>=4.0.0; python_version<'3.8'",
     # Tracing und Monitoring
     "opentelemetry-api>=1.20.0,<2.0.0",
     "opentelemetry-sdk>=1.20.0,<2.0.0",

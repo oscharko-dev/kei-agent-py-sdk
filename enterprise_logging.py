@@ -38,12 +38,12 @@ def _get_package_version() -> str:
     Returns:
         Package-Version oder Fallback-Version
     """
-    # DEAKTIVIERT: importlib_metadata verursacht KeyError-Probleme
-    # try:
-    #     return version("kei_agent_py_sdk")
-    # except (PackageNotFoundError, Exception):
-    #     # Fallback wenn Package nicht installiert ist (z.B. Development)
-    return "0.1.0-beta.1"
+    try:
+        from importlib.metadata import version
+
+        return version("kei_agent_py_sdk")
+    except Exception:
+        return "0.0.0-dev"
 
 
 @dataclass
