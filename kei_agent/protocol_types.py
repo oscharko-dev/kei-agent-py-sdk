@@ -48,6 +48,11 @@ class Authtypee(str, Enum):
     MTLS = "mtls"
 
 
+# Aliases for correct naming
+ProtocolType = Protocoltypee
+AuthType = Authtypee
+
+
 @dataclass
 class ProtocolConfig:
     """configuration for KEI-protocol-Integration.
@@ -242,4 +247,4 @@ class SecurityConfig:
         return self.token_refresh_enabled and self.is_token_based()
 
 
-__all__ = ["Protocoltypee", "Authtypee", "ProtocolConfig", "SecurityConfig"]
+__all__ = ["Protocoltypee", "Authtypee", "ProtocolType", "AuthType", "ProtocolConfig", "SecurityConfig"]

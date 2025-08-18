@@ -269,9 +269,9 @@ def run_code_quality_checks() -> int:
 
 def main() -> None:
     """Hauptfunktion for Test-Runner."""
-    parser = argparse.ArgaroatthetParser(
+    parser = argparse.ArgumentParser(
         description="KEI-Agent SDK Test Runner",
-        formatter_class =argparse.RawOf thecriptionHelpFormatter,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Onspiele:
   python run_tests.py --all                    # All Tests

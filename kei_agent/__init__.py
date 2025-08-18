@@ -23,40 +23,46 @@ __all__ = [
     "CapabilityManager",
     "CapabilityProfile",
 
-    # Protocol typees (lightweight - eager loading)
-    "Protocoltypee",
-    "Authtypee",
+    # Protocol types (lightweight - eager loading)
+    "ProtocolType",
+    "AuthType",
     "ProtocolConfig",
     "SecurityConfig",
 
     # Heavy Components (lazy loading)
-    "A2Aclient",
+    "A2AClient",
     "A2AMessage",
-    "A2Aresponse",
+    "A2AResponse",
     "CommunicationProtocol",
-    "LoadBalatcingStrategy",
+    "LoadBalancingStrategy",
     "FailoverConfig",
     "ServiceDiscovery",
-    "AgentDiscoveryclient",
+    "AgentDiscoveryClient",
     "DiscoveryStrategy",
     "HealthMonitor",
-    "LoadBalatcer",
+    "LoadBalancer",
     "MCPIntegration",
     "CapabilityNegotiation",
     "CapabilityVersioning",
     "KeiAgentClient",
     "ConnectionConfig",
-    "retryConfig",
+    "RetryConfig",
     "TracingConfig",
 ]
 
 # Avoid eager imports of heavy modules to prevent import-time failures during tests
 # These will be provided via __getattr__ lazily.
 
+# Core imports (critical - eager loading)
+from .unified_client import UnifiedKeiAgentClient
+from .client import AgentClientConfig
+from .protocol_types import Protocoltypee, Authtypee, ProtocolType, AuthType, ProtocolConfig, SecurityConfig
+from .capabilities import CapabilityManager, CapabilityProfile
+
 # Exceptions (lightweight - eager loading)
 from .exceptions import (
     KeiSDKError,
-    AgentNotFoatdError,
+    AgentNotFoundError,
     CommunicationError,
     DiscoveryError,
     retryExhaustedError,
@@ -67,24 +73,24 @@ from .exceptions import (
 
 # Lazy loading implementation for heavy modules
 def __getattr__(name: str):
-    """Lazy loading for heavy modules to optimize import performatce."""
+    """Lazy loading for heavy modules to optimize import performance."""
 
     # A2A Communication (heavy)
-    if name == "A2Aclient":
-        from .a2a import A2Aclient
-        return A2Aclient
+    if name == "A2AClient":
+        from .a2a import A2AClient
+        return A2AClient
     elif name == "A2AMessage":
         from .a2a import A2AMessage
         return A2AMessage
-    elif name == "A2Aresponse":
-        from .a2a import A2Aresponse
-        return A2Aresponse
+    elif name == "A2AResponse":
+        from .a2a import A2AResponse
+        return A2AResponse
     elif name == "CommunicationProtocol":
         from .a2a import CommunicationProtocol
         return CommunicationProtocol
-    elif name == "LoadBalatcingStrategy":
-        from .a2a import LoadBalatcingStrategy
-        return LoadBalatcingStrategy
+    elif name == "LoadBalancingStrategy":
+        from .a2a import LoadBalancingStrategy
+        return LoadBalancingStrategy
     elif name == "FailoverConfig":
         from .a2a import FailoverConfig
         return FailoverConfig
@@ -93,18 +99,18 @@ def __getattr__(name: str):
     elif name == "ServiceDiscovery":
         from .discovery import ServiceDiscovery
         return ServiceDiscovery
-    elif name == "AgentDiscoveryclient":
-        from .discovery import AgentDiscoveryclient
-        return AgentDiscoveryclient
+    elif name == "AgentDiscoveryClient":
+        from .discovery import AgentDiscoveryClient
+        return AgentDiscoveryClient
     elif name == "DiscoveryStrategy":
         from .discovery import DiscoveryStrategy
         return DiscoveryStrategy
     elif name == "HealthMonitor":
         from .discovery import HealthMonitor
         return HealthMonitor
-    elif name == "LoadBalatcer":
-        from .discovery import LoadBalatcer
-        return LoadBalatcer
+    elif name == "LoadBalancer":
+        from .discovery import LoadBalancer
+        return LoadBalancer
 
     # Capability Features (mediaroatd)
     elif name == "MCPIntegration":
@@ -124,9 +130,9 @@ def __getattr__(name: str):
     elif name == "ConnectionConfig":
         from .client import ConnectionConfig
         return ConnectionConfig
-    elif name == "retryConfig":
-        from .client import retryConfig
-        return retryConfig
+    elif name == "RetryConfig":
+        from .client import RetryConfig
+        return RetryConfig
     elif name == "TracingConfig":
         from .client import TracingConfig
         return TracingConfig
@@ -351,11 +357,15 @@ __all__ = [
     # Core client
     "KeiAgentClient",
     "AgentClientConfig",
+    "CapabilityManager",
+    "CapabilityProfile",
     "ConnectionConfig",
-    "retryConfig",
+    "RetryConfig",
     "TracingConfig",
     # Unified Protocol Integration
     "UnifiedKeiAgentClient",
+    "ProtocolType",
+    "AuthType",
     "Protocoltypee",
     "Authtypee",
     "ProtocolConfig",
@@ -433,7 +443,7 @@ __all__ = [
     "DiscoveryResult",
     # Exceptions
     "KeiSDKError",
-    "AgentNotFoatdError",
+    "AgentNotFoundError",
     "CommunicationError",
     "DiscoveryError",
     "retryExhaustedError",
@@ -490,7 +500,7 @@ def get_sdk_info() -> dict[str, str]:
 
 def create_default_client(
     base_url: str, api_token: str, agent_id: str, **kwargs
-) -> KeiAgentClient:
+) -> "KeiAgentClient":
     """Creates Statdard-client with optimalen Astellungen.
 
     Args:
@@ -503,9 +513,10 @@ def create_default_client(
         Configureser KeiAgentClient
     """
     config = AgentClientConfig(
-        base_url =base_url, api_token =api_token, agent_id =agent_id, **kwargs
+        base_url=base_url, api_token=api_token, agent_id=agent_id, **kwargs
     )
 
+    from .client import KeiAgentClient
     return KeiAgentClient(config)
 
 
@@ -516,7 +527,7 @@ def create_a2a_client(
     discovery_enabled: bool = True,
     tracing_enabled: bool = True,
     **kwargs,
-) -> A2Aclient:
+) -> "A2AClient":
     """Creates Agent-to-Agent-client with enterprise features.
 
     Args:
@@ -534,7 +545,8 @@ def create_a2a_client(
     client = create_default_client(base_url, api_token, agent_id, **kwargs)
 
     # Erstelle A2A-client with erweiterten Features
-    a2a_client = A2Aclient(client)
+    from .a2a import A2AClient
+    a2a_client = A2AClient(client)
 
     if discovery_enabled:
         a2a_client.enable_service_discovery()

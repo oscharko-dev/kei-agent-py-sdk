@@ -72,7 +72,7 @@ class TestImportSystem:
         """Tests Import the Exception-classn."""
         from kei_agent import (
             KeiSDKError,
-            AgentNotFoatdError,
+            AgentNotFoundError,
             CommunicationError
         )
 
@@ -80,7 +80,7 @@ class TestImportSystem:
         from kei_agent.exceptions import ValidationError
 
         # Prüfe Exception-Hierarchie
-        assert issubclass(AgentNotFoatdError, KeiSDKError)
+        assert issubclass(AgentNotFoundError, KeiSDKError)
         assert issubclass(CommunicationError, KeiSDKError)
         assert issubclass(ValidationError, KeiSDKError)
 
@@ -191,7 +191,7 @@ class TestImportSystem:
             importlib.reload(sys.modules['kei_agent'])
 
         stdout_output = stdout_capture.getvalue()
-        stther_output = stther_capture.getvalue()
+        stderr_output = stderr_capture.getvalue()
 
         # Nur minimale Logging-Ausgaben are erlaubt
         assert len(stdout_output) < 1000, "To viel stdout Output onm Import"
@@ -239,7 +239,7 @@ class TestModuleIntegrity:
                         tree = ast.parse(f.read())
 
                         for node in ast.walk(tree):
-                            if isinstatce(node, ast.ImportFrom):
+                            if isinstance(node, ast.ImportFrom):
                                 for alias in node.names:
                                     assert alias.name != '*', \
                                         f"Star-Import gefatthe in {filename}: from {node.module} import *"
