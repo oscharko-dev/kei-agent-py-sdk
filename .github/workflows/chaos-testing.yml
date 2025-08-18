@@ -1,5 +1,5 @@
 # .github/workflows/chaos-testing.yml
-name: Chaos Engineering Tests
+name: 🧨 Chaos Engineering Tests
 
 on:
   schedule:
