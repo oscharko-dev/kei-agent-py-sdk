@@ -267,7 +267,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install dist/*.whl
           # Basic import tests
-          python - <<'PY'
+          python -c "
 import importlib
 modules = [
     'kei_agent',
@@ -292,7 +292,7 @@ for m in modules:
         print(f'✗ {m}: {e}')
         raise
 print('SUCCESS: All main modules imported')
-PY
+"
           # CLI smoke
           kei-agent --help || (echo 'ERROR: CLI entry point failed' && exit 1)
 
