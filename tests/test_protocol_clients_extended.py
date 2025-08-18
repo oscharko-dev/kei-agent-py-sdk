@@ -6,7 +6,7 @@ Ziel: Coverage from 19% on 70%+ erhöhen.
 
 import pytest
 import asyncio
-from unittest.mock import Mock, patch, AsyncMock, MagicMock
+from unittest.mock import Mock, patch, AsyncMock
 from kei_agent.protocol_clients import (
     KEIRPCclient,
     KEIStreamclient,

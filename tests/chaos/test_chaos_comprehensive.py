@@ -406,7 +406,7 @@ class TestComprehensiveChaosScenarios:
 
             assert loaded_report == report, "Report serialization/deserialization failed"
 
-        except Exception:
+        except Exception as e:
             pytest.fail(f"Chaos test suite integration failed: {e}")
 
 

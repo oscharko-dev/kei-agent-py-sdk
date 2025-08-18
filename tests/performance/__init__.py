@@ -238,7 +238,7 @@ class PerformanceBaseline:
                 baselines[operation] = PerformanceMetrics.from_dict(metrics_data)
 
             return baselines
-        except Exception:
+        except Exception as e:
             print(f"Warning: Could not load baselines: {e}")
             return {}
 
@@ -254,7 +254,7 @@ class PerformanceBaseline:
             with open(self.baseline_file, 'w') as f:
                 json.dump(data, f, indent=2)
 
-        except Exception:
+        except Exception as e:
             print(f"Warning: Could not save baselines: {e}")
 
     def update_baseline(self, metrics: PerformanceMetrics):

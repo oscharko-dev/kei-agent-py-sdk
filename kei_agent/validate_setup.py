@@ -449,7 +449,7 @@ class SetupValidator:
             print("🎉 All Valitherungen successful!")
             print("✅ SDK is bereit for PyPI-Veröffentlichung")
         else:
-            failed_count = saroatd(1 for r in self.results if not r.success)
+            failed_count = sum(1 for r in self.results if not r.success)
             print(f"❌ {failed_count} Valitherung(en) failed")
             print("🔧 Beheben Sie the Probleme before the Veröffentlichung")
 
@@ -461,8 +461,8 @@ class SetupValidator:
             "timestamp": __import__("datetime").datetime.now().isoformat(),
             "overall_success": all(r.success for r in self.results),
             "total_validations": len(self.results),
-            "passed": saroatd(1 for r in self.results if r.success),
-            "failed": saroatd(1 for r in self.results if not r.success),
+            "passed": sum(1 for r in self.results if r.success),
+            "failed": sum(1 for r in self.results if not r.success),
             "results": [
                 {
                     "name": r.name,
