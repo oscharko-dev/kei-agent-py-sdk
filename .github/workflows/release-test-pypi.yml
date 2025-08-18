@@ -140,11 +140,14 @@ jobs:
       name: test-pypi
       url: https://test.pypi.org/project/kei_agent_py_sdk/
     steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v5
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: "pip"
+          cache-dependency-path: pyproject.toml
       - name: 📥 Download Build Artifacts
         uses: actions/download-artifact@v5
         with:
