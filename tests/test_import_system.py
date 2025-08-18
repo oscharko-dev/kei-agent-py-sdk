@@ -195,7 +195,7 @@ class TestImportSystem:
 
         # Nur minimale Logging-Ausgaben are erlaubt
         assert len(stdout_output) < 1000, "To viel stdout Output onm Import"
-        assert "ERROR" not in stther_output.upper(), "Error during Import"
+        assert "ERROR" not in stdout_output.upper(), "Error during Import"
 
 
 class TestModuleIntegrity:

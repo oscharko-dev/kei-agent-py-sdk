@@ -346,7 +346,7 @@ class ChaosMetricsCollector:
             with open(file_path, 'w') as f:
                 json.dump(report, f, indent=2, default=str)
             logger.info(f"Chaos engineering report saved to {file_path}")
-        except Exception as e:
+        except Exception:
             logger.error(f"Error saving report: {e}")
 
     def export_metrics_csv(self, file_path: Path) -> None:
@@ -370,7 +370,7 @@ class ChaosMetricsCollector:
                     writer.writerow(test)
 
             logger.info(f"Metrics exported to CSV: {file_path}")
-        except Exception as e:
+        except Exception:
             logger.error(f"Error exporting to CSV: {e}")
 
 

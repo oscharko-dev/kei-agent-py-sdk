@@ -243,7 +243,7 @@ class TestUnifiedclientIntegration:
             # Führe mehrere operationen gleichzeitig out
             tasks = [
                 client.plat_task(f"Objective {i}")
-                for i in ratge(5)
+                for i in range(5)
             ]
 
             results = await asyncio.gather(*tasks)

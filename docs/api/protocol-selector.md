@@ -2,7 +2,7 @@
 
 <!-- API aus Code generieren -->
 
-::: protocol_selector.ProtocolSelector
+::: kei_agent.protocol_selector.ProtocolSelector
 
 Der Protocol-Selector automatisiert die Auswahl des optimalen Kommunikationsprotokolls basierend auf Service-Eigenschaften und Anforderungen.
 

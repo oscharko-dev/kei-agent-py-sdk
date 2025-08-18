@@ -36,7 +36,7 @@ class SecurityManager:
         _refresh_lock: Lock for Thread-sichere Token-Erneuerung
     """
 
-    def __init__(self, config: SecurityConfig, client_factory=None) -> None:
+    def __init__(self, config: SecurityConfig, client_factory: Optional[Any] = None) -> None:
         """Initializes security manager.
 
         Args:

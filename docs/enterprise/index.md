@@ -143,7 +143,7 @@ from kei_agent import (
     APIHealthCheck,
     DatabaseHealthCheck,
     MemoryHealthCheck,
-    HealthStatus
+    Healthstatus
 )
 
 # Health Manager konfigurieren

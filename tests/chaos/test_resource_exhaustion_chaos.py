@@ -104,7 +104,7 @@ class TestResourceExhaustionChaos:
                         memory_related_errors += 1
                         chaos_test.record_operation(False)
                         chaos_test.record_error()
-                    except Exception as e:
+                    except Exception:
                         chaos_test.record_operation(False)
                         chaos_test.record_error()
 
@@ -181,7 +181,7 @@ class TestResourceExhaustionChaos:
                         if current_cpu > 80:
                             chaos_test.add_custom_metric(f"high_cpu_at_operation_{i}", current_cpu)
 
-                    except Exception as e:
+                    except Exception:
                         chaos_test.record_operation(False)
                         chaos_test.record_error()
 
@@ -251,7 +251,7 @@ class TestResourceExhaustionChaos:
 
                         await asyncio.sleep(0.1)
 
-                    except Exception as e:
+                    except Exception:
                         chaos_test.record_operation(False)
                         chaos_test.record_error()
                         pool_exhaustion_errors += 1
@@ -332,7 +332,7 @@ class TestResourceExhaustionChaos:
 
                         await asyncio.sleep(0.05)  # Small delay between operations
 
-                    except Exception as e:
+                    except Exception:
                         chaos_test.record_operation(False)
                         chaos_test.record_error()
 
@@ -411,7 +411,7 @@ class TestResourceExhaustionChaos:
                         disk_errors += 1
                         chaos_test.record_operation(False)
                         chaos_test.record_error()
-                    except Exception as e:
+                    except Exception:
                         chaos_test.record_operation(False)
                         chaos_test.record_error()
 
@@ -499,7 +499,7 @@ class TestResourceExhaustionChaos:
                             operations_under_stress += 1
                             chaos_test.record_operation(True)
 
-                    except Exception as e:
+                    except Exception:
                         resource_errors += 1
                         chaos_test.record_operation(False)
                         chaos_test.record_error()

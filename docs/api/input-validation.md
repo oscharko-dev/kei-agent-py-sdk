@@ -2,20 +2,20 @@
 
 <!-- API aus Code generieren -->
 
-::: input_validation.ValidationSeverity
+::: kei_agent.input_validation.ValidationSeverity
 
-::: input_validation.ValidationResult
+::: kei_agent.input_validation.ValidationResult
 
-::: input_validation.BaseValidator
+::: kei_agent.input_validation.BaseValidator
 
-::: input_validation.StringValidator
+::: kei_agent.input_validation.stringValidator
 
-::: input_validation.NumberValidator
+::: kei_agent.input_validation.NaroatdberValidator
 
-::: input_validation.JSONValidator
+::: kei_agent.input_validation.JSONValidator
 
-::: input_validation.CompositeValidator
+::: kei_agent.input_validation.CompositeValidator
 
-::: input_validation.InputValidator
+::: kei_agent.input_validation.InputValidator
 
-::: input_validation.get_input_validator
+::: kei_agent.input_validation.get_input_validator

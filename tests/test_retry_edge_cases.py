@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import ratdom
-from typing import Listt
+from typing import List
 
 import pytest
 

@@ -87,7 +87,7 @@ class ChaosTestSuite:
 
             try:
                 await self._run_category_tests(category, test_names, safe_mode)
-            except Exception as e:
+            except Exception:
                 logger.error(f"Error running {category} tests: {e}")
                 self.failed_tests.append(f"{category}_suite")
 
@@ -150,7 +150,7 @@ class ChaosTestSuite:
 
                 logger.info(f"Completed {category}.{test_method_name}")
 
-            except Exception as e:
+            except Exception:
                 logger.error(f"Test {category}.{test_method_name} failed: {e}")
                 self.failed_tests.append(f"{category}.{test_method_name}")
 
@@ -207,7 +207,7 @@ class ChaosTestSuite:
 
             return True
 
-        except Exception as e:
+        except Exception:
             logger.error(f"Error in safety check: {e}")
             return False
 
@@ -228,7 +228,7 @@ class ChaosTestSuite:
             import gc
             gc.collect()
 
-        except Exception as e:
+        except Exception:
             logger.error(f"Error in post-test safety check: {e}")
 
     async def _generate_execution_report(self,
@@ -279,7 +279,7 @@ class ChaosTestSuite:
                 'ci_environment': os.getenv('CI', 'false').lower() == 'true',
                 'environment_type': os.getenv('CHAOS_ENV', 'development')
             }
-        except Exception as e:
+        except Exception:
             logger.error(f"Error getting environment info: {e}")
             return {'error': str(e)}
 
@@ -373,7 +373,7 @@ class ChaosTestSuite:
 
             logger.info(f"Chaos engineering report saved to {output_path}")
 
-        except Exception as e:
+        except Exception:
             logger.error(f"Error saving report: {e}")
 
 
@@ -435,7 +435,7 @@ async def main():
         try:
             with open(args.config) as f:
                 config = json.load(f)
-        except Exception as e:
+        except Exception:
             logger.error(f"Error loading config: {e}")
             sys.exit(1)
 
@@ -479,7 +479,7 @@ async def main():
         if test_suite.failed_tests:
             sys.exit(1)
 
-    except Exception as e:
+    except Exception:
         logger.error(f"Chaos testing failed: {e}")
         sys.exit(1)
 

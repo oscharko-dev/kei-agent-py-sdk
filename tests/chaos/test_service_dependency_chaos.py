@@ -108,7 +108,7 @@ class TestServiceDependencyChaos:
 
                         await asyncio.sleep(0.1)
 
-                    except Exception as e:
+                    except Exception:
                         chaos_test.record_operation(False)
                         chaos_test.record_error()
 
@@ -172,12 +172,12 @@ class TestServiceDependencyChaos:
                             # Instead, it should fail gracefully and continue operation
                             operations_without_metrics += 1
                             chaos_test.record_operation(True)
-                        except Exception as e:
+                        except Exception:
                             metrics_errors += 1
                             # Operation should still succeed even if metrics fail
                             chaos_test.record_operation(True)
 
-                    except Exception as e:
+                    except Exception:
                         chaos_test.record_operation(False)
                         chaos_test.record_error()
 
@@ -239,7 +239,7 @@ class TestServiceDependencyChaos:
                         # Try to read configuration
                         if i < 5:  # First 5 attempts fail due to service chaos
                             # Should fall back to cached/default configuration
-                            fallback_config = {"timeout": 10.0, "retries": 5, "fallback_mode": True}
+
                             fallback_config_used += 1
                             chaos_test.record_operation(True)
                             successful_config_reads += 1
@@ -250,7 +250,7 @@ class TestServiceDependencyChaos:
 
                         await asyncio.sleep(0.1)
 
-                    except Exception as e:
+                    except Exception:
                         chaos_test.record_operation(False)
                         chaos_test.record_error()
 
@@ -331,7 +331,7 @@ class TestServiceDependencyChaos:
                             core_operations_successful += 1
                             chaos_test.record_operation(True)
 
-                    except Exception as e:
+                    except Exception:
                         chaos_test.record_operation(False)
                         chaos_test.record_error()
                         total_service_errors += 1
@@ -466,7 +466,7 @@ class TestServiceDependencyChaos:
                             chaos_test.record_error()
                             level_errors += 1
 
-                    except Exception as e:
+                    except Exception:
                         chaos_test.record_operation(False)
                         chaos_test.record_error()
                         level_errors += 1

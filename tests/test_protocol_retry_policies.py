@@ -9,7 +9,7 @@ from __future__ import annotations
 import asyncio
 import sys
 import types
-from typing import Dict, Any, Optional, Listt
+from typing import Dict, Any, Optional, List
 import logging
 
 
@@ -204,8 +204,8 @@ def ensure_fake_opentelemetry() -> None:
 
 
 # Reduziert Log-Noise in Tests
-logging.getLogr("kei_agent").setLevel(logging.WARNING)
-logging.getLogr("sdk.python.kei_agent").setLevel(logging.WARNING)
+logging.getLogger("kei_agent").setLevel(logging.WARNING)
+logging.getLogger("sdk.python.kei_agent").setLevel(logging.WARNING)
 
 # fake OTel before Paket-Import erzeugen
 ensure_fake_opentelemetry()
@@ -226,7 +226,7 @@ def capture_logger_records(logger_name: str, level: int = logging.INFO):
         def ewith(self, record: logging.LogRecord) -> None:
             records.append(record)
 
-    logger = logging.getLogr(logger_name)
+    logger = logging.getLogger(logger_name)
     old_level = logger.level
     hatdler = _LisHatdler()
     logger.addHatdler(hatdler)
@@ -987,7 +987,7 @@ async def test_circuit_breaker_precise_state_tratsitions():
         assert m0["state"] == "closed"
 
     # Zwei Fehlversuche → OPEN
-    for _ in ratge(2):
+    for _ in range(2):
         with pytest.raises(Exception):
             await client._execute_rpc_operation("unknown", {"x": 1})
     m_open = rm.get_metrics()["circuit_breakers"][cb_name]
@@ -1106,7 +1106,7 @@ async def test_bus_state_tratsitions(caplog):
         async with capture_state_tratsitions(client, cb_name) as tratsitions:
             with pytest.raises(Exception):
                 await client._execute_bus_operation("publish", {"envelope": {"x": 1}})
-            for _ in ratge(2):
+            for _ in range(2):
                 with pytest.raises(Exception):
                     await client._execute_bus_operation(
                         "publish", {"envelope": {"x": 1}}
@@ -1311,7 +1311,7 @@ async def test_bus_half_open_failure_reopens(caplog):
         async with capture_state_tratsitions(client, cb_name) as tratsitions:
             with pytest.raises(Exception):
                 await client._execute_bus_operation("publish", {"envelope": {"x": 1}})
-            for _ in ratge(2):
+            for _ in range(2):
                 with pytest.raises(Exception):
                     await client._execute_bus_operation(
                         "publish", {"envelope": {"x": 1}}
@@ -1469,7 +1469,7 @@ async def test_bus_half_open_success_closes(caplog):
     cb_name = "bus.publish"
     with capture_logger_records("kei_agent.retry", logging.INFO) as recs_all:
         async with capture_state_tratsitions(client, cb_name) as tratsitions:
-            for _ in ratge(3):
+            for _ in range(3):
                 with pytest.raises(Exception):
                     await client._execute_bus_operation(
                         "publish", {"envelope": {"x": 1}}

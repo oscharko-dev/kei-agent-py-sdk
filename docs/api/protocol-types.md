@@ -2,13 +2,13 @@
 
 <!-- API aus Code generieren -->
 
-::: protocol_types.ProtocolType
+::: kei_agent.protocol_types.ProtocolType
 
-::: protocol_types.AuthType
+::: kei_agent.protocol_types.AuthType
 
-::: protocol_types.ProtocolConfig
+::: kei_agent.protocol_types.ProtocolConfig
 
-::: protocol_types.SecurityConfig
+::: kei_agent.protocol_types.SecurityConfig
 
 ## AgentClientConfig
 

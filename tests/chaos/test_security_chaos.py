@@ -276,7 +276,7 @@ class TestSecurityChaos:
 
                         await asyncio.sleep(0.1)
 
-                    except Exception as e:
+                    except Exception:
                         auth_failures += 1
                         chaos_test.record_operation(False)
                         chaos_test.record_error()
@@ -375,7 +375,7 @@ class TestSecurityChaos:
                         ssl_errors += 1
                         chaos_test.record_operation(False)
                         chaos_test.record_error()
-                    except Exception as e:
+                    except Exception:
                         chaos_test.record_operation(False)
                         chaos_test.record_error()
 
@@ -459,7 +459,7 @@ class TestSecurityChaos:
 
                         await asyncio.sleep(0.1)
 
-                    except Exception as e:
+                    except Exception:
                         chaos_test.record_operation(False)
                         chaos_test.record_error()
 
@@ -523,7 +523,7 @@ class TestSecurityChaos:
                                 # This should trigger rate limiting
                                 legitimate_requests += 1
                                 chaos_test.record_operation(True)
-                            except Exception as e:
+                            except Exception:
                                 if "rate limit" in str(e).lower():
                                     rate_limit_violations += 1
                                     blocked_requests += 1
@@ -548,7 +548,7 @@ class TestSecurityChaos:
                             legitimate_requests += 1
                             chaos_test.record_operation(True)
 
-                    except Exception as e:
+                    except Exception:
                         chaos_test.record_operation(False)
                         chaos_test.record_error()
 
@@ -627,7 +627,7 @@ class TestSecurityChaos:
                             # Operations after security recovery
                             chaos_test.record_operation(True)
 
-                    except Exception as e:
+                    except Exception:
                         total_security_events += 1
                         chaos_test.record_operation(False)
                         chaos_test.record_error()

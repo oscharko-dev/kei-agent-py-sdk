@@ -187,7 +187,7 @@ class ConfigurationChaosInjector:
             try:
                 with open(file_path, 'w') as f:
                     f.write(original_content)
-            except Exception as e:
+            except Exception:
                 print(f"Error restoring file {file_path}: {e}")
 
         self.corrupted_files.clear()
@@ -261,7 +261,7 @@ class TestConfigurationChaos:
 
                         await asyncio.sleep(0.1)
 
-                    except Exception as e:
+                    except Exception:
                         validation_failures += 1
                         chaos_test.record_operation(False)
                         chaos_test.record_error()
@@ -324,7 +324,7 @@ class TestConfigurationChaos:
 
                         await asyncio.sleep(0.1)
 
-                    except Exception as e:
+                    except Exception:
                         file_read_errors += 1
                         chaos_test.record_operation(False)
                         chaos_test.record_error()
@@ -411,7 +411,7 @@ class TestConfigurationChaos:
 
                         await asyncio.sleep(0.1)
 
-                    except Exception as e:
+                    except Exception:
                         failed_rollbacks += 1
                         chaos_test.record_operation(False)
                         chaos_test.record_error()
@@ -539,14 +539,14 @@ class TestConfigurationChaos:
                             await self.config_manager._load_config_file(self.test_config_file)
                             manual_reloads += 1
                             chaos_test.record_operation(True)
-                        except Exception as e:
+                        except Exception:
                             reload_failures += 1
                             chaos_test.record_operation(False)
                             chaos_test.record_error()
 
                         await asyncio.sleep(0.1)
 
-                    except Exception as e:
+                    except Exception:
                         reload_failures += 1
                         chaos_test.record_operation(False)
                         chaos_test.record_error()

@@ -2,7 +2,7 @@
 
 <!-- API aus Code generieren -->
 
-::: security_manager.SecurityManager
+::: kei_agent.security_manager.SecurityManager
 
 ## Authentifizierungstypen
 

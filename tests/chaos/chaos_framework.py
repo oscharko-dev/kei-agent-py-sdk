@@ -112,7 +112,7 @@ class ChaosInjector(ABC):
                     await callback()
                 else:
                     callback()
-            except Exception as e:
+            except Exception:
                 logger.error(f"Error in cleanup callback: {e}")
 
         self._cleanup_callbacks.clear()
@@ -382,7 +382,7 @@ class ChaosTest:
                         'timestamp': time.time()
                     })
 
-                except Exception as e:
+                except Exception:
                     logger.error(f"Error collecting system metrics: {e}")
 
                 time.sleep(1)

@@ -2,22 +2,30 @@
 
 <!-- API aus Code generieren -->
 
-::: exceptions.KeiSDKError
+::: kei_agent.exceptions.KeiSDKError
 
-::: exceptions.ProtocolError
+::: kei_agent.exceptions.ValidationError
 
-::: exceptions.SecurityError
+::: kei_agent.exceptions.AgentNotFoundError
 
-::: exceptions.AgentNotFoundError
+::: kei_agent.exceptions.CommunicationError
 
-::: exceptions.CommunicationError
+::: kei_agent.exceptions.DiscoveryError
 
-::: exceptions.DiscoveryError
+::: kei_agent.exceptions.retryExhaustedError
 
-::: exceptions.RetryExhaustedError
+::: kei_agent.exceptions.CircuitBreakerOpenError
 
-::: exceptions.CircuitBreakerOpenError
+::: kei_agent.exceptions.CapabilityError
 
-::: exceptions.CapabilityError
+::: kei_agent.exceptions.TracingError
 
-::: exceptions.TracingError
+::: kei_agent.exceptions.ConfigurationError
+
+::: kei_agent.exceptions.AuthenticationError
+
+::: kei_agent.exceptions.TimeoutError
+
+::: kei_agent.exceptions.ProtocolError
+
+::: kei_agent.exceptions.SecurityError

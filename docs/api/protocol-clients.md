@@ -2,13 +2,15 @@
 
 <!-- API aus Code generieren -->
 
-::: protocol_clients.KEIRPCClient
+::: kei_agent.protocol_clients.BaseProtocolclient
 
-::: protocol_clients.KEIStreamClient
+::: kei_agent.protocol_clients.KEIRPCclient
 
-::: protocol_clients.KEIBusClient
+::: kei_agent.protocol_clients.KEIStreamclient
 
-::: protocol_clients.KEIMCPClient
+::: kei_agent.protocol_clients.KEIBusclient
+
+::: kei_agent.protocol_clients.KEIMCPclient
 
 ## 🏗️ Client-Architektur
 

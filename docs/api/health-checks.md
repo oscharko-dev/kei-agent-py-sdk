@@ -2,13 +2,21 @@
 
 <!-- API aus Code generieren -->
 
-::: health_checks.HealthCheckManager
+::: kei_agent.health_checks.HealthCheckManager
 
-::: health_checks.APIHealthCheck
+::: kei_agent.health_checks.APIHealthCheck
 
-::: health_checks.MemoryHealthCheck
+::: kei_agent.health_checks.MemoryHealthCheck
 
-::: health_checks.HealthStatus
+::: kei_agent.health_checks.DatabaseHealthCheck
+
+::: kei_agent.health_checks.BaseHealthCheck
+
+::: kei_agent.health_checks.Healthstatus
+
+::: kei_agent.health_checks.HealthCheckResult
+
+::: kei_agent.health_checks.HealthCheckSaroatdmary
 
 ## 🏗️ Health-Check-Architektur
 

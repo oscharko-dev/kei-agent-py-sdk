@@ -102,7 +102,7 @@ class TestNetworkChaos:
                             chaos_test.record_operation(True)
                             operations_completed += 1
 
-                    except Exception as e:
+                    except Exception:
                         chaos_test.record_operation(False)
                         chaos_test.record_error()
 
@@ -176,7 +176,7 @@ class TestNetworkChaos:
                                 successful_connections += 1
                                 break
 
-                    except Exception as e:
+                    except Exception:
                         chaos_test.record_error()
 
                 chaos_test.add_custom_metric("retry_attempts", retry_attempts)
@@ -248,7 +248,7 @@ class TestNetworkChaos:
                                 chaos_test.record_operation(True)
                                 successful_ops += 1
 
-                        except Exception as e:
+                        except Exception:
                             chaos_test.record_operation(False)
                             chaos_test.record_error()
 
@@ -298,7 +298,7 @@ class TestNetworkChaos:
                             else:
                                 chaos_test.record_operation(False)
 
-                        except Exception as e:
+                        except Exception:
                             chaos_test.record_operation(False)
                             chaos_test.record_error()
 
@@ -440,7 +440,7 @@ class TestNetworkChaos:
                                 chaos_test.record_operation(False)
                                 failure_count += 1
 
-                    except Exception as e:
+                    except Exception:
                         chaos_test.record_error()
 
                 chaos_test.add_custom_metric("circuit_breaker_transitions", len(state_transitions))
