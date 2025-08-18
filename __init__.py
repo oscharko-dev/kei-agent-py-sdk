@@ -93,7 +93,7 @@ from .input_validation import (
 )
 
 # Basic Agent Components (from kei_agent.py)
-from .kei_agent import AgentConfig, AgentSkeleton
+from .agent_skeleton import AgentConfig, AgentSkeleton
 
 # Models and Types
 from .models import (

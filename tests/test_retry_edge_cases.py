@@ -8,7 +8,12 @@ from typing import List
 
 import pytest
 
-from kei_agent.client import AgentClientConfig, RetryConfig, RetryStrategy, TracingConfig
+from kei_agent.client import (
+    AgentClientConfig,
+    RetryConfig,
+    RetryStrategy,
+    TracingConfig,
+)
 from kei_agent.unified_client import UnifiedKeiAgentClient
 
 

@@ -210,7 +210,7 @@ logging.getLogger("sdk.python.kei_agent").setLevel(logging.WARNING)
 # Fake OTel vor Paket-Import erzeugen
 ensure_fake_opentelemetry()
 
-from unified_client import UnifiedKeiAgentClient  # noqa: E402
+from kei_agent.unified_client import UnifiedKeiAgentClient  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
 
 
@@ -279,7 +279,12 @@ def assert_cb_initialized_and_used(
     )
 
 
-from client import AgentClientConfig, RetryConfig, TracingConfig, RetryStrategy  # noqa: E402
+from kei_agent.client import (
+    AgentClientConfig,
+    RetryConfig,
+    TracingConfig,
+    RetryStrategy,
+)  # noqa: E402
 
 
 class DummyTransientError(Exception):

@@ -11,7 +11,12 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from kei_agent.unified_client_refactored import UnifiedKeiAgentClient
 from kei_agent.client import AgentClientConfig
-from kei_agent.protocol_types import ProtocolType, ProtocolConfig, SecurityConfig, AuthType
+from kei_agent.protocol_types import (
+    ProtocolType,
+    ProtocolConfig,
+    SecurityConfig,
+    AuthType,
+)
 from kei_agent.exceptions import KeiSDKError, ProtocolError
 
 # Markiere alle Tests in dieser Datei als Refactored-Tests
