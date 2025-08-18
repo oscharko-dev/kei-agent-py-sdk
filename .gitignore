@@ -358,7 +358,42 @@ perf.data*
 # CUSTOM EXCLUDES
 # ============================================================================
 
-# Add project-specific excludes here
-# Example:
-# custom-config.yaml
-# local-overrides/
+# Build and publish artifacts
+build-report.json
+build-report-*.json
+
+# Package build artifacts
+*.egg-info/
+build/
+dist/
+
+# MkDocs site generation
+site/
+
+# Development and testing
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+build-report*.json

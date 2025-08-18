@@ -13,7 +13,7 @@ from __future__ import annotations
 import logging
 
 # Agent-to-Agent Communication
-from a2a import (
+from .a2a import (
     A2AClient,
     A2AMessage,
     A2AResponse,
@@ -23,7 +23,7 @@ from a2a import (
 )
 
 # Capability Advertisement
-from capabilities import (
+from .capabilities import (
     CapabilityManager,
     CapabilityProfile,
     MCPIntegration,
@@ -32,7 +32,7 @@ from capabilities import (
 )
 
 # Core SDK Components
-from client import (
+from .client import (
     KeiAgentClient,
     AgentClientConfig,
     ConnectionConfig,
@@ -41,7 +41,7 @@ from client import (
 )
 
 # Service Discovery
-from discovery import (
+from .discovery import (
     ServiceDiscovery,
     AgentDiscoveryClient,
     DiscoveryStrategy,
@@ -50,7 +50,7 @@ from discovery import (
 )
 
 # Enterprise Features
-from enterprise_logging import (
+from .enterprise_logging import (
     LogContext,
     StructuredFormatter,
     EnterpriseLogger,
@@ -59,7 +59,7 @@ from enterprise_logging import (
 )
 
 # Exceptions
-from exceptions import (
+from .exceptions import (
     KeiSDKError,
     AgentNotFoundError,
     CommunicationError,
@@ -69,7 +69,7 @@ from exceptions import (
     CapabilityError,
     TracingError,
 )
-from health_checks import (
+from .health_checks import (
     HealthStatus,
     HealthCheckResult,
     BaseHealthCheck,
@@ -80,7 +80,7 @@ from health_checks import (
     HealthCheckManager,
     get_health_manager,
 )
-from input_validation import (
+from .input_validation import (
     ValidationSeverity,
     ValidationResult,
     BaseValidator,
@@ -93,10 +93,10 @@ from input_validation import (
 )
 
 # Basic Agent Components (from kei_agent.py)
-from kei_agent import AgentConfig, AgentSkeleton
+from .kei_agent import AgentConfig, AgentSkeleton
 
 # Models and Types
-from models import (
+from .models import (
     Agent,
     AgentMetadata,
     AgentCapability,
@@ -105,20 +105,20 @@ from models import (
     DiscoveryQuery,
     DiscoveryResult,
 )
-from protocol_clients import (
+from .protocol_clients import (
     BaseProtocolClient,
     KEIRPCClient,
     KEIStreamClient,
     KEIBusClient,
     KEIMCPClient,
 )
-from protocol_selector import ProtocolSelector
+from .protocol_selector import ProtocolSelector
 
 # Refactored Unified Protocol Integration
-from protocol_types import ProtocolType, AuthType, ProtocolConfig, SecurityConfig
+from .protocol_types import ProtocolType, AuthType, ProtocolConfig, SecurityConfig
 
 # Retry Mechanisms
-from retry import (
+from .retry import (
     RetryManager,
     RetryStrategy,
     CircuitBreaker,
@@ -126,10 +126,10 @@ from retry import (
     DeadLetterQueue,
     RetryPolicy,
 )
-from security_manager import SecurityManager
+from .security_manager import SecurityManager
 
 # Distributed Tracing
-from tracing import (
+from .tracing import (
     TracingManager,
     TraceContext,
     SpanBuilder,
@@ -138,13 +138,13 @@ from tracing import (
 )
 
 # Unified Protocol Integration (Legacy)
-from unified_client import (
+from .unified_client import (
     UnifiedKeiAgentClient as LegacyUnifiedKeiAgentClient,
 )
-from unified_client_refactored import UnifiedKeiAgentClient
+from .unified_client_refactored import UnifiedKeiAgentClient
 
 # Utilities
-from utils import (
+from .utils import (
     create_correlation_id,
     parse_agent_id,
     validate_capability,
