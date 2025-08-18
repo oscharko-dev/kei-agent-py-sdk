@@ -19,14 +19,14 @@ from typing import Any, Dict, List, Optional, Callable, Awaitable
 import httpx
 import logging
 
-from client import AgentClientConfig, KeiAgentClient
-from models import Agent
-from exceptions import KeiSDKError, ProtocolError, SecurityError
-from tracing import TracingManager
-from retry import RetryManager
-from capabilities import CapabilityManager
-from discovery import ServiceDiscovery
-from utils import create_correlation_id
+from .client import AgentClientConfig, KeiAgentClient
+from .models import Agent
+from .exceptions import KeiSDKError, ProtocolError, SecurityError
+from .tracing import TracingManager
+from .retry import RetryManager
+from .capabilities import CapabilityManager
+from .discovery import ServiceDiscovery
+from .utils import create_correlation_id
 
 # Initialisiert Modul-Logger
 _logger = logging.getLogger(__name__)

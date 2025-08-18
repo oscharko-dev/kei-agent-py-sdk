@@ -20,11 +20,11 @@ import aiohttp
 import websockets
 from opentelemetry import trace
 
-from client import KeiAgentClient
-from models import AgentInstance
-from discovery import ServiceDiscovery, DiscoveryStrategy, LoadBalancer
-from exceptions import CommunicationError, AgentNotFoundError
-from utils import create_correlation_id, format_trace_id
+from .client import KeiAgentClient
+from .models import AgentInstance
+from .discovery import ServiceDiscovery, DiscoveryStrategy, LoadBalancer
+from .exceptions import CommunicationError, AgentNotFoundError
+from .utils import create_correlation_id, format_trace_id
 
 
 class CommunicationProtocol(str, Enum):

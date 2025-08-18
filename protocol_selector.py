@@ -11,8 +11,8 @@ from __future__ import annotations
 from typing import Dict, List, Optional, Any
 import logging
 
-from protocol_types import ProtocolType, ProtocolConfig
-from exceptions import ProtocolError
+from .protocol_types import ProtocolType, ProtocolConfig
+from .exceptions import ProtocolError
 
 # Initialisiert Modul-Logger
 _logger = logging.getLogger(__name__)

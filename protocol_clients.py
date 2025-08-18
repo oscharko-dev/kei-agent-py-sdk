@@ -17,8 +17,8 @@ import logging
 import httpx
 import websockets
 
-from security_manager import SecurityManager
-from exceptions import ProtocolError, CommunicationError
+from .security_manager import SecurityManager
+from .exceptions import ProtocolError, CommunicationError
 
 # Initialisiert Modul-Logger
 _logger = logging.getLogger(__name__)

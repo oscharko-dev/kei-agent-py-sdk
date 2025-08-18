@@ -180,7 +180,7 @@ except ImportError:
         return NoOpSpanProcessor()
 
 
-from exceptions import TracingError
+from .exceptions import TracingError
 
 
 @dataclass

@@ -16,8 +16,8 @@ from typing import Any, Dict, List, Optional, Union, Pattern
 from enum import Enum
 import html
 
-from exceptions import ValidationError
-from enterprise_logging import get_logger
+from .exceptions import ValidationError
+from .enterprise_logging import get_logger
 
 # Initialisiert Modul-Logger
 _logger = get_logger(__name__)

@@ -16,8 +16,8 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Callable, Awaitable
 from packaging import version
 
-from client import KeiAgentClient
-from exceptions import CapabilityError
+from .client import KeiAgentClient
+from .exceptions import CapabilityError
 
 
 class CapabilityStatus(str, Enum):
