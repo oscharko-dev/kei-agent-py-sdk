@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kei_agent_py_sdk"
-version = "0.1.0b1.post3"
+version = "0.1.0b2"
 description = "Enterprise-Grade Python SDK for Keiko-Personal-Assistant Platform with Multi-Protocol Support and Comprehensive Documentation"
 readme = "README.md"
 license = "MIT"
@@ -42,7 +42,7 @@ classifiers = [
 requires-python = ">=3.8"
 dependencies = [
     # HTTP und WebSocket Clients
-    "aiohttp>=3.8.0,<4.0.0",
+    "aiohttp>=3.9.0,<4.0.0",
     "httpx>=0.24.0,<1.0.0",
     "websockets>=11.0.0,<12.0.0",
     # Async und Utilities
