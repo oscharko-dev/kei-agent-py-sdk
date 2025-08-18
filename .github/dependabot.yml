@@ -1,29 +1,99 @@
+# GitHub Dependabot configuration for KEI-Agent Python SDK
+# Automatically creates PRs for dependency updates and security patches
+
 version: 2
 updates:
   # Python dependencies
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "daily"
+      time: "06:00"
+      timezone: "UTC"
     open-pull-requests-limit: 10
+
+    # Security updates - immediate
+    security-updates:
+      enabled: true
+
+    # Reviewers and assignees
     reviewers:
       - "oscharko"
     assignees:
       - "oscharko"
+
+    # Labels for categorization
+    labels:
+      - "dependencies"
+      - "security"
+      - "automated"
+
+    # Commit message configuration
     commit-message:
       prefix: "deps"
+      prefix-development: "deps-dev"
       include: "scope"
+
+    # Grouping related updates
+    groups:
+      # Security updates - highest priority
+      security:
+        patterns:
+          - "*"
+        update-types:
+          - "security-update"
+
+      # Testing dependencies
+      testing:
+        patterns:
+          - "pytest*"
+          - "coverage*"
+          - "*test*"
+        update-types:
+          - "minor"
+          - "patch"
+
+      # Development tools
+      dev-tools:
+        patterns:
+          - "ruff"
+          - "mypy"
+          - "bandit"
+          - "pre-commit"
+        update-types:
+          - "minor"
+          - "patch"
+
+    # Version update strategy
+    versioning-strategy: "increase"
+
+    # Ignore major version updates that need careful testing
+    ignore:
+      - dependency-name: "pydantic"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "aiohttp"
+        update-types: ["version-update:semver-major"]
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
     open-pull-requests-limit: 5
+
     reviewers:
       - "oscharko"
     assignees:
       - "oscharko"
+
+    labels:
+      - "github-actions"
+      - "dependencies"
+      - "ci-cd"
+
     commit-message:
       prefix: "ci"
       include: "scope"

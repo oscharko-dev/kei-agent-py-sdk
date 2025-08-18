@@ -1,10 +1,10 @@
-# Pre-Commit-Konfiguration für KEI-Agent Python SDK (Vereinfacht)
-# Führt automatische Code-Quality-Checks vor jedem Git-Commit aus
+# Pre-Commit-Configuration for KEI-Agent Python SDK (Vereinfacht)
+# Executes automatische Code-Quality-Checks vor jedem Git-Commit out
 #
 # Installation: pip install pre-commit && pre-commit install
 # Manueller Lauf: pre-commit run --all-files
 
-# Alle Hooks ausführen, auch wenn einer fehlschlägt
+# Alle Hooks ausführen, auch if einer fehlschlägt
 fail_fast: false
 
 # Standard-Ausschlüsse
@@ -40,16 +40,16 @@ repos:
 
       - id: end-of-file-fixer
         name: 📝 Korrigiere End-of-File
-        description: Stellt sicher, dass Dateien mit einer Newline enden
+        description: Stellt sicher, dass Dateien with einer Newline enden
 
       - id: check-merge-conflict
         name: 🔀 Prüfe Merge-Konflikte
-        description: Verhindert Commits mit Merge-Konflikt-Markern
+        description: Verhindert Commits with Merge-Konflikt-Markern
 
-      # Syntax-Validierung (nur einfache)
+      # Syntax-Validation (nur einfache)
       - id: check-toml
         name: ⚙️ Validiere TOML-Syntax
-        description: Prüft TOML-Dateien (pyproject.toml) auf Syntax-Fehler
+        description: Prüft TOML-Dateien (pyproject.toml) auf Syntax-Error
 
   # ============================================================================
   # PYTHON CODE-QUALITÄT
@@ -61,7 +61,7 @@ repos:
       # Ruff Linting (ersetzt flake8, pylint)
       - id: ruff
         name: 🔍 Ruff Linting
-        description: Führt Linting mit Ruff aus (ersetzt flake8)
+        description: Executes Linting with Ruff out (ersetzt flake8)
         args:
           - --fix
           - --exit-non-zero-on-fix
@@ -70,7 +70,7 @@ repos:
       # Ruff Formatierung (ersetzt black, isort)
       - id: ruff-format
         name: 🎨 Ruff Formatierung
-        description: Formatiert Python-Code mit Ruff (ersetzt black + isort)
+        description: Formatiert Python-Code with Ruff (ersetzt black + isort)
         files: '^[^/]*\.py$' # Nur Python-Dateien im Root
 
   # ============================================================================
@@ -79,19 +79,19 @@ repos:
 
   - repo: local
     hooks:
-      # Vollständige Ruff-Prüfung aller Python-Dateien (nur Warnung)
+      # Vollständige Ruff-Prüfung aller Python-Dateien (nur Warning)
       - id: ruff-check-all
         name: 🔍 Ruff Check (ALLE Dateien)
-        description: Führt Ruff-Check auf ALLEN Python-Dateien aus (inkl. Tests)
+        description: Executes Ruff-Check auf ALLEN Python-Dateien out (inkl. Tests)
         entry: bash -c 'ruff check . || echo "⚠️ Ruff fand Probleme in Tests - siehe oben"'
         language: system
         files: '\.py$'
         pass_filenames: false
 
-      # MkDocs Konfiguration validieren
+      # MkDocs Configuration validieren
       - id: mkdocs-validate
-        name: 📚 MkDocs Konfiguration validieren
-        description: Validiert MkDocs-Konfiguration und baut die Doku strikt
+        name: 📚 MkDocs Configuration validieren
+        description: Validiert MkDocs-Configuration and baut die Doku strikt
         entry: mkdocs build --strict --verbose --clean
         language: python
         additional_dependencies:
@@ -111,7 +111,7 @@ repos:
       - id: validate-pyproject
         name: ⚙️ Validiere pyproject.toml
         description: Prüft pyproject.toml auf Konsistenz
-        entry: python3 -c "import tomllib; f=open('pyproject.toml','rb'); config=tomllib.load(f); f.close(); print('✅ pyproject.toml ist gültig')"
+        entry: python3 -c "import tomllib; f=open('pyproject.toml','rb'); config=tomllib.load(f); f.close(); print('✅ pyproject.toml is gültig')"
         language: system
         files: ^pyproject\.toml$
         pass_filenames: false

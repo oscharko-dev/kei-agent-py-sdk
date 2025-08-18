@@ -1,0 +1,328 @@
+# Type checking workflow for KEI-Agent Python SDK
+name: 🔍 Type Checking
+
+on:
+  # Run on every push and PR
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+  # Daily type checking
+  schedule:
+    - cron: '0 8 * * *'  # 8 AM UTC daily
+
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      strict_mode:
+        description: 'Enable strict type checking'
+        required: false
+        default: 'true'
+        type: boolean
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  type-coverage:
+    name: 📊 Type Hint Coverage
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🐍 Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+
+    - name: 📦 Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install mypy types-PyYAML types-requests
+
+    - name: 📝 Check Type Hint Coverage
+      run: |
+        chmod +x scripts/check_type_coverage.py
+        python scripts/check_type_coverage.py \
+          --fail-under 95 \
+          --output type-coverage-${{ matrix.python-version }}.json
+
+    - name: 📊 Generate Coverage Report
+      if: matrix.python-version == '3.11'
+      run: |
+        python scripts/check_type_coverage.py \
+          --output type-coverage-detailed.json \
+          --run-mypy
+
+    - name: 📦 Upload Coverage Report
+      if: matrix.python-version == '3.11'
+      uses: actions/upload-artifact@v3
+      with:
+        name: type-coverage-report
+        path: |
+          type-coverage-detailed.json
+          type-coverage-*.json
+        retention-days: 30
+
+  mypy-strict:
+    name: 🔍 mypy Strict Mode
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: 📦 Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install mypy types-PyYAML types-requests types-setuptools
+
+    - name: 🔍 Run mypy Strict Check
+      run: |
+        mypy kei_agent/ \
+          --config-file mypy.ini \
+          --strict \
+          --show-error-codes \
+          --show-column-numbers \
+          --show-error-context \
+          --pretty \
+          --no-error-summary
+
+    - name: 📊 Generate mypy Report
+      if: always()
+      run: |
+        mypy kei_agent/ \
+          --config-file mypy.ini \
+          --strict \
+          --show-error-codes \
+          --html-report mypy-report \
+          --txt-report mypy-report-txt || true
+
+    - name: 📦 Upload mypy Report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: mypy-report
+        path: |
+          mypy-report/
+          mypy-report-txt/
+        retention-days: 30
+
+  type-stub-check:
+    name: 📚 Type Stub Validation
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: 📦 Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install mypy stubgen
+
+    - name: 📚 Generate Type Stubs
+      run: |
+        mkdir -p stubs
+        stubgen -p kei_agent -o stubs/
+
+    - name: 🔍 Validate Generated Stubs
+      run: |
+        mypy --config-file mypy.ini stubs/kei_agent/
+
+    - name: 📦 Upload Type Stubs
+      uses: actions/upload-artifact@v3
+      with:
+        name: type-stubs
+        path: stubs/
+        retention-days: 30
+
+  type-compatibility:
+    name: 🔄 Type Compatibility Check
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🐍 Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+
+    - name: 📦 Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install mypy
+
+    - name: 🔄 Check Type Compatibility
+      run: |
+        mypy kei_agent/ \
+          --python-version ${{ matrix.python-version }} \
+          --config-file mypy.ini \
+          --show-error-codes
+
+    - name: 📊 Generate Compatibility Report
+      if: failure()
+      run: |
+        echo "Type compatibility issues found for Python ${{ matrix.python-version }}" > compatibility-issues.txt
+        mypy kei_agent/ \
+          --python-version ${{ matrix.python-version }} \
+          --config-file mypy.ini \
+          --show-error-codes >> compatibility-issues.txt || true
+
+    - name: 📦 Upload Compatibility Issues
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: compatibility-issues-${{ matrix.python-version }}
+        path: compatibility-issues.txt
+        retention-days: 30
+
+  type-checking-summary:
+    name: 📋 Type Checking Summary
+    runs-on: ubuntu-latest
+    needs: [type-coverage, mypy-strict, type-stub-check, type-compatibility]
+    if: always()
+
+    steps:
+    - name: 📥 Download All Artifacts
+      uses: actions/download-artifact@v3
+
+    - name: 📊 Generate Summary
+      run: |
+        echo "# 🔍 Type Checking Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        # Check type coverage results
+        if [ -d "type-coverage-report" ]; then
+          echo "## 📊 Type Coverage Results" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Type coverage analysis completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        # Check mypy results
+        if [ -d "mypy-report" ]; then
+          echo "## 🔍 mypy Strict Mode Results" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.mypy-strict.result }}" == "success" ]; then
+            echo "✅ mypy strict mode passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ mypy strict mode failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        # Check type stub validation
+        if [ -d "type-stubs" ]; then
+          echo "## 📚 Type Stub Validation" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.type-stub-check.result }}" == "success" ]; then
+            echo "✅ Type stubs validated successfully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Type stub validation failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        # Check compatibility
+        echo "## 🔄 Python Version Compatibility" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ needs.type-compatibility.result }}" == "success" ]; then
+          echo "✅ Type compatibility verified across all Python versions" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Type compatibility issues found" >> $GITHUB_STEP_SUMMARY
+
+          # List compatibility issues
+          for file in compatibility-issues-*/compatibility-issues.txt; do
+            if [ -f "$file" ]; then
+              version=$(echo "$file" | sed 's/.*compatibility-issues-\([^/]*\).*/\1/')
+              echo "- Python $version: Issues found" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+        fi
+
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## 📋 Next Steps" >> $GITHUB_STEP_SUMMARY
+        echo "1. Review type coverage reports for missing annotations" >> $GITHUB_STEP_SUMMARY
+        echo "2. Fix any mypy strict mode violations" >> $GITHUB_STEP_SUMMARY
+        echo "3. Address Python version compatibility issues" >> $GITHUB_STEP_SUMMARY
+        echo "4. Update type stubs if needed" >> $GITHUB_STEP_SUMMARY
+
+  update-type-coverage-badge:
+    name: 🏷️ Update Type Coverage Badge
+    runs-on: ubuntu-latest
+    needs: [type-coverage]
+    if: github.ref == 'refs/heads/main' && needs.type-coverage.result == 'success'
+
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 📥 Download Coverage Report
+      uses: actions/download-artifact@v3
+      with:
+        name: type-coverage-report
+
+    - name: 🏷️ Update Badge
+      run: |
+        # Extract coverage percentage from report
+        if [ -f "type-coverage-detailed.json" ]; then
+          coverage=$(python -c "
+          import json
+          with open('type-coverage-detailed.json', 'r') as f:
+              data = json.load(f)
+          print(f\"{data['summary']['coverage_percentage']:.1f}\")
+          ")
+
+          echo "Type coverage: $coverage%"
+
+          # Create badge URL
+          if (( $(echo "$coverage >= 95" | bc -l) )); then
+            color="brightgreen"
+          elif (( $(echo "$coverage >= 80" | bc -l) )); then
+            color="yellow"
+          else
+            color="red"
+          fi
+
+          badge_url="https://img.shields.io/badge/type%20coverage-$coverage%25-$color"
+          echo "Badge URL: $badge_url"
+
+          # Update README if needed (this would require additional setup)
+          echo "Type coverage badge: $badge_url" > type-coverage-badge.txt
+        fi
+
+    - name: 📦 Upload Badge Info
+      uses: actions/upload-artifact@v3
+      with:
+        name: type-coverage-badge
+        path: type-coverage-badge.txt
+        retention-days: 30

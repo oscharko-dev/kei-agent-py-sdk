@@ -61,6 +61,7 @@ test: test-unit ## Führt Standard-Tests aus (Unit Tests)
 
 test-unit: ## Führt Unit Tests aus
 	@echo "$(BLUE)Führe Unit Tests aus...$(RESET)"
+	$(PIP) install -e .
 	$(PYTHON) run_tests.py --unit --verbose
 
 test-integration: ## Führt Integration Tests aus
@@ -101,10 +102,12 @@ test-performance: ## Führt Performance Tests aus
 
 test-all: ## Führt alle Tests aus
 	@echo "$(BLUE)Führe alle Tests aus...$(RESET)"
+	$(PIP) install -e .
 	$(PYTHON) run_tests.py --all --verbose
 
 test-fast: ## Führt schnelle Tests aus (ohne Coverage)
 	@echo "$(BLUE)Führe schnelle Tests aus...$(RESET)"
+	$(PIP) install -e .
 	$(PYTHON) run_tests.py --unit --no-coverage
 
 # =====================================================================

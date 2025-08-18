@@ -80,7 +80,7 @@ graph TB
 
 | Modul | Verantwortlichkeit | Zeilen | Abhängigkeiten |
 |-------|-------------------|--------|----------------|
-| `unified_client_refactored.py` | Haupt-API-Interface | 180 | Core Components |
+| `unified_client.py` | Haupt-API-Interface | 858 | Core Components |
 | `protocol_types.py` | Typ-Definitionen und Konfigurationen | 150 | Pydantic, Enum |
 | `security_manager.py` | Authentifizierung und Token-Management | 190 | httpx, asyncio |
 | `protocol_selector.py` | Intelligente Protokoll-Auswahl | 170 | Core Types |

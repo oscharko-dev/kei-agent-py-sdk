@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kei_agent_py_sdk"
-version = "0.1.0b5"
+version = "0.1.0b6"
 description = "Enterprise-Grade Python SDK for Keiko-Personal-Assistant Platform with Multi-Protocol Support and Comprehensive Documentation"
 readme = "README.md"
 license = "MIT"
@@ -82,12 +82,20 @@ dev = [
     "pytest-asyncio>=0.21.0,<1.0.0",
     "pytest-mock>=3.11.0,<4.0.0",
     "pytest-benchmark>=4.0.0,<6.0.0",
+    "pytest-cov>=4.1.0,<5.0.0",
+    "coverage>=7.3.0,<8.0.0",
     "ruff>=0.1.0,<1.0.0",
     "mypy>=1.5.0,<2.0.0",
     "bandit>=1.7.0,<2.0.0",
     "pre-commit>=3.4.0,<4.0.0",
     "twine>=4.0.0,<5.0.0",
-    "build>=0.10.0,<2.0.0"
+    "build>=0.10.0,<2.0.0",
+    # Security scanning tools
+    "safety>=3.0.0,<4.0.0",
+    "pip-audit>=2.6.0,<3.0.0",
+    "cyclonedx-bom>=4.0.0,<5.0.0",
+    # Dependency management
+    "pip-tools>=7.0.0,<8.0.0"
 ]
 docs = [
     "mkdocs>=1.5.0,<2.0.0",
@@ -104,7 +112,7 @@ all = [
 ]
 
 [project.scripts]
-kei-agent = "cli:main"
+kei-agent = "kei_agent.cli:main"
 
 [project.urls]
 Homepage = "https://oscharko.de"
@@ -115,9 +123,8 @@ Changelog = "https://github.com/oscharko-dev/kei-agent-py-sdk/blob/main/CHANGELO
 
 # Tool-Konfigurationen
 
-[tool.setuptools]
-packages = ["kei_agent"]
-package-dir = {"kei_agent" = "."}
+[tool.setuptools.packages.find]
+include = ["kei_agent*"]
 
 [tool.setuptools.package-data]
 kei_agent = ["py.typed", "*.pyi"]
@@ -193,28 +200,61 @@ markers = [
     "security: marks tests as security tests"
 ]
 
-# Coverage.py DEAKTIVIERT wegen importlib_metadata KeyError-Problem
-# [tool.coverage.run]
-# source = ["."]
-# omit = [
-#     "*/tests/*",
-#     "*/examples/*",
-#     "setup.py",
-#     "build_and_publish.py",
-#     "run_tests.py"
-# ]
-#
-# [tool.coverage.report]
-# exclude_lines = [
-#     "pragma: no cover",
-#     "def __repr__",
-#     "if self.debug:",
-#     "if settings.DEBUG",
-#     "raise AssertionError",
-#     "raise NotImplementedError",
-#     "if 0:",
-#     "if __name__ == .__main__.:"
-# ]
-#
-# [tool.coverage.html]
-# directory = "htmlcov"
+# Coverage Configuration
+[tool.coverage.run]
+source = ["kei_agent"]
+omit = [
+    "*/tests/*",
+    "*/examples/*",
+    "setup.py",
+    "build_and_publish.py",
+    "run_tests.py",
+    "fix_remaining_syntax_errors.py",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/.venv/*"
+]
+branch = true
+parallel = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod"
+]
+fail_under = 25
+show_missing = true
+skip_covered = false
+precision = 2
+
+[tool.coverage.html]
+directory = "htmlcov"
+title = "KEI-Agent Python SDK Coverage Report"
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+# Bandit Security Configuration
+[tool.bandit]
+exclude_dirs = ["tests", "docs", "htmlcov", ".venv", "venv"]
+skips = ["B101"]  # Skip assert_used test since we use asserts in tests
+
+# Security rules to enforce
+[tool.bandit.assert_used]
+skips = ["*test*.py", "*tests*.py"]
+
+# Enforce specific exception handling
+[tool.bandit.try_except_pass]
+level = "HIGH"
+
+[tool.bandit.try_except_continue]
+level = "HIGH"

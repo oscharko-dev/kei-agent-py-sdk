@@ -126,7 +126,7 @@ async with UnifiedKeiAgentClient(config=config) as client:
 
 ### Nach Modul
 
-#### kei_agent.unified_client_refactored
+#### kei_agent.unified_client
 - `UnifiedKeiAgentClient` - Haupt-Client-Klasse
 
 #### kei_agent.protocol_types

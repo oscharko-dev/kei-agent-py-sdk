@@ -1,0 +1,261 @@
+name: PyPI Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v0.1.0b6)'
+        required: true
+        type: string
+
+env:
+  PYTHON_VERSION: '3.9'
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install pytest pytest-cov pytest-asyncio mypy bandit ruff
+
+    - name: Run linting (Ruff)
+      run: |
+        ruff check kei_agent/ --output-format=github
+
+    - name: Run type checking (MyPy)
+      run: |
+        mypy kei_agent/ --ignore-missing-imports --show-error-codes || true
+
+    - name: Run security checks (Bandit)
+      run: |
+        bandit -r kei_agent/ -f json -o bandit-report.json || true
+        bandit -r kei_agent/ --severity-level medium --confidence-level medium
+
+    - name: Run tests with coverage
+      run: |
+        pytest tests/ --cov=kei_agent --cov-report=xml --cov-report=term-missing -v
+
+    - name: Upload coverage to Codecov
+      if: matrix.python-version == '3.9'
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+
+  build:
+    name: Build Package
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+
+    - name: Build package
+      run: |
+        python -m build
+
+    - name: Check package
+      run: |
+        python -m twine check dist/*
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist
+        path: dist/
+
+  test-install:
+    name: Test Installation
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+
+    steps:
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: dist
+        path: dist/
+
+    - name: Test wheel installation
+      run: |
+        pip install dist/*.whl
+        python -c "
+        import kei_agent
+        print(f'✅ Package Version: {kei_agent.__version__}')
+
+        # Test critical imports
+        from kei_agent import UnifiedKeiAgentClient, AgentClientConfig, CapabilityManager, CapabilityProfile
+        print('✅ Critical imports successful')
+
+        # Test instantiation
+        config = kei_agent.AgentClientConfig('test', 'http://localhost:8000', 'token')
+        client = kei_agent.UnifiedKeiAgentClient(config)
+        profile = kei_agent.CapabilityProfile('test', '1.0.0')
+        print('✅ Instantiation successful')
+
+        print('🎉 Package installation test passed!')
+        "
+
+    - name: Test source distribution installation
+      run: |
+        pip uninstall -y kei_agent_py_sdk
+        pip install dist/*.tar.gz
+        python -c "
+        import kei_agent
+        print(f'✅ Source Distribution Version: {kei_agent.__version__}')
+        print('✅ Source distribution installation successful')
+        "
+
+  publish-testpypi:
+    name: Publish to TestPyPI
+    runs-on: ubuntu-latest
+    needs: [test, build, test-install]
+    if: github.event_name == 'workflow_dispatch' || contains(github.ref, 'beta') || contains(github.ref, 'alpha') || contains(github.ref, 'rc')
+    environment: testpypi
+
+    steps:
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: dist
+        path: dist/
+
+    - name: Publish to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
+        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        skip-existing: true
+
+    - name: Test TestPyPI installation
+      run: |
+        sleep 60  # Wait for package to be available
+        pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ kei_agent_py_sdk
+        python -c "
+        import kei_agent
+        print(f'✅ TestPyPI Version: {kei_agent.__version__}')
+        print('✅ TestPyPI installation successful')
+        "
+
+  publish-pypi:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: [test, build, test-install]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, 'beta') && !contains(github.ref, 'alpha') && !contains(github.ref, 'rc')
+    environment: pypi
+
+    steps:
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: dist
+        path: dist/
+
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.PYPI_API_TOKEN }}
+
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          ## Changes in this Release
+
+          - Automated release from CI/CD pipeline
+          - Package available on PyPI: https://pypi.org/project/kei_agent_py_sdk/
+
+          ## Installation
+
+          ```bash
+          pip install kei_agent_py_sdk==${{ github.ref_name }}
+          ```
+
+          ## Quick Start
+
+          ```python
+          from kei_agent import UnifiedKeiAgentClient, AgentClientConfig
+
+          config = AgentClientConfig(
+              agent_id="my-agent",
+              base_url="http://localhost:8000",
+              api_token="your-token"
+          )
+
+          client = UnifiedKeiAgentClient(config)
+          ```
+        draft: false
+        prerelease: false
+
+  notify:
+    name: Notify Success
+    runs-on: ubuntu-latest
+    needs: [publish-pypi, publish-testpypi]
+    if: always()
+
+    steps:
+    - name: Notify success
+      if: needs.publish-pypi.result == 'success' || needs.publish-testpypi.result == 'success'
+      run: |
+        echo "🎉 Package successfully published!"
+        echo "📦 PyPI: ${{ needs.publish-pypi.result }}"
+        echo "🧪 TestPyPI: ${{ needs.publish-testpypi.result }}"
+
+    - name: Notify failure
+      if: needs.publish-pypi.result == 'failure' || needs.publish-testpypi.result == 'failure'
+      run: |
+        echo "❌ Package publication failed!"
+        echo "📦 PyPI: ${{ needs.publish-pypi.result }}"
+        echo "🧪 TestPyPI: ${{ needs.publish-testpypi.result }}"
+        exit 1

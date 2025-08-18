@@ -1,0 +1,228 @@
+name: 🚀 Optimized CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  PYTHON_VERSION: '3.9'
+
+jobs:
+  quality-checks:
+    name: 🔍 Code Quality & Security
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install ruff mypy bandit
+        pip install -e .
+
+    - name: 🎨 Ruff Linting
+      run: |
+        echo "🔍 Running Ruff linting..."
+        ruff check kei_agent/ --output-format=github
+
+    - name: 🔒 Security Checks
+      run: |
+        echo "🔒 Running Bandit security checks..."
+        bandit -r kei_agent/ --severity-level medium --confidence-level medium
+
+  core-tests:
+    name: 🧪 Core Functionality Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install pytest pytest-cov pytest-asyncio
+
+    - name: 📦 Import Tests
+      run: |
+        python -c "
+        import time
+        start = time.time()
+        import kei_agent
+        end = time.time()
+        print(f'✅ Import successful in {(end-start)*1000:.2f}ms')
+
+        # Test critical APIs
+        from kei_agent import UnifiedKeiAgentClient, AgentClientConfig, CapabilityManager, CapabilityProfile
+        config = kei_agent.AgentClientConfig('test', 'http://localhost:8000', 'token')
+        client = kei_agent.UnifiedKeiAgentClient(config)
+        profile = kei_agent.CapabilityProfile('test', '1.0.0')
+        print('✅ Critical APIs functional')
+        "
+
+    - name: 🧪 Core Tests
+      run: |
+        pytest tests/test_import_system.py tests/test_core_functionality.py tests/test_critical_workflows.py --cov=kei_agent --cov-report=xml -v
+
+    - name: 🛡️ Security Scanning
+      run: |
+        # Install security scanning tools
+        pip install safety pip-audit cyclonedx-bom pipdeptree tomli
+
+        # Make scripts executable
+        chmod +x scripts/security_scan.py scripts/generate_sbom.py
+
+        # Run comprehensive security scan
+        python scripts/security_scan.py --fail-on-error
+
+        # Generate SBOM for compliance
+        python scripts/generate_sbom.py
+
+    - name: 📊 Upload Coverage
+      if: matrix.python-version == '3.9'
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+
+    - name: 📦 Upload Security Reports
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-reports-${{ matrix.python-version }}
+        path: |
+          security-reports/
+          sbom/
+        retention-days: 30
+
+  performance-tests:
+    name: ⚡ Performance Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+
+    - name: ⚡ Import Performance
+      run: |
+        python -c "
+        import time
+        import sys
+
+        # Measure import time
+        start = time.time()
+        import kei_agent
+        end = time.time()
+
+        import_time = (end - start) * 1000
+        module_count = len([m for m in sys.modules if m.startswith('kei_agent')])
+
+        print(f'Import time: {import_time:.2f}ms')
+        print(f'Loaded modules: {module_count}')
+
+        # Performance thresholds
+        if import_time > 200:
+            print('❌ Import time too slow (>200ms)')
+            exit(1)
+        elif import_time > 150:
+            print('⚠️ Import time warning (>150ms)')
+        else:
+            print('✅ Import time acceptable')
+
+        if module_count > 25:
+            print('❌ Too many modules loaded (>25)')
+            exit(1)
+        else:
+            print('✅ Module count acceptable')
+        "
+
+  build-test:
+    name: 🔨 Build & Install Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+
+    - name: 🔨 Build Package
+      run: |
+        python -m build
+
+    - name: 🔍 Check Package
+      run: |
+        python -m twine check dist/*
+
+    - name: 📦 Test Installation
+      run: |
+        pip install dist/*.whl
+        python -c "
+        import kei_agent
+        print(f'✅ Installation successful: {kei_agent.__version__}')
+
+        # Test critical functionality
+        from kei_agent import UnifiedKeiAgentClient, AgentClientConfig
+        config = kei_agent.AgentClientConfig('test', 'http://localhost:8000', 'token')
+        client = kei_agent.UnifiedKeiAgentClient(config)
+        print('✅ Critical functionality works')
+        "
+
+  summary:
+    name: 📋 CI Summary
+    runs-on: ubuntu-latest
+    needs: [quality-checks, core-tests, performance-tests, build-test]
+    if: always()
+
+    steps:
+    - name: 🎉 Success Summary
+      if: needs.quality-checks.result == 'success' && needs.core-tests.result == 'success' && needs.performance-tests.result == 'success' && needs.build-test.result == 'success'
+      run: |
+        echo "🎉 All CI checks passed successfully!"
+        echo "✅ Code Quality: ${{ needs.quality-checks.result }}"
+        echo "✅ Core Tests: ${{ needs.core-tests.result }}"
+        echo "✅ Performance: ${{ needs.performance-tests.result }}"
+        echo "✅ Build: ${{ needs.build-test.result }}"
+        echo ""
+        echo "🚀 Ready for deployment!"
+
+    - name: ❌ Failure Summary
+      if: needs.quality-checks.result == 'failure' || needs.core-tests.result == 'failure' || needs.performance-tests.result == 'failure' || needs.build-test.result == 'failure'
+      run: |
+        echo "❌ CI checks failed!"
+        echo "🔍 Code Quality: ${{ needs.quality-checks.result }}"
+        echo "🧪 Core Tests: ${{ needs.core-tests.result }}"
+        echo "⚡ Performance: ${{ needs.performance-tests.result }}"
+        echo "🔨 Build: ${{ needs.build-test.result }}"
+        echo ""
+        echo "🔧 Please fix the failing checks before merging."
+        exit 1

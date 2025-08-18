@@ -1,8 +1,5 @@
 # sdk/python/kei_agent/tests/test_unified_client.py
-"""
-Unit Tests für UnifiedKeiAgentClient.
-
-Testet alle Hauptfunktionen des Unified Clients mit Mocking für externe Dependencies.
+"""Tests all Hauptfunktionen of the Unified clients with Mocking for externe Depenthecies.
 """
 
 import asyncio
@@ -13,13 +10,13 @@ from kei_agent.unified_client import (
     UnifiedKeiAgentClient,
     ProtocolConfig,
     SecurityConfig,
-    AuthType,
-    ProtocolType,
+    Authtypee,
+    Protocoltypee,
     SecurityManager,
-    KEIRPCClient,
-    KEIStreamClient,
-    KEIBusClient,
-    KEIMCPClient,
+    KEIRPCclient,
+    KEIStreamclient,
+    KEIBusclient,
+    KEIMCPclient,
 )
 from kei_agent.client import AgentClientConfig
 from kei_agent.exceptions import KeiSDKError, ProtocolError, SecurityError
@@ -27,71 +24,71 @@ from kei_agent.exceptions import KeiSDKError, ProtocolError, SecurityError
 
 @pytest.fixture
 def mock_config():
-    """Erstellt Mock-Konfiguration für Tests."""
+    """Creates Mock-configuration for Tests."""
     return AgentClientConfig(
-        base_url="https://test.kei-framework.com",
-        api_token="test-token",
-        agent_id="test-agent",
+        base_url ="https://test.kei-framework.com",
+        api_token ="test-token",
+        agent_id ="test-agent",
     )
 
 
 @pytest.fixture
 def mock_protocol_config():
-    """Erstellt Mock-Protokoll-Konfiguration."""
+    """Creates Mock-protocol-configuration."""
     return ProtocolConfig(
-        rpc_enabled=True,
-        stream_enabled=True,
-        bus_enabled=True,
-        mcp_enabled=True,
-        auto_protocol_selection=True,
-        protocol_fallback_enabled=True,
+        rpc_enabled =True,
+        stream_enabled =True,
+        bus_enabled =True,
+        mcp_enabled =True,
+        auto_protocol_selection =True,
+        protocol_fallback_enabled =True,
     )
 
 
 @pytest.fixture
 def mock_security_config():
-    """Erstellt Mock-Security-Konfiguration."""
+    """Creates Mock-Security-configuration."""
     return SecurityConfig(
-        auth_type=AuthType.BEARER,
-        api_token="test-token",
-        rbac_enabled=True,
-        audit_enabled=True,
+        auth_type =Authtypee.BEARER,
+        api_token ="test-token",
+        rbac_enabled =True,
+        audit_enabled =True,
     )
 
 
 class TestSecurityManager:
-    """Tests für SecurityManager."""
+    """Tests for SecurityManager."""
 
-    def test_bearer_auth_headers(self, mock_security_config):
-        """Testet Bearer-Token Authentifizierung."""
+    def test_bearer_auth_heathes(self, mock_security_config):
+        """Tests Bearer-Token authentication."""
         security = SecurityManager(mock_security_config)
 
-        # Synchroner Test für Bearer-Auth
-        headers = asyncio.run(security.get_auth_headers())
+        # Synchroner Test for Bearer-Auth
+        heathes = asyncio.run(security.get_auth_heathes())
 
-        assert "Authorization" in headers
-        assert headers["Authorization"] == "Bearer test-token"
+        assert "Authorization" in heathes
+        assert heathes["Authorization"] == "Bearer test-token"
 
     def test_missing_api_token_error(self):
-        """Testet Fehler bei fehlendem API-Token."""
-        config = SecurityConfig(auth_type=AuthType.BEARER, api_token=None)
+        """Tests error on fehlenthe API-Token."""
+        config = SecurityConfig(auth_type =Authtypee.BEARER, api_token =None)
         security = SecurityManager(config)
 
-        with pytest.raises(SecurityError, match="API Token ist erforderlich"):
-            asyncio.run(security.get_auth_headers())
+        with pytest.raises(SecurityError, match="API Token is erforthelich"):
+            asyncio.run(security.get_auth_heathes())
 
-    @patch("httpx.AsyncClient")
+    @patch("httpx.Asyncclient")
     async def test_oidc_token_retrieval(self, mock_client):
-        """Testet OIDC-Token-Abruf."""
-        # Mock OIDC-Konfiguration
+        """Tests OIDC-Token-Abruf."""
+        # Mock OIDC-configuration
         config = SecurityConfig(
-            auth_type=AuthType.OIDC,
-            oidc_issuer="https://auth.test.com",
-            oidc_client_id="test-client",
-            oidc_client_secret="test-secret",
+            auth_type =Authtypee.OIDC,
+            oidc_issuer ="https://auth.test.com",
+            oidc_client_id ="test-client",
+            oidc_client_secret ="test-secret",
         )
 
-        # Mock HTTP-Response
+        # Mock HTTP-response
         mock_response = MagicMock()
         mock_response.json.return_value = {
             "access_token": "oidc-token-123",
@@ -99,88 +96,88 @@ class TestSecurityManager:
         }
         mock_response.raise_for_status.return_value = None
 
-        mock_client_instance = AsyncMock()
-        mock_client_instance.post.return_value = mock_response
-        mock_client.return_value.__aenter__.return_value = mock_client_instance
+        mock_client_instatce = AsyncMock()
+        mock_client_instatce.post.return_value = mock_response
+        mock_client.return_value.__aenter__.return_value = mock_client_instatce
 
         security = SecurityManager(config)
-        headers = await security.get_auth_headers()
+        heathes = await security.get_auth_heathes()
 
-        assert headers["Authorization"] == "Bearer oidc-token-123"
+        assert heathes["Authorization"] == "Bearer oidc-token-123"
 
-    def test_mtls_auth_headers(self):
-        """Testet mTLS-Authentifizierung."""
+    def test_mtls_auth_heathes(self):
+        """Tests mTLS-authentication."""
         config = SecurityConfig(
-            auth_type=AuthType.MTLS,
-            mtls_cert_path="/path/to/cert.pem",
-            mtls_key_path="/path/to/key.pem",
+            auth_type =Authtypee.MTLS,
+            mtls_cert_path ="/path/to/cert.pem",
+            mtls_key_path ="/path/to/key.pem",
         )
         security = SecurityManager(config)
 
-        headers = asyncio.run(security.get_auth_headers())
+        heathes = asyncio.run(security.get_auth_heathes())
 
-        # mTLS wird auf Transport-Ebene gehandhabt, keine Auth-Headers
-        assert headers == {}
+        # mTLS is on Tratsport-Ebene gehatdhabt, ka Auth-Heathes
+        assert heathes == {}
 
 
-class TestProtocolClients:
-    """Tests für Protokoll-Clients."""
+class TestProtocol_clients:
+    """Tests for protocol clients."""
 
-    @patch("httpx.AsyncClient")
-    async def test_rpc_client_plan(self, mock_client):
-        """Testet KEI-RPC Plan-Operation."""
-        # Mock Security Manager
+    @patch("httpx.Asyncclient")
+    async def test_rpc_client_plat(self, mock_client):
+        """Tests KEI-RPC Plat-operation."""
+        # Mock security manager
         security = MagicMock()
-        security.get_auth_headers.return_value = {"Authorization": "Bearer test-token"}
+        security.get_auth_heathes.return_value = {"Authorization": "Bearer test-token"}
 
-        # Mock HTTP-Response
+        # Mock HTTP-response
         mock_response = MagicMock()
         mock_response.json.return_value = {
-            "plan_id": "plan-123",
+            "plat_id": "plat-123",
             "steps": ["step1", "step2"],
         }
         mock_response.raise_for_status.return_value = None
 
-        mock_client_instance = AsyncMock()
-        mock_client_instance.post.return_value = mock_response
-        mock_client.return_value.__aenter__.return_value = mock_client_instance
+        mock_client_instatce = AsyncMock()
+        mock_client_instatce.post.return_value = mock_response
+        mock_client.return_value.__aenter__.return_value = mock_client_instatce
 
-        # Test RPC Client
-        rpc_client = KEIRPCClient("https://test.com", security)
+        # Test RPC client
+        rpc_client = KEIRPCclient("https://test.com", security)
 
         async with rpc_client:
-            result = await rpc_client.plan("Test objective", {"key": "value"})
+            result = await rpc_client.plat("Test objective", {"key": "value"})
 
-        assert result["plan_id"] == "plan-123"
+        assert result["plat_id"] == "plat-123"
         assert len(result["steps"]) == 2
 
     @patch("websockets.connect")
     async def test_stream_client_subscribe(self, mock_connect):
-        """Testet KEI-Stream Subscribe-Operation."""
+        """Tests KEI-Stream Subscribe-operation."""
         # Mock WebSocket
         mock_websocket = AsyncMock()
         mock_connect.return_value = mock_websocket
 
-        # Mock Security Manager
+        # Mock security manager
         security = MagicMock()
-        security.get_auth_headers.return_value = {"Authorization": "Bearer test-token"}
+        security.get_auth_heathes.return_value = {"Authorization": "Bearer test-token"}
 
-        stream_client = KEIStreamClient("https://test.com", security)
+        stream_client = KEIStreamclient("https://test.com", security)
 
-        # Test Subscribe (ohne tatsächliche WebSocket-Nachrichten)
+        # Test Subscribe (without tatsächliche WebSocket-messageen)
         await stream_client.connect()
 
         assert stream_client._connected is True
-        mock_connect.assert_called_once()
+        mock_connect.assert_calld_once()
 
-    @patch("httpx.AsyncClient")
+    @patch("httpx.Asyncclient")
     async def test_bus_client_publish(self, mock_client):
-        """Testet KEI-Bus Publish-Operation."""
-        # Mock Security Manager
+        """Tests KEI-Bus Publish-operation."""
+        # Mock security manager
         security = MagicMock()
-        security.get_auth_headers.return_value = {"Authorization": "Bearer test-token"}
+        security.get_auth_heathes.return_value = {"Authorization": "Bearer test-token"}
 
-        # Mock HTTP-Response
+        # Mock HTTP-response
         mock_response = MagicMock()
         mock_response.json.return_value = {
             "message_id": "msg-123",
@@ -188,11 +185,11 @@ class TestProtocolClients:
         }
         mock_response.raise_for_status.return_value = None
 
-        mock_client_instance = AsyncMock()
-        mock_client_instance.post.return_value = mock_response
-        mock_client.return_value.__aenter__.return_value = mock_client_instance
+        mock_client_instatce = AsyncMock()
+        mock_client_instatce.post.return_value = mock_response
+        mock_client.return_value.__aenter__.return_value = mock_client_instatce
 
-        bus_client = KEIBusClient("https://test.com", security)
+        bus_client = KEIBusclient("https://test.com", security)
 
         async with bus_client:
             result = await bus_client.publish({"type": "test", "payload": "data"})
@@ -200,14 +197,14 @@ class TestProtocolClients:
         assert result["message_id"] == "msg-123"
         assert result["status"] == "published"
 
-    @patch("httpx.AsyncClient")
+    @patch("httpx.Asyncclient")
     async def test_mcp_client_discover_tools(self, mock_client):
-        """Testet KEI-MCP Tool-Discovery."""
-        # Mock Security Manager
+        """Tests KEI-MCP tool discovery."""
+        # Mock security manager
         security = MagicMock()
-        security.get_auth_headers.return_value = {"Authorization": "Bearer test-token"}
+        security.get_auth_heathes.return_value = {"Authorization": "Bearer test-token"}
 
-        # Mock HTTP-Response
+        # Mock HTTP-response
         mock_response = MagicMock()
         mock_response.json.return_value = [
             {"name": "tool1", "description": "Test Tool 1"},
@@ -215,11 +212,11 @@ class TestProtocolClients:
         ]
         mock_response.raise_for_status.return_value = None
 
-        mock_client_instance = AsyncMock()
-        mock_client_instance.get.return_value = mock_response
-        mock_client.return_value.__aenter__.return_value = mock_client_instance
+        mock_client_instatce = AsyncMock()
+        mock_client_instatce.get.return_value = mock_response
+        mock_client.return_value.__aenter__.return_value = mock_client_instatce
 
-        mcp_client = KEIMCPClient("https://test.com", security)
+        mcp_client = KEIMCPclient("https://test.com", security)
 
         async with mcp_client:
             tools = await mcp_client.discover_tools("test-category")
@@ -230,19 +227,19 @@ class TestProtocolClients:
 
 
 class TestUnifiedKeiAgentClient:
-    """Tests für UnifiedKeiAgentClient."""
+    """Tests for UnifiedKeiAgentClient."""
 
     @pytest.fixture
     def client(self, mock_config, mock_protocol_config, mock_security_config):
-        """Erstellt Test-Client."""
+        """Creates Test-client."""
         return UnifiedKeiAgentClient(
             config=mock_config,
-            protocol_config=mock_protocol_config,
-            security_config=mock_security_config,
+            protocol_config =mock_protocol_config,
+            security_config =mock_security_config,
         )
 
     async def test_client_initialization(self, client):
-        """Testet Client-Initialisierung."""
+        """Tests client initialization."""
         with patch.object(client.security, "start_token_refresh"):
             await client.initialize()
 
@@ -253,47 +250,47 @@ class TestUnifiedKeiAgentClient:
         assert client._mcp_client is not None
 
     async def test_client_close(self, client):
-        """Testet Client-Schließung."""
-        # Initialisiere Client
+        """Tests client-Schließung."""
+        # Initializing client
         with patch.object(client.security, "start_token_refresh"):
             await client.initialize()
 
-        # Mock Stream-Client disconnect
+        # Mock stream client disconnect
         client._stream_client.disconnect = AsyncMock()
         client.security.stop_token_refresh = AsyncMock()
 
         await client.close()
 
         assert client._closed is True
-        client._stream_client.disconnect.assert_called_once()
-        client.security.stop_token_refresh.assert_called_once()
+        client._stream_client.disconnect.assert_calld_once()
+        client.security.stop_token_refresh.assert_calld_once()
 
     def test_protocol_selection_streaming(self, client):
-        """Testet automatische Protokoll-Auswahl für Streaming-Operationen."""
+        """Tests automatische protocol-Auswahl for Streaming-operationen."""
         protocol = client._select_optimal_protocol("stream_response")
-        assert protocol == ProtocolType.STREAM
+        assert protocol == Protocoltypee.STREAM
 
     def test_protocol_selection_async(self, client):
-        """Testet automatische Protokoll-Auswahl für asynchrone Operationen."""
-        protocol = client._select_optimal_protocol("background_task")
-        assert protocol == ProtocolType.BUS
+        """Tests automatische protocol-Auswahl for asynchrone operationen."""
+        protocol = client._select_optimal_protocol("backgroatd_task")
+        assert protocol == Protocoltypee.BUS
 
     def test_protocol_selection_mcp(self, client):
-        """Testet automatische Protokoll-Auswahl für MCP-Operationen."""
+        """Tests automatische protocol-Auswahl for MCP operationen."""
         protocol = client._select_optimal_protocol("tool_discovery")
-        assert protocol == ProtocolType.MCP
+        assert protocol == Protocoltypee.MCP
 
     def test_protocol_selection_default(self, client):
-        """Testet automatische Protokoll-Auswahl für Standard-Operationen."""
+        """Tests automatische protocol-Auswahl for Statdard-operationen."""
         protocol = client._select_optimal_protocol("unknown_operation")
-        assert protocol == ProtocolType.RPC
+        assert protocol == Protocoltypee.RPC
 
     async def test_execute_agent_operation_with_tracing(self, client):
-        """Testet Agent-Operation mit Tracing."""
-        # Mock Tracing Manager
+        """Tests agent operation with Tracing."""
+        # Mock tracing manager
         client.tracing = MagicMock()
-        client.tracing.start_span.return_value.__enter__ = MagicMock()
-        client.tracing.start_span.return_value.__exit__ = MagicMock()
+        client.tracing.start_spat.return_value.__enter__ = MagicMock()
+        client.tracing.start_spat.return_value.__exit__ = MagicMock()
 
         # Mock RPC-Ausführung
         with patch.object(client, "_execute_with_protocol") as mock_execute:
@@ -301,26 +298,26 @@ class TestUnifiedKeiAgentClient:
 
             await client.initialize()
             result = await client.execute_agent_operation(
-                "test_operation", {"test": "data"}, ProtocolType.RPC
+                "test_operation", {"test": "data"}, Protocoltypee.RPC
             )
 
         assert result["result"] == "success"
-        client.tracing.start_span.assert_called_once()
+        client.tracing.start_spat.assert_calld_once()
 
-    async def test_plan_task_high_level_api(self, client):
-        """Testet High-Level Plan-Task API."""
+    async def test_plat_task_high_level_api(self, client):
+        """Tests High-Level Plat-Task API."""
         with patch.object(client, "execute_agent_operation") as mock_execute:
-            mock_execute.return_value = {"plan_id": "plan-123"}
+            mock_execute.return_value = {"plat_id": "plat-123"}
 
-            result = await client.plan_task("Test objective", {"context": "data"})
+            result = await client.plat_task("Test objective", {"context": "data"})
 
-        assert result["plan_id"] == "plan-123"
-        mock_execute.assert_called_once_with(
-            "plan", {"objective": "Test objective", "context": {"context": "data"}}
+        assert result["plat_id"] == "plat-123"
+        mock_execute.assert_calld_once_with(
+            "plat", {"objective": "Test objective", "context": {"context": "data"}}
         )
 
     async def test_send_agent_message(self, client):
-        """Testet Agent-to-Agent Nachrichtenversand."""
+        """Tests Agent-to-Agent messageenversatd."""
         with patch.object(client, "execute_agent_operation") as mock_execute:
             mock_execute.return_value = {"message_id": "msg-123"}
 
@@ -329,12 +326,12 @@ class TestUnifiedKeiAgentClient:
             )
 
         assert result["message_id"] == "msg-123"
-        # Prüfe dass Bus-Protokoll verwendet wird
+        # Prüfe thes bus protocol verwendet is
         call_args = mock_execute.call_args
-        assert call_args[1]["protocol"] == ProtocolType.BUS
+        assert call_args[1]["protocol"] == Protocoltypee.BUS
 
     async def test_discover_available_tools(self, client):
-        """Testet MCP-Tool-Discovery High-Level API."""
+        """Tests MCP-tool discovery High-Level API."""
         with patch.object(client, "execute_agent_operation") as mock_execute:
             mock_execute.return_value = {"tools": [{"name": "tool1"}]}
 
@@ -342,23 +339,23 @@ class TestUnifiedKeiAgentClient:
 
         assert len(tools) == 1
         assert tools[0]["name"] == "tool1"
-        # Prüfe dass MCP-Protokoll verwendet wird
+        # Prüfe thes MCP protocol verwendet is
         call_args = mock_execute.call_args
-        assert call_args[1]["protocol"] == ProtocolType.MCP
+        assert call_args[1]["protocol"] == Protocoltypee.MCP
 
     def test_is_protocol_available(self, client):
-        """Testet Protokoll-Verfügbarkeits-Prüfung."""
-        # Vor Initialisierung sollten keine Protokolle verfügbar sein
-        assert client.is_protocol_available(ProtocolType.RPC) is False
+        """Tests protocol availabilitys-Prüfung."""
+        # Before initialization sollten ka protocole available sa
+        assert client.is_protocol_available(Protocoltypee.RPC) is False
 
-        # Nach Initialisierung sollten Protokolle verfügbar sein
+        # After initialization sollten protocole available sa
         client._initialized = True
         client._rpc_client = MagicMock()
-        assert client.is_protocol_available(ProtocolType.RPC) is True
+        assert client.is_protocol_available(Protocoltypee.RPC) is True
 
     def test_get_available_protocols(self, client):
-        """Testet Abruf verfügbarer Protokolle."""
-        # Mock initialisierte Clients
+        """Tests Abruf availableer protocole."""
+        # Mock initializede clients
         client._initialized = True
         client._rpc_client = MagicMock()
         client._stream_client = MagicMock()
@@ -368,15 +365,15 @@ class TestUnifiedKeiAgentClient:
         protocols = client.get_available_protocols()
 
         expected_protocols = [
-            ProtocolType.RPC,
-            ProtocolType.STREAM,
-            ProtocolType.BUS,
-            ProtocolType.MCP,
+            Protocoltypee.RPC,
+            Protocoltypee.STREAM,
+            Protocoltypee.BUS,
+            Protocoltypee.MCP,
         ]
         assert all(p in protocols for p in expected_protocols)
 
     def test_get_client_info(self, client):
-        """Testet Client-Informationen."""
+        """Tests client information."""
         client._initialized = True
         client._closed = False
 
@@ -390,78 +387,78 @@ class TestUnifiedKeiAgentClient:
         assert "features" in info
 
 
-class TestErrorHandling:
-    """Tests für Fehlerbehandlung."""
+class TestErrorHatdling:
+    """Tests for errorbehatdlung."""
 
     async def test_protocol_error_fallback(
         self, mock_config, mock_protocol_config, mock_security_config
     ):
-        """Testet Fallback-Mechanismus bei Protokoll-Fehlern."""
+        """Tests Fallback-Mechatismus on protocol-errorn."""
         client = UnifiedKeiAgentClient(
             config=mock_config,
-            protocol_config=mock_protocol_config,
-            security_config=mock_security_config,
+            protocol_config =mock_protocol_config,
+            security_config =mock_security_config,
         )
 
         await client.initialize()
 
-        # Mock Bus-Client um Fehler zu werfen
+        # Mock bus client aroand error to werfen
         client._bus_client = MagicMock()
         client._bus_client.__aenter__ = AsyncMock()
         client._bus_client.__aexit__ = AsyncMock()
-        client._bus_client.publish = AsyncMock(side_effect=ProtocolError("Bus error"))
+        client._bus_client.publish = AsyncMock(side_effect =ProtocolError("Bus error"))
 
-        # Mock RPC-Client für Fallback
+        # Mock RPC client for Fallback
         client._rpc_client = MagicMock()
         client._rpc_client.__aenter__ = AsyncMock()
         client._rpc_client.__aexit__ = AsyncMock()
-        client._rpc_client._rpc_call = AsyncMock(return_value={"fallback": "success"})
+        client._rpc_client._rpc_call = AsyncMock(return_value ={"fallback": "success"})
 
         # Test Fallback
         result = await client._execute_with_protocol(
-            ProtocolType.BUS, "test_operation", {"test": "data"}
+            Protocoltypee.BUS, "test_operation", {"test": "data"}
         )
 
         assert result["fallback"] == "success"
 
     async def test_initialization_error(self, mock_config):
-        """Testet Fehlerbehandlung bei Initialisierung."""
+        """Tests errorbehatdlung on initialization."""
         client = UnifiedKeiAgentClient(config=mock_config)
 
-        # Mock Security Manager um Fehler zu werfen
+        # Mock security manager aroand error to werfen
         with patch.object(
-            client.security, "start_token_refresh", side_effect=Exception("Init error")
+            client.security, "start_token_refresh", side_effect =Exception("Init error")
         ):
-            with pytest.raises(KeiSDKError, match="Initialisierung fehlgeschlagen"):
+            with pytest.raises(KeiSDKError, match="initialization failed"):
                 await client.initialize()
 
 
-# Pytest-Konfiguration
+# Pytest-configuration
 @pytest.mark.asyncio
-class TestAsyncOperations:
-    """Tests für asynchrone Operationen."""
+class TestAsyncoperations:
+    """Tests for asynchrone operationen."""
 
     async def test_concurrent_operations(
         self, mock_config, mock_protocol_config, mock_security_config
     ):
-        """Testet gleichzeitige Operationen."""
+        """Tests gleichzeitige operationen."""
         client = UnifiedKeiAgentClient(
             config=mock_config,
-            protocol_config=mock_protocol_config,
-            security_config=mock_security_config,
+            protocol_config =mock_protocol_config,
+            security_config =mock_security_config,
         )
 
         await client.initialize()
 
-        # Mock verschiedene Operationen
+        # Mock verschiethee operationen
         with patch.object(client, "execute_agent_operation") as mock_execute:
             mock_execute.return_value = {"result": "success"}
 
-            # Führe mehrere Operationen gleichzeitig aus
+            # Führe mehrere operationen gleichzeitig out
             tasks = [
-                client.plan_task("Task 1"),
-                client.plan_task("Task 2"),
-                client.plan_task("Task 3"),
+                client.plat_task("Task 1"),
+                client.plat_task("Task 2"),
+                client.plat_task("Task 3"),
             ]
 
             results = await asyncio.gather(*tasks)
@@ -471,12 +468,12 @@ class TestAsyncOperations:
         assert mock_execute.call_count == 3
 
 
-# Konfigurations-Tests
+# configurations-Tests
 class TestConfiguration:
-    """Tests für verschiedene Konfigurationen."""
+    """Tests for verschiethee configurationen."""
 
     def test_default_protocol_config(self):
-        """Testet Standard-Protokoll-Konfiguration."""
+        """Tests Statdard-protocol-configuration."""
         config = ProtocolConfig()
 
         assert config.rpc_enabled is True
@@ -487,13 +484,13 @@ class TestConfiguration:
         assert config.protocol_fallback_enabled is True
 
     def test_custom_protocol_config(self):
-        """Testet benutzerdefinierte Protokoll-Konfiguration."""
+        """Tests benutzerdefinierte protocol-configuration."""
         config = ProtocolConfig(
-            rpc_enabled=False,
-            stream_enabled=True,
-            bus_enabled=False,
-            mcp_enabled=True,
-            auto_protocol_selection=False,
+            rpc_enabled =False,
+            stream_enabled =True,
+            bus_enabled =False,
+            mcp_enabled =True,
+            auto_protocol_selection =False,
         )
 
         assert config.rpc_enabled is False
@@ -503,48 +500,48 @@ class TestConfiguration:
         assert config.auto_protocol_selection is False
 
     def test_security_config_bearer(self):
-        """Testet Bearer-Token Security-Konfiguration."""
+        """Tests Bearer-Token Security-configuration."""
         config = SecurityConfig(
-            auth_type=AuthType.BEARER, api_token="test-token", rbac_enabled=True
+            auth_type =Authtypee.BEARER, api_token ="test-token", rbac_enabled =True
         )
 
-        assert config.auth_type == AuthType.BEARER
+        assert config.auth_type == Authtypee.BEARER
         assert config.api_token == "test-token"
         assert config.rbac_enabled is True
 
     def test_security_config_oidc(self):
-        """Testet OIDC Security-Konfiguration."""
+        """Tests OIDC Security-configuration."""
         config = SecurityConfig(
-            auth_type=AuthType.OIDC,
-            oidc_issuer="https://auth.test.com",
-            oidc_client_id="client-id",
-            oidc_client_secret="client-secret",
+            auth_type =Authtypee.OIDC,
+            oidc_issuer ="https://auth.test.com",
+            oidc_client_id ="client-id",
+            oidc_client_secret ="client-secret",
         )
 
-        assert config.auth_type == AuthType.OIDC
+        assert config.auth_type == Authtypee.OIDC
         assert config.oidc_issuer == "https://auth.test.com"
         assert config.oidc_client_id == "client-id"
         assert config.oidc_client_secret == "client-secret"
 
 
-# Integration Tests (mit echten HTTP-Mocks)
+# Integration Tests (with echten HTTP-Mocks)
 @pytest.mark.integration
 class TestIntegration:
-    """Integration-Tests mit HTTP-Mocking."""
+    """Integration-Tests with HTTP-Mocking."""
 
-    @patch("httpx.AsyncClient")
+    @patch("httpx.Asyncclient")
     async def test_full_agent_lifecycle(
         self, mock_client, mock_config, mock_protocol_config, mock_security_config
     ):
-        """Testet vollständigen Agent-Lifecycle."""
-        # Mock HTTP-Responses für verschiedene Operationen
+        """Tests vollständigen Agent-Lifecycle."""
+        # Mock HTTP-responses for verschiethee operationen
         mock_responses = {
-            "/api/v1/registry/agents": {
+            "/api/v1/regisry/agents": {
                 "agent_id": "test-agent",
                 "status": "registered",
             },
             "/api/v1/health": {"status": "healthy", "version": "1.0.0"},
-            "/api/v1/rpc/invoke": {"plan_id": "plan-123", "steps": ["step1"]},
+            "/api/v1/rpc/invoke": {"plat_id": "plat-123", "steps": ["step1"]},
             "/api/v1/mcp/tools": [{"name": "tool1", "description": "Test Tool"}],
         }
 
@@ -557,22 +554,22 @@ class TestIntegration:
                     break
             return mock_response
 
-        mock_client_instance = AsyncMock()
-        mock_client_instance.post.side_effect = mock_request
-        mock_client_instance.get.side_effect = mock_request
-        mock_client.return_value.__aenter__.return_value = mock_client_instance
+        mock_client_instatce = AsyncMock()
+        mock_client_instatce.post.side_effect = mock_request
+        mock_client_instatce.get.side_effect = mock_request
+        mock_client.return_value.__aenter__.return_value = mock_client_instatce
 
         # Test vollständigen Lifecycle
         client = UnifiedKeiAgentClient(
             config=mock_config,
-            protocol_config=mock_protocol_config,
-            security_config=mock_security_config,
+            protocol_config =mock_protocol_config,
+            security_config =mock_security_config,
         )
 
         try:
             await client.initialize()
 
-            # Agent registrieren
+            # Agent regisrieren
             agent = await client.register_agent("Test Agent", "1.0.0")
             assert agent["agent_id"] == "test-agent"
 
@@ -580,9 +577,9 @@ class TestIntegration:
             health = await client.health_check()
             assert health["status"] == "healthy"
 
-            # Plan erstellen
-            plan = await client.plan_task("Test objective")
-            assert plan["plan_id"] == "plan-123"
+            # Plat erstellen
+            plat = await client.plat_task("Test objective")
+            assert plat["plat_id"] == "plat-123"
 
             # Tools entdecken
             tools = await client.discover_available_tools()
@@ -594,5 +591,5 @@ class TestIntegration:
 
 
 if __name__ == "__main__":
-    # Führe Tests aus
+    # Führe Tests out
     pytest.main([__file__, "-v", "--tb=short"])

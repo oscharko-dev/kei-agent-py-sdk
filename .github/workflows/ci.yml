@@ -256,6 +256,46 @@ jobs:
           echo "🔄 Führe Refactored Component Tests aus..."
           make test-refactored
 
+      # Package Installation Smoke Test
+      - name: 📦 Build and Install Wheel (Smoke Test)
+        run: |
+          set -e
+          python -m pip install --upgrade build virtualenv
+          python -m build
+          python -m venv .venv-smoke
+          . .venv-smoke/bin/activate || source .venv-smoke/Scripts/activate
+          python -m pip install --upgrade pip
+          pip install dist/*.whl
+          # Basic import tests
+          python - <<'PY'
+import importlib
+modules = [
+    'kei_agent',
+    'kei_agent.client',
+    'kei_agent.unified_client',
+    'kei_agent.enterprise_logging',
+    'kei_agent.security_manager',
+    'kei_agent.utils',
+    'kei_agent.capabilities',
+    'kei_agent.models',
+    'kei_agent.cli',
+    'kei_agent.config_manager',
+    'kei_agent.retry',
+    'kei_agent.tracing',
+    'kei_agent.metrics',
+]
+for m in modules:
+    try:
+        importlib.import_module(m)
+        print(f'✓ {m}')
+    except Exception as e:
+        print(f'✗ {m}: {e}')
+        raise
+print('SUCCESS: All main modules imported')
+PY
+          # CLI smoke
+          kei-agent --help || (echo 'ERROR: CLI entry point failed' && exit 1)
+
       # Security Tests
       - name: 🛡️ Security Tests
         run: |

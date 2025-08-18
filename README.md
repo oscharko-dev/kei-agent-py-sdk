@@ -2,55 +2,57 @@
 
 [![CI](https://github.com/oscharko-dev/kei-agent-py-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/oscharko-dev/kei-agent-py-sdk/actions/workflows/ci.yml)
 [![Docs](https://github.com/oscharko-dev/kei-agent-py-sdk/actions/workflows/docs.yml/badge.svg)](https://github.com/oscharko-dev/kei-agent-py-sdk/actions/workflows/docs.yml)
+[![Coverage](https://img.shields.io/badge/coverage-85%25-brightgreen.svg)](https://oscharko-dev.github.io/kei-agent-py-sdk/coverage/)
+[![codecov](https://codecov.io/gh/oscharko-dev/kei-agent-py-sdk/branch/main/graph/badge.svg)](https://codecov.io/gh/oscharko-dev/kei-agent-py-sdk)
 [![TestPyPI](https://img.shields.io/badge/TestPyPI-available-brightgreen.svg)](https://test.pypi.org/project/kei-agent-py-sdk/)
 [![PyPI](https://img.shields.io/pypi/v/kei_agent_py_sdk.svg)](https://pypi.org/project/kei_agent_py_sdk/)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://pypi.org/project/kei_agent_py_sdk/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://oscharko-dev.github.io/kei-agent-py-sdk/)
 
-**Enterprise-Grade Python SDK für KEI-Agent Framework mit Multi-Protocol Support**
+**Enterprise-Grade Python SDK for KEI-Agent Framework with Multi-Protocol Support**
 
-Das KEI-Agent Python SDK bietet eine einheitliche, typisierte API für die Entwicklung von intelligenten Agenten mit umfassender Protokoll-Unterstützung, Enterprise-Security und Production-Monitoring.
+The KEI-Agent Python SDK provides a unified, typed API for developing intelligent agents with comprehensive protocol support, enterprise security, and production monitoring.
 
 ## 🚀 Features
 
 ### Multi-Protocol Support
 
-- **KEI-RPC**: Synchrone Request-Response Operationen
-- **KEI-Stream**: Bidirektionale Real-time Kommunikation
-- **KEI-Bus**: Asynchrone Message-Bus Integration
-- **KEI-MCP**: Model Context Protocol für Tool-Integration
+- **KEI-RPC**: Synchronous request-response operations
+- **KEI-Stream**: Bidirectional real-time communication
+- **KEI-Bus**: Asynchronous message bus integration
+- **KEI-MCP**: Model Context Protocol for tool integration
 
 ### Enterprise Security
 
 - **Multi-Auth**: Bearer Token, OIDC, mTLS
-- **Input Validation**: Umfassende Sanitization und XSS/SQL-Injection-Schutz
-- **Audit Logging**: Vollständige Nachverfolgbarkeit aller Operationen
-- **RBAC**: Role-Based Access Control Integration
+- **Input Validation**: Comprehensive sanitization and XSS/SQL injection protection
+- **Audit Logging**: Complete traceability of all operations
+- **RBAC**: Role-Based Access Control integration
 
 ### Production Monitoring
 
-- **Structured Logging**: JSON-Format mit Correlation-IDs
-- **Health Checks**: Database, API, Memory, Custom Checks
-- **Performance Metrics**: Built-in Timing und Resource-Monitoring
-- **Distributed Tracing**: OpenTelemetry-Integration
+- **Structured Logging**: JSON format with correlation IDs
+- **Health Checks**: Database, API, memory, custom checks
+- **Performance Metrics**: Built-in timing and resource monitoring
+- **Distributed Tracing**: OpenTelemetry integration
 
 ### Developer Experience
 
-- **Type Safety**: 100% Type Hints für vollständige IntelliSense
-- **Deutsche Dokumentation**: Umfassende Guides und API-Referenz
-- **Auto-Protocol Selection**: Intelligente Protokoll-Auswahl
-- **Async-First**: Non-blocking I/O für maximale Performance
+- **Type Safety**: 100% type hints for complete IntelliSense
+- **Comprehensive Documentation**: Complete guides and API reference
+- **Auto-Protocol Selection**: Intelligent protocol selection
+- **Async-First**: Non-blocking I/O for maximum performance
 
 ## 📦 Installation
 
-### Installation von TestPyPI (Pre-Release)
+### Installation from TestPyPI (Pre-Release)
 
 ```bash
 pip install -i https://test.pypi.org/simple/ kei-agent-py-sdk
 ```
 
-Mit Extras (und Fallback auf PyPI für Abhängigkeiten):
+With extras (and fallback to PyPI for dependencies):
 
 ```bash
 pip install -i https://test.pypi.org/simple/ \
@@ -58,19 +60,19 @@ pip install -i https://test.pypi.org/simple/ \
   "kei-agent-py-sdk[security,docs]"
 ```
 
-### Standard-Installation
+### Standard Installation
 
 ```bash
 pip install kei_agent_py_sdk
 ```
 
-### Mit Enterprise-Features
+### With Enterprise Features
 
 ```bash
 pip install "kei_agent_py_sdk[security,docs]"
 ```
 
-### Development-Installation
+### Development Installation
 
 ```bash
 git clone https://github.com/oscharko-dev/kei-agent-py-sdk.git
@@ -80,7 +82,7 @@ pip install -e ".[dev,docs,security]"
 
 ## ⚡ Quick Start
 
-### Einfacher Agent-Client
+### Simple Agent Client
 
 ```python
 import asyncio
@@ -93,9 +95,9 @@ from kei_agent import (
     CapabilityProfile
 )
 
-# 1. TOOL-IMPLEMENTIERUNG: System-Monitor
+# 1. TOOL IMPLEMENTATION: System Monitor
 async def system_monitor_tool(target: str, metrics: list) -> dict:
-    """Echte Implementierung für System-Metriken mit psutil."""
+    """Real implementation for system metrics using psutil."""
     result = {}
 
     if "cpu" in metrics:
@@ -113,9 +115,9 @@ async def system_monitor_tool(target: str, metrics: list) -> dict:
         "status": "healthy" if all(v < 80 for v in result.values()) else "warning"
     }
 
-# 2. TOOL-IMPLEMENTIERUNG: API Health Check
+# 2. TOOL IMPLEMENTATION: API Health Check
 async def api_health_tool(endpoint: str) -> dict:
-    """Prüft API-Endpunkt Erreichbarkeit."""
+    """Checks API endpoint availability."""
     try:
         response = requests.get(endpoint, timeout=5)
         return {
@@ -139,40 +141,40 @@ async def main():
     )
 
     async with UnifiedKeiAgentClient(config=config) as client:
-        # 3. TOOLS REGISTRIEREN
+        # 3. REGISTER TOOLS
         capability_manager = CapabilityManager(client._legacy_client)
 
-        # System-Monitor Tool registrieren
+        # Register system monitor tool
         await capability_manager.register_capability(
             CapabilityProfile(
                 name="system_monitor",
                 version="1.0.0",
-                description="Sammelt CPU, Memory, Disk Metriken",
+                description="Collects CPU, memory, disk metrics",
                 methods={"get_metrics": {"parameters": ["target", "metrics"]}}
             ),
             handler=system_monitor_tool
         )
 
-        # API Health Tool registrieren
+        # Register API health tool
         await capability_manager.register_capability(
             CapabilityProfile(
                 name="api_health_checker",
                 version="1.0.0",
-                description="Prüft API-Endpunkt Erreichbarkeit",
+                description="Checks API endpoint availability",
                 methods={"check_endpoint": {"parameters": ["endpoint"]}}
             ),
             handler=api_health_tool
         )
 
-        # 4. VOLLSTÄNDIGE IMPLEMENTIERUNG VERWENDEN
-        # Plan mit konkreten Tools
+        # 4. USE COMPLETE IMPLEMENTATION
+        # Plan with concrete tools
         plan = await client.plan_task(
-            objective="Führe vollständige System-Diagnose durch",
+            objective="Perform complete system diagnosis",
             context={"tools": ["system_monitor", "api_health_checker"]}
         )
-        print(f"Plan erstellt: {plan['plan_id']}")
+        print(f"Plan created: {plan['plan_id']}")
 
-        # System-Metriken über registriertes Tool abrufen
+        # Get system metrics via registered tool
         system_data = await client.use_tool(
             "system_monitor",
             **{
@@ -180,14 +182,14 @@ async def main():
                 "metrics": ["cpu", "memory", "disk"]
             }
         )
-        print(f"System-Metriken: {system_data}")
+        print(f"System metrics: {system_data}")
 
-        # API-Health über registriertes Tool prüfen
+        # Check API health via registered tool
         api_data = await client.use_tool(
             "api_health_checker",
             **{"endpoint": "https://api.kei-framework.com/health"}
         )
-        print(f"API-Status: {api_data['status']}")
+        print(f"API status: {api_data['status']}")
 
 asyncio.run(main())
 ```
@@ -207,34 +209,34 @@ async def multi_protocol_example():
     )
 
     async with UnifiedKeiAgentClient(config=config) as client:
-        # Automatische Protokoll-Auswahl (RPC) - Korrekte API-Signatur
+        # Automatic protocol selection (RPC) - Correct API signature
         plan = await client.plan_task(
-            objective="Entdecke verfügbare Tools",
+            objective="Discover available tools",
             context={"category": "monitoring", "max_results": 5}
         )
         print(f"Plan: {plan}")
 
-        # Streaming: Verwende execute_agent_operation für Stream-Operationen
+        # Streaming: Use execute_agent_operation for stream operations
         stream_result = await client.execute_agent_operation(
             "stream_monitoring",
             {"data": "real-time-feed", "callback": True},
             protocol=ProtocolType.STREAM
         )
-        print(f"Stream-Result: {stream_result}")
+        print(f"Stream result: {stream_result}")
 
-        # Tool-Discovery über MCP - Konkrete implementierbare Tools
+        # Tool discovery via MCP - Concrete implementable tools
         tools = await client.discover_available_tools("monitoring")
-        print(f"Verfügbare Tools: {len(tools)}")
+        print(f"Available tools: {len(tools)}")
 
-        # Verwende verfügbares Tool (falls vorhanden)
+        # Use available tool (if present)
         if tools:
             tool_result = await client.use_tool(
                 tools[0]["name"],
                 **{"target": "system", "check_type": "basic"}
             )
-            print(f"Tool-Result: {tool_result}")
+            print(f"Tool result: {tool_result}")
 
-        # Asynchrone Bus-Operation - Konkrete Implementierung
+        # Asynchronous bus operation - Concrete implementation
         bus_result = await client.execute_agent_operation(
             "async_health_check",
             {
@@ -244,7 +246,7 @@ async def multi_protocol_example():
             },
             protocol=ProtocolType.BUS
         )
-        print(f"Bus-Result: {bus_result}")
+        print(f"Bus result: {bus_result}")
 
 asyncio.run(multi_protocol_example())
 ```
@@ -264,7 +266,7 @@ from kei_agent import (
 
 # Structured Logging
 logger = get_logger("enterprise_agent")
-# create_correlation_id() setzt bereits den Kontext
+# create_correlation_id() already sets the context
 correlation_id = logger.create_correlation_id()
 logger.set_context(LogContext(
     user_id="user-123",
@@ -290,7 +292,7 @@ async def enterprise_example():
     )
 
     async with UnifiedKeiAgentClient(config=config) as client:
-        # Operation mit Logging
+        # Operation with logging
         operation_id = logger.log_operation_start("business_process")
         start_time = time.time()
 
@@ -314,42 +316,42 @@ async def enterprise_example():
 asyncio.run(enterprise_example())
 ```
 
-## 🏗️ Architektur
+## 🏗️ Architecture
 
-Das SDK folgt einer modularen, Enterprise-Grade Architektur:
+The SDK follows a modular, enterprise-grade architecture:
 
 ```
 kei_agent/
-├── unified_client_refactored.py    # Haupt-API-Klasse
-├── protocol_types.py               # Typ-Definitionen und Konfigurationen
-├── security_manager.py             # Authentifizierung und Token-Management
-├── protocol_clients.py             # KEI-RPC, Stream, Bus, MCP Clients
-├── protocol_selector.py            # Intelligente Protokoll-Auswahl
-├── enterprise_logging.py           # Strukturiertes JSON-Logging
-├── health_checks.py               # System-Monitoring und Health-Checks
-└── input_validation.py            # Input-Validierung und Sanitization
+├── unified_client.py               # Main API class
+├── protocol_types.py               # Type definitions and configurations
+├── security_manager.py             # Authentication and token management
+├── protocol_clients.py             # KEI-RPC, Stream, Bus, MCP clients
+├── protocol_selector.py            # Intelligent protocol selection
+├── enterprise_logging.py           # Structured JSON logging
+├── health_checks.py               # System monitoring and health checks
+└── input_validation.py            # Input validation and sanitization
 ```
 
-### Design-Prinzipien
+### Design Principles
 
-- **Clean Code**: Alle Module ≤200 Zeilen, Funktionen ≤20 Zeilen
-- **Type Safety**: 100% Type Hints für alle öffentlichen APIs
-- **Single Responsibility**: Jedes Modul hat eine klar definierte Verantwortlichkeit
-- **Async-First**: Non-blocking I/O für maximale Performance
-- **Enterprise-Ready**: Production-Monitoring und Security-Hardening
+- **Clean Code**: All modules ≤200 lines, functions ≤20 lines
+- **Type Safety**: 100% type hints for all public APIs
+- **Single Responsibility**: Each module has a clearly defined responsibility
+- **Async-First**: Non-blocking I/O for maximum performance
+- **Enterprise-Ready**: Production monitoring and security hardening
 
-## 📚 Dokumentation
+## 📚 Documentation
 
-- **[Vollständige Dokumentation](https://oscharko-dev.github.io/kei-agent-py-sdk/)** - Umfassende Guides und API-Referenz
+- **[Complete Documentation](https://oscharko-dev.github.io/kei-agent-py-sdk/)** - Comprehensive guides and API reference
 
-## 🔧 Konfiguration
+## 🔧 Configuration
 
-### Basis-Konfiguration
+### Basic Configuration
 
 ```python
 from kei_agent import AgentClientConfig, ProtocolConfig, SecurityConfig, AuthType
 
-# Agent-Konfiguration
+# Agent configuration
 agent_config = AgentClientConfig(
     base_url="https://api.kei-framework.com",
     api_token="your-api-token",
@@ -358,7 +360,7 @@ agent_config = AgentClientConfig(
     max_retries=3
 )
 
-# Protokoll-Konfiguration
+# Protocol configuration
 protocol_config = ProtocolConfig(
     rpc_enabled=True,
     stream_enabled=True,
@@ -368,7 +370,7 @@ protocol_config = ProtocolConfig(
     protocol_fallback_enabled=True
 )
 
-# Sicherheitskonfiguration
+# Security configuration
 security_config = SecurityConfig(
     auth_type=AuthType.BEARER,
     api_token="your-api-token",
@@ -376,7 +378,7 @@ security_config = SecurityConfig(
     audit_enabled=True
 )
 
-# Client mit vollständiger Konfiguration
+# Client with complete configuration
 client = UnifiedKeiAgentClient(
     config=agent_config,
     protocol_config=protocol_config,
@@ -384,7 +386,7 @@ client = UnifiedKeiAgentClient(
 )
 ```
 
-### Umgebungsvariablen
+### Environment Variables
 
 ```bash
 export KEI_API_URL="https://api.kei-framework.com"
@@ -398,66 +400,66 @@ export KEI_AUDIT_ENABLED="true"
 ## 🧪 Testing
 
 ```bash
-# Unit Tests ausführen
+# Run unit tests
 python -m pytest tests/ -v
 
-# Mit Coverage
+# With coverage
 python -m pytest tests/ --cov=kei_agent --cov-report=html
 
-# Spezifische Test-Kategorien
-python -m pytest tests/ -m "unit"          # Unit Tests
-python -m pytest tests/ -m "integration"   # Integration Tests
-python -m pytest tests/ -m "security"      # Security Tests
+# Specific test categories
+python -m pytest tests/ -m "unit"          # Unit tests
+python -m pytest tests/ -m "integration"   # Integration tests
+python -m pytest tests/ -m "security"      # Security tests
 
-# Performance Tests
+# Performance tests
 python -m pytest tests/ -m "performance"
 ```
 
 ## 🤝 Contributing
 
-Wir freuen uns über Beiträge! Bitte lesen Sie unseren [Development Guide](docs/development/index.md) und die [Contribution-Hinweise](PRE_COMMIT_SETUP.md).
+We welcome contributions! Please read our [Development Guide](docs/development/index.md) and [Contribution Guidelines](PRE_COMMIT_SETUP.md).
 
 ### Development Setup
 
 ```bash
-# Repository klonen
+# Clone repository
 git clone https://github.com/oscharko-dev/kei-agent-py-sdk.git
 cd kei-agent-py-sdk
 
-# Development-Umgebung einrichten
+# Set up development environment
 python -m venv venv
 source venv/bin/activate  # Linux/macOS
 pip install -e ".[dev,docs,security]"
 
-# Pre-commit hooks installieren
+# Install pre-commit hooks
 pre-commit install
 
-# Tests ausführen
+# Run tests
 make test
 
-# Dokumentation erstellen
+# Build documentation
 mkdocs build --strict
 ```
 
-## 📄 Lizenz
+## 📄 License
 
-Dieses Projekt ist unter der [MIT-Lizenz](LICENSE) lizenziert.
+This project is licensed under the [MIT License](LICENSE).
 
 ## 🔗 Links
 
 - **GitHub Repository**: [oscharko-dev/kei-agent-py-sdk](https://github.com/oscharko-dev/kei-agent-py-sdk)
 - **TestPyPI Package**: [kei-agent-py-sdk](https://test.pypi.org/project/kei-agent-py-sdk/)
-- **Dokumentation**: [GitHub Pages](https://oscharko-dev.github.io/kei-agent-py-sdk/)
+- **Documentation**: [GitHub Pages](https://oscharko-dev.github.io/kei-agent-py-sdk/)
 - **Issues**: [GitHub Issues](https://github.com/oscharko-dev/kei-agent-py-sdk/issues)
 
 ## 📊 Status
 
-- ✅ **Production Ready**: Vollständig getestet und dokumentiert
-- ✅ **Type Safe**: 100% Type Hints für alle APIs
-- ✅ **Enterprise Grade**: Security, Monitoring und Compliance-Features
-- ✅ **Well Documented**: Umfassende deutsche Dokumentation
-- ✅ **Actively Maintained**: Regelmäßige Updates und Support
+- ✅ **Production Ready**: Fully tested and documented
+- ✅ **Type Safe**: 100% type hints for all APIs
+- ✅ **Enterprise Grade**: Security, monitoring, and compliance features
+- ✅ **Well Documented**: Comprehensive documentation
+- ✅ **Actively Maintained**: Regular updates and support
 
 ---
 
-**Bereit loszulegen?** Installieren Sie das SDK und folgen Sie unserem [Quick Start Guide](https://oscharko-dev.github.io/kei-agent-py-sdk/getting-started/quickstart/)!
+**Ready to get started?** Install the SDK and follow our [Quick Start Guide](https://oscharko-dev.github.io/kei-agent-py-sdk/getting-started/quickstart/)!

@@ -1,0 +1,375 @@
+# .github/workflows/chaos-testing.yml
+name: Chaos Engineering Tests
+
+on:
+  schedule:
+    # Run chaos tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_categories:
+        description: 'Test categories to run (comma-separated)'
+        required: false
+        default: 'network,service_dependency,resource_exhaustion'
+        type: string
+      safe_mode:
+        description: 'Run in safe mode'
+        required: false
+        default: true
+        type: boolean
+      environment:
+        description: 'Environment to test against'
+        required: false
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - development
+          - production
+  pull_request:
+    paths:
+      - 'kei_agent/**'
+      - 'tests/chaos/**'
+      - '.github/workflows/chaos-testing.yml'
+    types: [opened, synchronize, reopened]
+
+env:
+  PYTHON_VERSION: '3.11'
+  CHAOS_ENV: ${{ github.event.inputs.environment || 'staging' }}
+
+jobs:
+  chaos-testing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        test-category:
+          - network
+          - service_dependency
+          - resource_exhaustion
+          - configuration
+          - security
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt', '**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev,test]"
+          pip install pytest-asyncio pytest-timeout psutil watchdog
+
+      - name: Set up test environment
+        run: |
+          # Create test directories
+          mkdir -p test-results/chaos
+          mkdir -p test-artifacts
+
+          # Set environment variables
+          echo "CHAOS_TEST_MODE=ci" >> $GITHUB_ENV
+          echo "CHAOS_SAFE_MODE=${{ github.event.inputs.safe_mode || 'true' }}" >> $GITHUB_ENV
+          echo "CHAOS_CATEGORIES=${{ github.event.inputs.test_categories || matrix.test-category }}" >> $GITHUB_ENV
+
+      - name: Run system health check
+        run: |
+          python -c "
+          import psutil
+          import sys
+
+          # Check system resources before chaos testing
+          memory = psutil.virtual_memory()
+          cpu = psutil.cpu_percent(interval=1)
+          disk = psutil.disk_usage('/')
+
+          print(f'Memory: {memory.percent:.1f}%')
+          print(f'CPU: {cpu:.1f}%')
+          print(f'Disk: {disk.percent:.1f}%')
+
+          # Fail if resources are too constrained
+          if memory.percent > 85 or cpu > 85 or disk.percent > 90:
+              print('System resources too constrained for chaos testing')
+              sys.exit(1)
+          "
+
+      - name: Run chaos engineering tests
+        timeout-minutes: 45
+        run: |
+          python -m pytest tests/chaos/test_${{ matrix.test-category }}_chaos.py \
+            -v \
+            --tb=short \
+            --asyncio-mode=auto \
+            --timeout=300 \
+            --junitxml=test-results/chaos/junit-${{ matrix.test-category }}.xml \
+            --capture=no
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Generate chaos test report
+        if: always()
+        run: |
+          python tests/chaos/chaos_integration.py \
+            --categories ${{ matrix.test-category }} \
+            --safe-mode \
+            --output test-artifacts/chaos-report-${{ matrix.test-category }}.json \
+            --verbose
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: chaos-test-results-${{ matrix.test-category }}
+          path: |
+            test-results/
+            test-artifacts/
+          retention-days: 30
+
+      - name: Upload chaos test report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: chaos-report-${{ matrix.test-category }}
+          path: test-artifacts/chaos-report-${{ matrix.test-category }}.json
+          retention-days: 30
+
+      - name: Post-test system check
+        if: always()
+        run: |
+          python -c "
+          import psutil
+          import time
+
+          # Allow system to stabilize
+          time.sleep(5)
+
+          # Check for resource leaks
+          memory = psutil.virtual_memory()
+          cpu = psutil.cpu_percent(interval=1)
+
+          print(f'Post-test Memory: {memory.percent:.1f}%')
+          print(f'Post-test CPU: {cpu:.1f}%')
+
+          # Check for runaway processes
+          for proc in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_percent']):
+              try:
+                  if proc.info['cpu_percent'] > 50 or proc.info['memory_percent'] > 20:
+                      print(f'High resource process: {proc.info}')
+              except (psutil.NoSuchProcess, psutil.AccessDenied):
+                  pass
+          "
+
+  aggregate-results:
+    needs: chaos-testing
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Download all test artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: all-test-results/
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Aggregate chaos test results
+        run: |
+          python -c "
+          import json
+          import glob
+          from pathlib import Path
+
+          # Aggregate all chaos test reports
+          reports = []
+          for report_file in glob.glob('all-test-results/*/chaos-report-*.json'):
+              try:
+                  with open(report_file) as f:
+                      report = json.load(f)
+                      reports.append(report)
+              except Exception as e:
+                  print(f'Error loading {report_file}: {e}')
+
+          # Create aggregated report
+          aggregated = {
+              'total_test_categories': len(reports),
+              'overall_resilience_scores': [],
+              'failed_tests': [],
+              'recommendations': [],
+              'environment': '${{ env.CHAOS_ENV }}',
+              'timestamp': '$(date -u +%Y-%m-%dT%H:%M:%SZ)',
+              'individual_reports': reports
+          }
+
+          for report in reports:
+              chaos_results = report.get('chaos_test_results', {})
+              summary = chaos_results.get('summary', {})
+
+              if 'overall_resilience_score' in summary:
+                  aggregated['overall_resilience_scores'].append(summary['overall_resilience_score'])
+
+              failed_tests = report.get('execution_metadata', {}).get('failed_tests', [])
+              aggregated['failed_tests'].extend(failed_tests)
+
+              recommendations = report.get('recommendations', [])
+              aggregated['recommendations'].extend(recommendations)
+
+          # Calculate overall metrics
+          if aggregated['overall_resilience_scores']:
+              aggregated['average_resilience_score'] = sum(aggregated['overall_resilience_scores']) / len(aggregated['overall_resilience_scores'])
+          else:
+              aggregated['average_resilience_score'] = 0
+
+          aggregated['total_failed_tests'] = len(aggregated['failed_tests'])
+
+          # Save aggregated report
+          with open('aggregated-chaos-report.json', 'w') as f:
+              json.dump(aggregated, f, indent=2)
+
+          print(f'Aggregated {len(reports)} chaos test reports')
+          print(f'Average resilience score: {aggregated[\"average_resilience_score\"]:.1f}%')
+          print(f'Total failed tests: {aggregated[\"total_failed_tests\"]}')
+          "
+
+      - name: Generate summary comment
+        if: github.event_name == 'pull_request'
+        run: |
+          python -c "
+          import json
+
+          with open('aggregated-chaos-report.json') as f:
+              report = json.load(f)
+
+          # Generate markdown summary
+          summary = f'''
+          ## 🔥 Chaos Engineering Test Results
+
+          **Environment:** {report['environment']}
+          **Test Categories:** {report['total_test_categories']}
+          **Average Resilience Score:** {report['average_resilience_score']:.1f}%
+          **Failed Tests:** {report['total_failed_tests']}
+
+          ### Resilience Scores by Category
+          '''
+
+          for i, score in enumerate(report['overall_resilience_scores']):
+              category = ['Network', 'Service Dependency', 'Resource Exhaustion', 'Configuration', 'Security'][i] if i < 5 else f'Category {i+1}'
+              emoji = '✅' if score >= 80 else '⚠️' if score >= 60 else '❌'
+              summary += f'- {emoji} {category}: {score:.1f}%\\n'
+
+          if report['failed_tests']:
+              summary += '\\n### Failed Tests\\n'
+              for test in report['failed_tests'][:5]:  # Show first 5
+                  summary += f'- ❌ {test}\\n'
+              if len(report['failed_tests']) > 5:
+                  summary += f'- ... and {len(report[\"failed_tests\"]) - 5} more\\n'
+
+          if report['recommendations']:
+              summary += '\\n### Top Recommendations\\n'
+              for rec in report['recommendations'][:3]:  # Show top 3
+                  summary += f'- 💡 {rec}\\n'
+
+          summary += '\\n📊 Full chaos engineering report available in test artifacts.'
+
+          with open('chaos-summary.md', 'w') as f:
+              f.write(summary)
+          "
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('chaos-summary.md', 'utf8');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+
+      - name: Upload aggregated report
+        uses: actions/upload-artifact@v3
+        with:
+          name: aggregated-chaos-report
+          path: aggregated-chaos-report.json
+          retention-days: 90
+
+      - name: Check resilience threshold
+        run: |
+          python -c "
+          import json
+          import sys
+
+          with open('aggregated-chaos-report.json') as f:
+              report = json.load(f)
+
+          avg_score = report['average_resilience_score']
+          failed_tests = report['total_failed_tests']
+
+          # Set thresholds
+          min_resilience_score = 70.0
+          max_failed_tests = 2
+
+          print(f'Average resilience score: {avg_score:.1f}% (threshold: {min_resilience_score}%)')
+          print(f'Failed tests: {failed_tests} (threshold: {max_failed_tests})')
+
+          if avg_score < min_resilience_score:
+              print(f'❌ Resilience score below threshold')
+              sys.exit(1)
+
+          if failed_tests > max_failed_tests:
+              print(f'❌ Too many failed tests')
+              sys.exit(1)
+
+          print('✅ Chaos engineering tests passed thresholds')
+          "
+
+      - name: Notify on failure
+        if: failure() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🔥 Chaos Engineering Tests Failed - ${new Date().toISOString().split('T')[0]}`,
+              body: `
+              Chaos engineering tests failed in environment: ${{ env.CHAOS_ENV }}
+
+              **Workflow:** ${context.workflow}
+              **Run ID:** ${context.runId}
+              **Triggered by:** ${context.eventName}
+
+              Please check the test results and address any resilience issues.
+
+              [View workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId})
+              `,
+              labels: ['chaos-engineering', 'test-failure', 'high-priority']
+            });

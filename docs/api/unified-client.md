@@ -2,7 +2,7 @@
 
 <!-- API aus Code generieren -->
 
-::: unified_client_refactored.UnifiedKeiAgentClient
+::: unified_client.UnifiedKeiAgentClient
 
 Die `UnifiedKeiAgentClient` Klasse ist die Haupt-API-Schnittstelle des KEI-Agent SDK. Sie bietet eine einheitliche, typisierte API für alle Agent-Operationen mit automatischer Protokoll-Auswahl und Enterprise-Features.
 

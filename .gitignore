@@ -304,6 +304,10 @@ secrets.json
 *.p12
 *.pfx
 
+# PyPI configuration files (contain API tokens)
+.pypirc
+~/.pypirc
+
 # Environment files with secrets
 .env.secret
 .env.prod

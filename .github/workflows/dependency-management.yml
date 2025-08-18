@@ -1,0 +1,405 @@
+# Enhanced Dependency Management Workflow
+name: 🔒 Dependency Management
+
+on:
+  # Run on dependency updates
+  pull_request:
+    paths:
+      - 'requirements*.txt'
+      - 'requirements*.in'
+      - 'pyproject.toml'
+      - 'setup.py'
+      - 'setup.cfg'
+
+  # Daily vulnerability scanning
+  schedule:
+    - cron: '0 2 * * *'  # 2 AM UTC daily
+
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      force_update:
+        description: 'Force dependency updates'
+        required: false
+        default: 'false'
+        type: boolean
+      scan_only:
+        description: 'Only run vulnerability scanning'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+  issues: write
+
+jobs:
+  vulnerability-scan:
+    name: 🔍 Vulnerability Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: 📦 Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install safety pip-audit bandit[toml]
+        pip install -e .
+
+    - name: 🔍 Run Safety Scan
+      run: |
+        safety check --json --output safety-report.json || true
+        safety check --short-report || true
+
+    - name: 🔍 Run pip-audit
+      run: |
+        pip-audit --format=json --output=pip-audit-report.json || true
+        pip-audit --format=cyclonedx-json --output=pip-audit-sbom.json || true
+        pip-audit || true
+
+    - name: 🔍 Run Bandit Security Scan
+      run: |
+        bandit -r kei_agent/ -f json -o bandit-report.json || true
+        bandit -r kei_agent/ || true
+
+    - name: 📊 Generate Vulnerability Summary
+      run: |
+        python scripts/security_scan.py \
+          --output-dir security-reports \
+          --format json \
+          --include-sbom
+
+    - name: 📦 Upload Security Reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-reports
+        path: |
+          security-reports/
+          *-report.json
+          *-sbom.json
+        retention-days: 30
+
+    - name: 🚨 Create Security Issue
+      if: failure()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+
+          // Read vulnerability reports
+          let vulnerabilities = [];
+
+          try {
+            const safetyReport = JSON.parse(fs.readFileSync('safety-report.json', 'utf8'));
+            vulnerabilities = vulnerabilities.concat(safetyReport);
+          } catch (e) {
+            console.log('No safety report found');
+          }
+
+          if (vulnerabilities.length > 0) {
+            const issueBody = `
+          ## 🚨 Security Vulnerabilities Detected
+
+          **Scan Date:** ${new Date().toISOString()}
+          **Workflow:** ${context.workflow}
+          **Run ID:** ${context.runId}
+
+          ### Vulnerabilities Found: ${vulnerabilities.length}
+
+          ${vulnerabilities.map(vuln => `
+          - **${vuln.package_name}** (${vuln.installed_version})
+            - **Vulnerability ID:** ${vuln.vulnerability_id}
+            - **Severity:** ${vuln.severity || 'Unknown'}
+            - **Advisory:** ${vuln.advisory}
+          `).join('\n')}
+
+          ### Next Steps
+          1. Review the vulnerability details above
+          2. Update affected packages to secure versions
+          3. Test the updates thoroughly
+          4. Close this issue once vulnerabilities are resolved
+
+          ### Reports
+          - [Workflow Run](${context.payload.repository.html_url}/actions/runs/${context.runId})
+          - Security reports are available as artifacts
+          `;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 Security Vulnerabilities Detected - ${new Date().toISOString().split('T')[0]}`,
+              body: issueBody,
+              labels: ['security', 'vulnerability', 'automated', 'high-priority']
+            });
+          }
+
+  license-compliance:
+    name: 📄 License Compliance Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: 📦 Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pip-licenses licensecheck
+        pip install -e .
+
+    - name: 📄 Generate License Report
+      run: |
+        pip-licenses --format=json --output-file=licenses.json
+        pip-licenses --format=csv --output-file=licenses.csv
+        pip-licenses --format=html --output-file=licenses.html
+
+    - name: 🔍 Check License Compatibility
+      run: |
+        # Create license compatibility check
+        python -c "
+        import json
+        import sys
+
+        # Allowed licenses (permissive and compatible)
+        ALLOWED_LICENSES = {
+            'MIT License', 'MIT', 'BSD License', 'BSD', 'BSD-3-Clause',
+            'Apache Software License', 'Apache 2.0', 'Apache License 2.0',
+            'Python Software Foundation License', 'PSF',
+            'Mozilla Public License 2.0 (MPL 2.0)', 'MPL-2.0',
+            'ISC License (ISCL)', 'ISC',
+            'The Unlicense (Unlicense)', 'Unlicense'
+        }
+
+        # Problematic licenses that need review
+        REVIEW_LICENSES = {
+            'GNU General Public License v2 (GPLv2)', 'GPL-2.0',
+            'GNU General Public License v3 (GPLv3)', 'GPL-3.0',
+            'GNU Lesser General Public License v2.1 (LGPLv2.1)', 'LGPL-2.1',
+            'GNU Lesser General Public License v3 (LGPLv3)', 'LGPL-3.0'
+        }
+
+        with open('licenses.json', 'r') as f:
+            licenses = json.load(f)
+
+        issues = []
+        for pkg in licenses:
+            license_name = pkg.get('License', 'Unknown')
+            if license_name not in ALLOWED_LICENSES:
+                if license_name in REVIEW_LICENSES:
+                    issues.append(f'REVIEW NEEDED: {pkg[\"Name\"]} ({pkg[\"Version\"]}) - {license_name}')
+                elif license_name not in ['UNKNOWN', 'Unknown']:
+                    issues.append(f'INCOMPATIBLE: {pkg[\"Name\"]} ({pkg[\"Version\"]}) - {license_name}')
+
+        if issues:
+            print('License compliance issues found:')
+            for issue in issues:
+                print(f'  - {issue}')
+            sys.exit(1)
+        else:
+            print('All licenses are compatible!')
+        "
+
+    - name: 📦 Upload License Reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: license-reports
+        path: |
+          licenses.*
+        retention-days: 30
+
+    - name: 📄 Comment License Summary on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+
+          try {
+            const licenses = JSON.parse(fs.readFileSync('licenses.json', 'utf8'));
+            const licenseCount = {};
+
+            licenses.forEach(pkg => {
+              const license = pkg.License || 'Unknown';
+              licenseCount[license] = (licenseCount[license] || 0) + 1;
+            });
+
+            const comment = `
+          ## 📄 License Compliance Report
+
+          **Total Dependencies:** ${licenses.length}
+
+          ### License Distribution
+          ${Object.entries(licenseCount)
+            .sort((a, b) => b[1] - a[1])
+            .map(([license, count]) => `- **${license}**: ${count} packages`)
+            .join('\n')}
+
+          ### Compliance Status
+          ✅ All licenses have been checked for compatibility
+
+          [View detailed license report](${context.payload.repository.html_url}/actions/runs/${context.runId})
+          `;
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+          } catch (e) {
+            console.log('Could not create license comment:', e);
+          }
+
+  dependency-update-test:
+    name: 🧪 Dependency Update Testing
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🐍 Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+
+    - name: 📦 Install Updated Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install -r requirements-dev.txt
+
+    - name: 🧪 Run Compatibility Tests
+      run: |
+        # Run a subset of tests to verify compatibility
+        python -m pytest tests/test_core.py -v
+        python -m pytest tests/test_metrics.py -v
+        python -m pytest tests/test_security.py -v
+
+    - name: 🔍 Check Import Compatibility
+      run: |
+        python -c "
+        import kei_agent
+        from kei_agent import UnifiedKeiAgentClient, AgentClientConfig
+        from kei_agent.metrics import get_metrics_collector
+        from kei_agent.security_manager import SecurityManager
+        print('✅ All imports successful')
+        "
+
+    - name: 📊 Generate Compatibility Report
+      if: failure()
+      run: |
+        echo "❌ Compatibility issues found with Python ${{ matrix.python-version }}" >> compatibility-issues.txt
+        echo "Please review the dependency updates for compatibility." >> compatibility-issues.txt
+
+    - name: 📦 Upload Compatibility Issues
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: compatibility-issues-${{ matrix.python-version }}
+        path: compatibility-issues.txt
+        retention-days: 7
+
+  auto-merge-security:
+    name: 🤖 Auto-merge Security Updates
+    runs-on: ubuntu-latest
+    needs: [vulnerability-scan, license-compliance, dependency-update-test]
+    if: |
+      github.event_name == 'pull_request' &&
+      github.actor == 'dependabot[bot]' &&
+      contains(github.event.pull_request.labels.*.name, 'security') &&
+      needs.vulnerability-scan.result == 'success' &&
+      needs.license-compliance.result == 'success' &&
+      needs.dependency-update-test.result == 'success'
+
+    steps:
+    - name: 🤖 Auto-approve Security Updates
+      uses: actions/github-script@v7
+      with:
+        script: |
+          await github.rest.pulls.createReview({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.issue.number,
+            event: 'APPROVE',
+            body: '🤖 Auto-approving security update after successful validation'
+          });
+
+    - name: 🔀 Auto-merge Security Updates
+      uses: actions/github-script@v7
+      with:
+        script: |
+          await github.rest.pulls.merge({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.issue.number,
+            commit_title: 'Auto-merge security update',
+            merge_method: 'squash'
+          });
+
+  dependency-summary:
+    name: 📋 Dependency Management Summary
+    runs-on: ubuntu-latest
+    needs: [vulnerability-scan, license-compliance, dependency-update-test]
+    if: always()
+
+    steps:
+    - name: 📊 Generate Summary
+      run: |
+        echo "# 🔒 Dependency Management Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        # Vulnerability scan results
+        echo "## 🔍 Vulnerability Scanning" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ needs.vulnerability-scan.result }}" == "success" ]; then
+          echo "✅ No critical vulnerabilities found" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Vulnerabilities detected - review required" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        # License compliance results
+        echo "## 📄 License Compliance" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ needs.license-compliance.result }}" == "success" ]; then
+          echo "✅ All licenses are compatible" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ License compliance issues found" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        # Compatibility testing results
+        echo "## 🧪 Compatibility Testing" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ needs.dependency-update-test.result }}" == "success" ]; then
+          echo "✅ Dependencies compatible across all Python versions" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Compatibility issues found" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        echo "## 📋 Next Steps" >> $GITHUB_STEP_SUMMARY
+        echo "1. Review any security vulnerabilities and update packages" >> $GITHUB_STEP_SUMMARY
+        echo "2. Address license compliance issues if any" >> $GITHUB_STEP_SUMMARY
+        echo "3. Fix compatibility issues across Python versions" >> $GITHUB_STEP_SUMMARY
+        echo "4. Monitor for new security advisories" >> $GITHUB_STEP_SUMMARY

@@ -1,6 +1,6 @@
-# MkDocs-Konfiguration für KEI-Agent Python SDK
+# MkDocs-Configuration for KEI-Agent Python SDK
 site_name: KEI-Agent Python SDK
-site_description: Enterprise-Grade Python SDK für Keiko-Personal-Assistant mit Multi-Protocol Support
+site_description: Enterprise-Grade Python SDK for Keiko-Personal-Assistant with Multi-Protocol Support
 site_author: Keiko-Personal-Assistant Developer Team
 site_url: https://oscharko-dev.github.io/kei-agent-py-sdk/
 
@@ -12,7 +12,7 @@ edit_uri: edit/main/docs/
 # Copyright
 copyright: Copyright &copy; 2025 Keiko-Personal-Assistant Developer Team
 
-# Konfiguration
+# Configuration
 theme:
   name: material
   language: de
@@ -151,13 +151,13 @@ nav:
       - getting-started/index.md
       - Installation: getting-started/installation.md
       - Quick Start: getting-started/quickstart.md
-      - Konfiguration: getting-started/configuration.md
+      - Configuration: getting-started/configuration.md
   - Benutzerhandbuch:
       - user-guide/index.md
       - Basis-Konzepte: user-guide/concepts.md
       - Client-Verwendung: user-guide/client-usage.md
       - Protokolle: user-guide/protocols.md
-      - Authentifizierung: user-guide/authentication.md
+      - Authentication: user-guide/authentication.md
       - Fehlerbehandlung: user-guide/error-handling.md
   - Enterprise Features:
       - enterprise/index.md
@@ -203,14 +203,14 @@ nav:
       - Security: troubleshooting/security.md
       - FAQ: troubleshooting/faq.md
 
-# Extra CSS und JavaScript
+# Extra CSS and JavaScript
 extra_css:
   - stylesheets/extra.css
 
 extra_javascript:
   - javascripts/extra.js
 
-# Extra-Konfiguration
+# Extra-Configuration
 extra:
   version:
     provider: mike
@@ -227,13 +227,13 @@ extra:
   consent:
     title: Cookie-Einstellungen
     description: >-
-      Wir verwenden Cookies, um wiederkehrende Besucher zu erkennen und zu verstehen,
-      welche Bereiche unserer Dokumentation am nützlichsten sind. Mit Ihrer Einwilligung
+      Wir verwenden Cookies, um wiederkehrende Besucher zu erkennen and zu verstehen,
+      welche Bereiche unserer Dokumentation am nützlichsten are. Mit Ihrer Einwilligung
       helfen Sie uns, unsere Dokumentation zu verbessern.
 
-# Hooks für erweiterte Funktionalität
+# Hooks for erweiterte Funktionalität
 hooks:
   - docs/hooks/macros.py
 
-# Validation aktiviert - alle Links und Referenzen werden überprüft
+# Validation aktiviert - alle Links and Referenzen will be überprüft
 strict: true

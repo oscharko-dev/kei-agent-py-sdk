@@ -4,7 +4,7 @@ Diese Seite verfolgt den Stand der Dokumentations-Initiative.
 
 ## Phase 1: Codebase-Analyse
 
-- [x] Module und Architektur identifiziert (`unified_client_refactored.py`, `protocol_*`, `security_manager.py`, `enterprise_logging.py`)
+- [x] Module und Architektur identifiziert (`unified_client.py`, `protocol_*`, `security_manager.py`, `enterprise_logging.py`)
 - [x] Öffentliche Exporte in `__init__.py` geprüft
 - [x] API-Oberflächen für Autogenerierung abgeleitet
 

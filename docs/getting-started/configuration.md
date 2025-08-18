@@ -134,10 +134,11 @@ mtls_config = SecurityConfig(
 #### Security Features
 
 ```python
-# Enterprise Security
+# Enterprise Security (using environment variables)
+import os
 enterprise_security = SecurityConfig(
     auth_type=AuthType.BEARER,
-    api_token="enterprise-token",
+    api_token=os.getenv("KEI_API_TOKEN"),  # Never hardcode tokens!
     rbac_enabled=True,        # Role-Based Access Control
     audit_enabled=True,       # Audit-Logging
     token_refresh_enabled=True,  # Automatische Token-Erneuerung
@@ -152,11 +153,12 @@ enterprise_security = SecurityConfig(
 ```python
 from kei_agent import UnifiedKeiAgentClient, AgentClientConfig, ProtocolConfig
 
-# Development-Konfiguration
+# Development-Konfiguration (using environment variables)
+import os
 dev_config = AgentClientConfig(
-    base_url="http://localhost:8000",
-    api_token="dev-token",
-    agent_id="dev-agent",
+    base_url=os.getenv("KEI_API_URL", "http://localhost:8000"),
+    api_token=os.getenv("KEI_API_TOKEN"),  # Set via environment variable
+    agent_id=os.getenv("KEI_AGENT_ID", "dev-agent"),
     timeout=10,
     max_retries=1
 )

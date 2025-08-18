@@ -1,17 +1,14 @@
-# GitHub Actions Workflow – nur PyPI
+# DEACTIVATED - Duplicate workflow - Use pypi-release.yml instead
 
-name: 🚀 Release & Publish to PyPi
+name: 🚀 Release & Publish to PyPi (DISABLED)
 
+# DISABLED - This workflow is deactivated to prevent conflicts
 on:
-  push:
-    tags:
-      - "v*.*.*"
-      - "*.*.*"
   workflow_dispatch:
     inputs:
-      version:
-        description: "Version to release (e.g., 0.1.0b1 or 0.1.0-beta.1)"
-        required: true
+      disabled:
+        description: "This workflow is disabled - use pypi-release.yml"
+        required: false
         type: string
 
 permissions:
