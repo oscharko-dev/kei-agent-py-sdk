@@ -56,30 +56,11 @@ __all__ = [
 # Avoid eager imports of heavy modules to prevent import-time failures during tests
 # These will be provided via __getattr__ lazily.
 
-# Core imports (critical - eager loading)
-from .unified_client import UnifiedKeiAgentClient
-from .client import AgentClientConfig
-from .protocol_types import (
-    Protocoltypee,
-    Authtypee,
-    ProtocolType,
-    AuthType,
-    ProtocolConfig,
-    SecurityConfig,
-)
-from .capabilities import CapabilityManager, CapabilityProfile
+# Minimal eager imports - only lightweight components
+# Heavy modules moved to lazy loading for better performance
 
-# Exceptions (lightweight - eager loading)
-from .exceptions import (
-    KeiSDKError,
-    AgentNotFoundError,
-    CommunicationError,
-    DiscoveryError,
-    retryExhaustedError,
-    CircuitBreakerOpenError,
-    CapabilityError,
-    TracingError,
-)
+# Only import lightweight exceptions that don't pull in heavy dependencies
+from .exceptions import KeiSDKError
 
 
 # Lazy loading implementation for heavy modules
@@ -103,6 +84,62 @@ def __getattr__(name: str) -> object:
         from .capabilities import CapabilityProfile
 
         return CapabilityProfile
+
+    # Protocol Types (now lazy loaded)
+    elif name == "Protocoltypee":
+        from .protocol_types import Protocoltypee
+
+        return Protocoltypee
+    elif name == "Authtypee":
+        from .protocol_types import Authtypee
+
+        return Authtypee
+    elif name == "ProtocolType":
+        from .protocol_types import ProtocolType
+
+        return ProtocolType
+    elif name == "AuthType":
+        from .protocol_types import AuthType
+
+        return AuthType
+    elif name == "ProtocolConfig":
+        from .protocol_types import ProtocolConfig
+
+        return ProtocolConfig
+    elif name == "SecurityConfig":
+        from .protocol_types import SecurityConfig
+
+        return SecurityConfig
+
+    # Exceptions (now lazy loaded)
+    elif name == "AgentNotFoundError":
+        from .exceptions import AgentNotFoundError
+
+        return AgentNotFoundError
+    elif name == "CommunicationError":
+        from .exceptions import CommunicationError
+
+        return CommunicationError
+    elif name == "DiscoveryError":
+        from .exceptions import DiscoveryError
+
+        return DiscoveryError
+    elif name == "retryExhaustedError":
+        from .exceptions import retryExhaustedError
+
+        return retryExhaustedError
+    elif name == "CircuitBreakerOpenError":
+        from .exceptions import CircuitBreakerOpenError
+
+        return CircuitBreakerOpenError
+    elif name == "CapabilityError":
+        from .exceptions import CapabilityError
+
+        return CapabilityError
+    elif name == "TracingError":
+        from .exceptions import TracingError
+
+        return TracingError
 
     # A2A Communication (heavy)
     elif name == "A2Aclient":
@@ -620,11 +657,11 @@ def create_default_client(
     Returns:
         Configureser KeiAgentClient
     """
+    from .client import AgentClientConfig, KeiAgentClient
+
     config = AgentClientConfig(
         base_url=base_url, api_token=api_token, agent_id=agent_id
     )
-
-    from .client import KeiAgentClient
 
     return KeiAgentClient(config)
 
