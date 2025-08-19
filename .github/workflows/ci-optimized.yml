@@ -86,6 +86,7 @@ jobs:
 
     - name: 🧪 Core Tests
       run: |
+        pip install pytest-cov
         pytest tests/test_import_system.py tests/test_core_functionality.py tests/test_critical_workflows.py --cov=kei_agent --cov-report=xml -v
 
     - name: 🛡️ Security Scanning

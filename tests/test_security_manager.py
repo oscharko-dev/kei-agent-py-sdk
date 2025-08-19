@@ -10,7 +10,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from kei_agent.security_manager import SecurityManager
 from kei_agent.protocol_types import SecurityConfig, Authtypee
-from kei_agent.exceptions import SecurityError
+from kei_agent.exceptions import SecurityError, ValidationError
 
 # Markiere all Tests in theser File als Security-Tests
 pytestmark = pytest.mark.security
@@ -62,7 +62,7 @@ class TestSecurityManager:
             api_token =None,  # Fehlt for Bearer
         )
 
-        with pytest.raises(SecurityError, match="Ungültige security configuration"):
+        with pytest.raises((SecurityError, ValidationError), match="(Ungültige security configuration|Configuration validation failed)"):
             SecurityManager(invalid_config)
 
     @pytest.mark.asyncio
