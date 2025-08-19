@@ -79,9 +79,6 @@ security = [
     "cryptography>=41.0.0,<42.0.0",
     "pyopenssl>=23.0.0,<26.0.0"
 ]
-file-watching = [
-    "watchdog>=3.0.0,<5.0.0"
-]
 dev = [
     "pytest>=7.4.0,<8.0.0",
     "pytest-asyncio>=0.21.0,<1.0.0",
