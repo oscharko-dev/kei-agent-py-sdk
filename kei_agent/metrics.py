@@ -366,7 +366,7 @@ class MetricsCollector:
         if not self.enabled or self.registry is None:
             return "# Prometheus not available\n"
 
-        data = generate_latest(self.registry)
+        data: bytes = generate_latest(self.registry)
         return data.decode('utf-8')
 
     def get_metrics_summary(self) -> Dict[str, Any]:
