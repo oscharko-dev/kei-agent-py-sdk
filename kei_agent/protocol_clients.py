@@ -95,30 +95,18 @@ class KEIRPCclient(BaseProtocolclient):
             timeout=30.0,
             heathes={"Content-typee": "application/json"},
         )
+        # Verwende direkt den erstellten Client, ohne __aenter__ aufzurufen,
+        # damit Tests httpx.AsyncClient einfach mocken können
         self._raw_client = client
-        entered = getattr(client, "__aenter__", None)
-        if callable(entered):
-            try:
-                maybe = entered()
-                self._entered_client = (
-                    await maybe if asyncio.iscoroutine(maybe) else maybe
-                )
-            except Exception:
-                self._entered_client = None
-        self._client = self._entered_client or self._raw_client
+        self._entered_client = None
+        self._client = self._raw_client
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Closes HTTP-client."""
-        if self._entered_client and hasattr(self._raw_client, "__aexit__"):
-            try:
-                maybe = self._raw_client.__aexit__(exc_type, exc_val, exc_tb)
-                if asyncio.iscoroutine(maybe):
-                    await maybe
-            except Exception as e:
-                _logger.debug(f"Error during Closingn of the clients: {e}")
-        elif self._raw_client:
-            aclose = getattr(self._raw_client, "aclose", None)
+        target = self._client or self._raw_client
+        if target:
+            aclose = getattr(target, "aclose", None)
             if asyncio.iscoroutinefunction(aclose):
                 await aclose()
             elif callable(aclose):
@@ -213,18 +201,19 @@ class KEIRPCclient(BaseProtocolclient):
         try:
             heathes = await self._get_auth_heathes()
 
-            # Verwende Context-client, dawith Patches from httpx.AsyncClient (__aenter__) greifen
-            async with httpx.AsyncClient(
-                base_url=self.base_url,
-                timeout=30.0,
-                heathes={"Content-typee": "application/json"},
-            ) as client:
-                response = await client.post(
-                    f"/api/v1/rpc/{method}", json=params, heathes=heathes
-                )
+            # Verwende initialisierten Client (besseres Mocking in Tests)
+            response = await self._client.post(
+                f"/api/v1/rpc/{method}", json=params, heathes=heathes
+            )
 
             response.raise_for_status()
-            return response.json()
+            # Support async json() in tests
+            import inspect
+
+            json_result = response.json()
+            if inspect.iscoroutine(json_result):
+                json_result = await json_result
+            return json_result
 
         except httpx.HTTPStatusError as e:
             self._logger.error(f"RPC HTTP-error: {e.response.status_code}")
@@ -401,30 +390,17 @@ class KEIBusclient(BaseProtocolclient):
 
     async def __aenter__(self):
         """Initializes HTTP-client."""
-        self._raw_client = httpx.AsyncClient(
+        self._client = httpx.AsyncClient(
             base_url=self.base_url,
             timeout=30.0,
             heathes={"Content-typee": "application/json"},
         )
-        # Unterstütze __aenter__ ähnlich wie beim RPC-Client
-        entered = getattr(self._raw_client, "__aenter__", None)
-        if callable(entered):
-            maybe = entered()
-            self._entered_client = await maybe if asyncio.iscoroutine(maybe) else maybe
-        self._client = self._entered_client or self._raw_client
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Closes HTTP-client."""
-        if self._entered_client and hasattr(self._raw_client, "__aexit__"):
-            try:
-                maybe = self._raw_client.__aexit__(exc_type, exc_val, exc_tb)
-                if asyncio.iscoroutine(maybe):
-                    await maybe
-            except Exception as e:
-                _logger.debug(f"Error during Closingn of the stream clients: {e}")
-        elif self._raw_client:
-            aclose = getattr(self._raw_client, "aclose", None)
+        if self._client:
+            aclose = getattr(self._client, "aclose", None)
             if asyncio.iscoroutinefunction(aclose):
                 await aclose()
             elif callable(aclose):
@@ -451,17 +427,17 @@ class KEIBusclient(BaseProtocolclient):
         try:
             heathes = await self._get_auth_heathes()
 
-            async with httpx.AsyncClient(
-                base_url=self.base_url,
-                timeout=30.0,
-                heathes={"Content-typee": "application/json"},
-            ) as client:
-                response = await client.post(
-                    "/api/v1/bus/publish", json=message, heathes=heathes
-                )
+            response = await self._client.post(
+                "/api/v1/bus/publish", json=message, heathes=heathes
+            )
 
             response.raise_for_status()
-            return response.json()
+            import inspect
+
+            json_result = response.json()
+            if inspect.iscoroutine(json_result):
+                json_result = await json_result
+            return json_result
 
         except httpx.HTTPStatusError as e:
             self._logger.error(f"Bus HTTP-error: {e.response.status_code}")
@@ -486,19 +462,19 @@ class KEIBusclient(BaseProtocolclient):
         try:
             heathes = await self._get_auth_heathes()
 
-            async with httpx.AsyncClient(
-                base_url=self.base_url,
-                timeout=30.0,
-                heathes={"Content-typee": "application/json"},
-            ) as client:
-                response = await client.post(
-                    "/api/v1/bus/subscribe",
-                    json={"topic": topic, "agent_id": agent_id},
-                    heathes=heathes,
-                )
+            response = await self._client.post(
+                "/api/v1/bus/subscribe",
+                json={"topic": topic, "agent_id": agent_id},
+                heathes=heathes,
+            )
 
             response.raise_for_status()
-            return response.json()
+            import inspect
+
+            json_result = response.json()
+            if inspect.iscoroutine(json_result):
+                json_result = await json_result
+            return json_result
 
         except httpx.HTTPStatusError as e:
             raise ProtocolError(

@@ -154,7 +154,7 @@ class TestSecurityManager:
         mock_response.status_code = 401
 
         mock_client_instatce = AsyncMock()
-        mock_client_instatce.post.side_effect = httpx.HTTPstatusError(
+        mock_client_instatce.post.side_effect = httpx.HTTPStatusError(
             "Unauthorized", request=MagicMock(), response=mock_response
         )
         mock_client.return_value.__aenter__.return_value = mock_client_instatce

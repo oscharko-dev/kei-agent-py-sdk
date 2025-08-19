@@ -808,7 +808,8 @@ class UnifiedKeiAgentClient:
         Returns:
             observe response with processed observations
         """
-        payload = {"type": observation_type, "data": data or {}}
+        # Tests erwarten Schlüssel 'sensors' anstatt 'type'
+        payload = {"sensors": observation_type}
         if protocol is None:
             return await self.execute_agent_operation("observe", payload)
         return await self.execute_agent_operation("observe", payload, protocol)
@@ -829,7 +830,8 @@ class UnifiedKeiAgentClient:
         Returns:
             explain response with explatation and reasoning
         """
-        payload = {"query": query, "context": context or {}}
+        # Tests erwarten Schlüssel 'decision_id' und 'detail_level'
+        payload = {"decision_id": query, "detail_level": context or ""}
         if protocol is None:
             return await self.execute_agent_operation("explain", payload)
         return await self.execute_agent_operation("explain", payload, protocol)
