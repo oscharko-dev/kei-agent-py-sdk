@@ -3,6 +3,7 @@
 [![CI](https://github.com/oscharko-dev/kei-agent-py-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/oscharko-dev/kei-agent-py-sdk/actions/workflows/ci.yml)
 [![Docs](https://github.com/oscharko-dev/kei-agent-py-sdk/actions/workflows/docs.yml/badge.svg)](https://github.com/oscharko-dev/kei-agent-py-sdk/actions/workflows/docs.yml)
 [![Coverage](https://img.shields.io/badge/coverage-15%25-yellow.svg)](https://oscharko-dev.github.io/kei-agent-py-sdk/coverage/)
+[![codecov](https://codecov.io/gh/oscharko-dev/kei-agent-py-sdk/branch/main/graph/badge.svg)](https://codecov.io/gh/oscharko-dev/kei-agent-py-sdk)
 [![TestPyPI](https://img.shields.io/badge/TestPyPI-available-brightgreen.svg)](https://test.pypi.org/project/kei-agent-py-sdk/)
 [![PyPI](https://img.shields.io/pypi/v/kei_agent_py_sdk.svg)](https://pypi.org/project/kei_agent_py_sdk/)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://pypi.org/project/kei_agent_py_sdk/)
