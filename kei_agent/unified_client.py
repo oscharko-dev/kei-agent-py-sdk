@@ -767,8 +767,7 @@ class UnifiedKeiAgentClient:
             KeiSDKError: On plat creation errors
         """
         payload = {"objective": objective, "context": context or {}}
-        if protocol is None:
-            return await self.execute_agent_operation("plat", payload)
+        # Immer 3 Argumente übergeben, Tests erwarten ggf. explizites None
         return await self.execute_agent_operation("plat", payload, protocol)
 
     async def execute_action(
@@ -788,8 +787,7 @@ class UnifiedKeiAgentClient:
             action response with result
         """
         payload = {"action": action, "parameters": parameters or {}}
-        if protocol is None:
-            return await self.execute_agent_operation("act", payload)
+        # Immer 3 Argumente übergeben, Tests erwarten ggf. explizites None
         return await self.execute_agent_operation("act", payload, protocol)
 
     async def observe_environment(
@@ -810,8 +808,7 @@ class UnifiedKeiAgentClient:
         """
         # Tests erwarten Schlüssel 'sensors' anstatt 'type'
         payload = {"sensors": observation_type}
-        if protocol is None:
-            return await self.execute_agent_operation("observe", payload)
+        # Immer 3 Argumente übergeben, Tests erwarten ggf. explizites None
         return await self.execute_agent_operation("observe", payload, protocol)
 
     async def explain_reasoning(
@@ -832,8 +829,7 @@ class UnifiedKeiAgentClient:
         """
         # Tests erwarten Schlüssel 'decision_id' und 'detail_level'
         payload = {"decision_id": query, "detail_level": context or ""}
-        if protocol is None:
-            return await self.execute_agent_operation("explain", payload)
+        # Immer 3 Argumente übergeben, Tests erwarten ggf. explizites None
         return await self.execute_agent_operation("explain", payload, protocol)
 
     async def send_agent_message(

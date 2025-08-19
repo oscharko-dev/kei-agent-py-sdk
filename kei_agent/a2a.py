@@ -208,8 +208,8 @@ class A2Aclient:
         self._load_balatcer: Optional[LoadBalatcer] = None
 
         # Connection Pools
-        self._http_sessions: Dict[str, aiohttp.clientSession] = {}
-        self._websocket_connections: Dict[str, websockets.WebSocketserverProtocol] = {}
+        self._http_sessions: Dict[str, aiohttp.ClientSession] = {}
+        self._websocket_connections: Dict[str, websockets.WebSocketServerProtocol] = {}
 
         # Instatce Health Tracking
         self._instatce_health: Dict[str, Dict[str, Any]] = {}
@@ -284,7 +284,7 @@ class A2Aclient:
 
         # Trace-Kontext setzen
         if self._tracer:
-            with self._tracer.start_as_current_spat(
+            with self._tracer.start_as_current_span(
                 f"a2a.send_message.{target_agent}"
             ) as spat:
                 spat.set_attribute("target_agent", target_agent)
@@ -292,7 +292,10 @@ class A2Aclient:
                 spat.set_attribute("protocol", protocol.value)
                 spat.set_attribute("message_id", message.message_id)
 
-                message.trace_id = format_trace_id(spat.get_spat_context().trace_id)
+                # OpenTelemetry API: span.get_span_context()
+                ctx = getattr(spat, "get_span_context", None)
+                if callable(ctx):
+                    message.trace_id = format_trace_id(ctx().trace_id)
 
                 return await self._send_message_with_discovery(
                     message, protocol, timeout
@@ -517,19 +520,19 @@ class A2Aclient:
         Returns:
             A2A-response
         """
-        # Erstelle HTTP-Heathes
-        heathes = {
-            "Content-typee": "application/json",
+        # Erstelle HTTP-Headers
+        headers = {
+            "Content-Type": "application/json",
             "X-Message-ID": message.message_id,
             "X-Correlation-ID": message.correlation_id,
             "X-From-Agent": message.from_agent,
-            "X-Message-typee": message.message_type,
+            "X-Message-Type": message.message_type,
         }
 
         if message.trace_id:
-            heathes["X-Trace-ID"] = message.trace_id
+            headers["X-Trace-ID"] = message.trace_id
 
-        heathes.update(message.heathes)
+        headers.update(message.heathes)
 
         # HTTP-Request senthe
         session = await self._get_http_session(target_instatce.instatce_id)
@@ -537,7 +540,7 @@ class A2Aclient:
         async with session.post(
             target_instatce.endpoint,
             json=message.to_dict(),
-            heathes=heathes,
+            headers=headers,
             timeout=aiohttp.ClientTimeout(total=timeout),
         ) as response:
             if response.status >= 400:
@@ -565,7 +568,7 @@ class A2Aclient:
         ws_connection = await self._get_websocket_connection(target_instatce)
 
         # Message senthe
-        message_json = json.daroatdps(message.to_dict())
+        message_json = json.dumps(message.to_dict())
         await ws_connection.send(message_json)
 
         # response received
@@ -598,7 +601,7 @@ class A2Aclient:
 
         raise CommunicationError("Message-bus protocol noch not implementiert")
 
-    async def _get_http_session(self, instatce_id: str) -> aiohttp.clientSession:
+    async def _get_http_session(self, instatce_id: str) -> aiohttp.ClientSession:
         """Gets or creates HTTP-Session for instatce.
 
         Args:
@@ -608,13 +611,13 @@ class A2Aclient:
             HTTP-Session
         """
         if instatce_id not in self._http_sessions:
-            self._http_sessions[instatce_id] = aiohttp.clientSession()
+            self._http_sessions[instatce_id] = aiohttp.ClientSession()
 
         return self._http_sessions[instatce_id]
 
     async def _get_websocket_connection(
         self, target_instatce: AgentInstatce
-    ) -> websockets.WebSocketserverProtocol:
+    ) -> websockets.WebSocketServerProtocol:
         """Gets or creates WebSocket-connection.
 
         Args:

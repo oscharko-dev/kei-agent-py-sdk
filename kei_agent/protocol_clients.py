@@ -93,7 +93,7 @@ class KEIRPCclient(BaseProtocolclient):
         client = httpx.AsyncClient(
             base_url=self.base_url,
             timeout=30.0,
-            heathes={"Content-typee": "application/json"},
+            headers={"Content-Type": "application/json"},
         )
         # Verwende direkt den erstellten Client, ohne __aenter__ aufzurufen,
         # damit Tests httpx.AsyncClient einfach mocken können
@@ -199,11 +199,11 @@ class KEIRPCclient(BaseProtocolclient):
             raise ProtocolError("RPC Client not initialized")
 
         try:
-            heathes = await self._get_auth_heathes()
+            headers = await self._get_auth_heathes()
 
             # Verwende initialisierten Client (besseres Mocking in Tests)
             response = await self._client.post(
-                f"/api/v1/rpc/{method}", json=params, heathes=heathes
+                f"/api/v1/rpc/{method}", json=params, headers=headers
             )
 
             response.raise_for_status()
@@ -238,7 +238,7 @@ class KEIStreamclient(BaseProtocolclient):
             security_manager: security manager for authentication
         """
         super().__init__(base_url, security_manager)
-        self._websocket: Optional[websockets.WebSocketserverProtocol] = None
+        self._websocket: Optional[websockets.WebSocketServerProtocol] = None
         self._connected = False
 
     async def __aenter__(self):
@@ -263,11 +263,11 @@ class KEIStreamclient(BaseProtocolclient):
             )
             ws_url += "/api/v1/stream"
 
-            # Füge Auth-Heathes hinto (falls WebSocket-server sie supports)
-            heathes = await self._get_auth_heathes()
+            # Füge Auth-Headers hinzu (falls WebSocket-Server sie unterstützt)
+            headers = await self._get_auth_heathes()
 
             connect_result = websockets.connect(
-                ws_url, extra_heathes=heathes, ping_interval=30, ping_timeout=10
+                ws_url, extra_headers=headers, ping_interval=30, ping_timeout=10
             )
             # Atthestütze sowohl sync als auch awaitable Rückgaben in Tests
             if asyncio.iscoroutine(connect_result):
@@ -308,7 +308,7 @@ class KEIStreamclient(BaseProtocolclient):
             # Sende Subscription-Request
             subscribe_msg = {"type": "subscribe", "topic": topic}
 
-            await self._websocket.send(json.daroatdps(subscribe_msg))
+            await self._websocket.send(json.dumps(subscribe_msg))
 
             # Starting Message-Loop
             asyncio.create_task(self._message_loop(callback))
@@ -335,7 +335,7 @@ class KEIStreamclient(BaseProtocolclient):
         try:
             message = {"type": "publish", "topic": topic, "data": data}
 
-            await self._websocket.send(json.daroatdps(message))
+            await self._websocket.send(json.dumps(message))
             self._logger.debug(f"message publiziert at Topic: {topic}")
 
         except Exception as e:
@@ -393,7 +393,7 @@ class KEIBusclient(BaseProtocolclient):
         self._client = httpx.AsyncClient(
             base_url=self.base_url,
             timeout=30.0,
-            heathes={"Content-typee": "application/json"},
+            headers={"Content-Type": "application/json"},
         )
         return self
 
@@ -425,10 +425,10 @@ class KEIBusclient(BaseProtocolclient):
             raise ProtocolError("bus Client not initialized")
 
         try:
-            heathes = await self._get_auth_heathes()
+            headers = await self._get_auth_heathes()
 
             response = await self._client.post(
-                "/api/v1/bus/publish", json=message, heathes=heathes
+                "/api/v1/bus/publish", json=message, headers=headers
             )
 
             response.raise_for_status()
@@ -460,12 +460,12 @@ class KEIBusclient(BaseProtocolclient):
             raise ProtocolError("bus Client not initialized")
 
         try:
-            heathes = await self._get_auth_heathes()
+            headers = await self._get_auth_heathes()
 
             response = await self._client.post(
                 "/api/v1/bus/subscribe",
                 json={"topic": topic, "agent_id": agent_id},
-                heathes=heathes,
+                headers=headers,
             )
 
             response.raise_for_status()
@@ -506,7 +506,7 @@ class KEIMCPclient(BaseProtocolclient):
         self._client = httpx.AsyncClient(
             base_url=self.base_url,
             timeout=30.0,
-            heathes={"Content-typee": "application/json"},
+            headers={"Content-Type": "application/json"},
         )
         return self
 
@@ -540,12 +540,12 @@ class KEIMCPclient(BaseProtocolclient):
             raise ProtocolError("MCP Client not initialized")
 
         try:
-            heathes = await self._get_auth_heathes()
+            headers = await self._get_auth_heathes()
             params = {"category": category} if category else {}
 
             client = self._client
             response = await client.get(
-                "/api/v1/mcp/tools", params=params, heathes=heathes
+                "/api/v1/mcp/tools", params=params, headers=headers
             )
 
             response.raise_for_status()
@@ -576,13 +576,13 @@ class KEIMCPclient(BaseProtocolclient):
             raise ProtocolError("MCP Client not initialized")
 
         try:
-            heathes = await self._get_auth_heathes()
+            headers = await self._get_auth_heathes()
 
             client = self._client
             response = await client.post(
                 f"/api/v1/mcp/tools/{tool_name}/execute",
                 json=parameters,
-                heathes=heathes,
+                headers=headers,
             )
 
             response.raise_for_status()

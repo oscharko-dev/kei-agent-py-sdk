@@ -370,7 +370,18 @@ class MetricsCollector:
             yield None
             return
 
-        with self.tracer.start_as_current_span(operation_name) as span:
+        # Absicherung: tracer kann in Tests ein einfacher Mock ohne Methode sein
+        start_span = getattr(self.tracer, "start_as_current_span", None)
+        if start_span is None:
+            # Kein echtes Tracing verfügbar
+            start_time = time.time()
+            try:
+                yield None
+            finally:
+                _ = time.time() - start_time
+            return
+
+        with start_span(operation_name) as span:
             # Set attributes
             span.set_attribute("agent_id", agent_id)
             for key, value in attributes.items():
