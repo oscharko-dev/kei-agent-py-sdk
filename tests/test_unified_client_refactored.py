@@ -117,7 +117,7 @@ class TestUnifiedKeiAgentClientRefactored:
             await unified_client.initialize()
 
             # Sollte not erneut initialized werthe
-            mock_token_refresh.assert_not_calld()
+            mock_token_refresh.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_initialize_error(self, unified_client):
@@ -158,7 +158,7 @@ class TestUnifiedKeiAgentClientRefactored:
             await unified_client.close()
 
             # Sollte not erneut closed werthe
-            mock_stop.assert_not_calld()
+            mock_stop.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_context_manager(self, unified_client):
@@ -274,7 +274,7 @@ class TestUnifiedKeiAgentClientRefactored:
 
             assert result["result"] == "traced"
             unified_client.tracing.start_spat.assert_called_once()
-            mock_spat.set_attribute.assert_calld()
+            mock_spat.set_attribute.assert_called()
 
     @pytest.mark.asyncio
     async def test_execute_with_protocol_rpc(self, unified_client):
