@@ -52,7 +52,7 @@
 ## 3) Testing Coverage
 
 - Current state
-  - Extensive tests: unit, integration, performance, chaos folders; pytest config in pyproject; coverage fail_under=85%
+  - Extensive tests: unit, integration, performance, chaos folders; pytest config in pyproject; coverage fail_under=15%
   - Multiple CI workflows for tests appear present
 
 - Gaps

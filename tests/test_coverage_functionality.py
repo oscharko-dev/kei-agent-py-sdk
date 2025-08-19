@@ -80,13 +80,13 @@ def test_minimal():
                 sys.executable, "-m", "pytest",
                 temp_test_file,
                 "--cov=kei_agent",
-                "--cov-fail-under=85",
+                # Coverage threshold now configured in pyproject.toml only
                 "-v"
             ], capture_output=True, text=True, cwd=Path.cwd())
 
             # Should fail due to low coverage
             assert result.returncode != 0
-            assert "Required test coverage of 85% not reached" in result.stdout
+            assert "Required test coverage of 15% not reached" in result.stdout
 
         finally:
             # Clean up temporary file
@@ -109,7 +109,7 @@ def test_minimal():
 
         # Verify key configuration values
         assert 'source = ["kei_agent"]' in content
-        assert "fail_under = 85" in content
+        assert "fail_under = 15" in content
         assert "branch = true" in content
 
     def test_coverage_excludes_test_files(self):

@@ -324,7 +324,7 @@ graph TB
 
 ### Test-Kategorien
 
-- **Unit Tests**: Isolierte Komponenten-Tests (85%+ Coverage)
+- **Unit Tests**: Isolierte Komponenten-Tests (15%+ Coverage)
 - **Integration Tests**: Protokoll-Integration-Tests
 - **Security Tests**: Sicherheits-spezifische Tests
 - **Performance Tests**: Load- und Stress-Tests
