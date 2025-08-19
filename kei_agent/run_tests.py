@@ -59,18 +59,13 @@ def run_unit_tests(verbose: bool = False, coverage: bool = False) -> int:
     if verbose:
         cmd.append("-v")
 
-    # Coverage DEAKTIVIERT wegen importlib_metadata KeyError-Problem
-    # if coverage:
-    #     cmd.extend(
-    #         [
-    #             "--cov=.",
-    #             "--cov-report=term-missing",
-    #             "--cov-report=html",
-    #             "--cov-report=xml",
-    #         ]
-    #     )
-    # else:
-    #     cmd.extend(["--no-cov"])
+    # Deaktiviere Coverage-Parameter aus pytest.ini wenn nicht gewünscht
+    if not coverage:
+        cmd.extend(
+            [
+                "--override-ini=addopts=-ra -q --strict-markers --strict-config --tb=short --durations=10 --color=yes"
+            ]
+        )
 
     return run_command(cmd, "Unit Tests")
 
@@ -90,18 +85,13 @@ def run_integration_tests(verbose: bool = False, coverage: bool = False) -> int:
     if verbose:
         cmd.append("-v")
 
-    # Coverage DEAKTIVIERT wegen importlib_metadata KeyError-Problem
-    # if coverage:
-    #     cmd.extend(
-    #         [
-    #             "--cov=.",
-    #             "--cov-report=term-missing",
-    #             "--cov-report=html",
-    #             "--cov-report=xml",
-    #         ]
-    #     )
-    # else:
-    #     cmd.extend(["--no-cov"])
+    # Deaktiviere Coverage-Parameter aus pytest.ini wenn nicht gewünscht
+    if not coverage:
+        cmd.extend(
+            [
+                "--override-ini=addopts=-ra -q --strict-markers --strict-config --tb=short --durations=10 --color=yes"
+            ]
+        )
 
     return run_command(cmd, "Integration Tests")
 
@@ -128,6 +118,13 @@ def run_protocol_tests(protocol: Optional[str] = None, verbose: bool = False) ->
     if verbose:
         cmd.append("-v")
 
+    # Deaktiviere Coverage-Parameter aus pytest.ini
+    cmd.extend(
+        [
+            "--override-ini=addopts=-ra -q --strict-markers --strict-config --tb=short --durations=10 --color=yes"
+        ]
+    )
+
     return run_command(cmd, description)
 
 
@@ -144,6 +141,13 @@ def run_refactored_tests(verbose: bool = False) -> int:
 
     if verbose:
         cmd.append("-v")
+
+    # Deaktiviere Coverage-Parameter aus pytest.ini
+    cmd.extend(
+        [
+            "--override-ini=addopts=-ra -q --strict-markers --strict-config --tb=short --durations=10 --color=yes"
+        ]
+    )
 
     return run_command(cmd, "Refactored Component Tests")
 
@@ -162,6 +166,13 @@ def run_security_tests(verbose: bool = False) -> int:
     if verbose:
         cmd.append("-v")
 
+    # Deaktiviere Coverage-Parameter aus pytest.ini
+    cmd.extend(
+        [
+            "--override-ini=addopts=-ra -q --strict-markers --strict-config --tb=short --durations=10 --color=yes"
+        ]
+    )
+
     return run_command(cmd, "Security Tests")
 
 
@@ -178,6 +189,13 @@ def run_performance_tests(verbose: bool = False) -> int:
 
     if verbose:
         cmd.append("-v")
+
+    # Deaktiviere Coverage-Parameter aus pytest.ini
+    cmd.extend(
+        [
+            "--override-ini=addopts=-ra -q --strict-markers --strict-config --tb=short --durations=10 --color=yes"
+        ]
+    )
 
     return run_command(cmd, "Performance Tests")
 
