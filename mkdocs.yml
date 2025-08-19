@@ -151,57 +151,27 @@ nav:
       - getting-started/index.md
       - Installation: getting-started/installation.md
       - Quick Start: getting-started/quickstart.md
-      - Configuration: getting-started/configuration.md
+      - Konfiguration: getting-started/configuration.md
   - Benutzerhandbuch:
-      - user-guide/index.md
       - Basis-Konzepte: user-guide/concepts.md
       - Client-Verwendung: user-guide/client-usage.md
       - Protokolle: user-guide/protocols.md
-      - Authentication: user-guide/authentication.md
-      - Fehlerbehandlung: user-guide/error-handling.md
-  - Enterprise Features:
+  - Enterprise:
       - enterprise/index.md
       - Logging: enterprise/logging.md
       - Health Checks: enterprise/health-checks.md
-      - Input Validation: enterprise/input-validation.md
       - Security: enterprise/security.md
-      - Monitoring: enterprise/monitoring.md
   - API-Referenz:
       - api/index.md
       - Unified Client: api/unified-client.md
       - Protocol Types: api/protocol-types.md
-      - Input Validation: api/input-validation.md
       - Exceptions: api/exceptions.md
-      - Protocol Clients: api/protocol-clients.md
-      - Protocol Selector: api/protocol-selector.md
-      - Security Manager: api/security-manager.md
-      - Enterprise Logging: api/enterprise-logging.md
-      - Health Checks: api/health-checks.md
-  - Architektur:
-      - architecture/index.md
-      - Überblick: architecture/overview.md
-      - Module: architecture/modules.md
-      - Protokolle: architecture/protocols.md
-      - Design-Patterns: architecture/design-patterns.md
-  - Beispiele:
-      - examples/index.md
   - Migration:
       - migration/index.md
       - Von Legacy: migration/from-legacy.md
-      - Breaking Changes: migration/breaking-changes.md
-      - Upgrade Guide: migration/upgrade-guide.md
-  - Deployment:
-      - deployment/index.md
-  - Entwicklung:
-      - development/index.md
-      - Aufgaben & Plan: development/tasks.md
   - Troubleshooting:
       - troubleshooting/index.md
       - Häufige Probleme: troubleshooting/common-issues.md
-      - Debugging: troubleshooting/debugging.md
-      - Performance: troubleshooting/performance.md
-      - Security: troubleshooting/security.md
-      - FAQ: troubleshooting/faq.md
 
 # Extra CSS and JavaScript
 extra_css:

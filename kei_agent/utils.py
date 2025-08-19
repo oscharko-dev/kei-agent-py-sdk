@@ -99,7 +99,7 @@ def calculate_backoff(
         Backoff-Zeit in Sekatthe
     """
     # Exponential Backoff
-    delay = base_delay * (2**attempt)
+    delay: float = base_delay * float(2**attempt)
 
     # Begrenze on Maximaroatd
     delay = min(delay, max_delay)

@@ -234,11 +234,16 @@ def validate_package_metadata() -> None:
     # Version out pyproject.toml extrahieren
     try:
         try:
-            import tomllib as tomli  # type: ignore[import-not-found]
-        except Exception:
-            import tomli  # type: ignore[import-not-found, no-redef]
+            import tomllib as tomli
+        except Exception:  # pragma: no cover
+            try:
+                import tomli
+            except Exception:
+                tomli = None
 
         with open(pyproject_file, "rb") as f:
+            if tomli is None:
+                raise RuntimeError("No TOML parser available (tomllib/tomli)")
             pyproject_data = tomli.load(f)
 
         version = pyproject_data["project"]["version"]
@@ -318,11 +323,16 @@ def create_build_report() -> Dict[str, Any]:
     # Package-Info
     try:
         try:
-            import tomllib as tomli  # type: ignore[import-not-found]
-        except Exception:
-            import tomli  # type: ignore[import-not-found, no-redef]
+            import tomllib as tomli
+        except Exception:  # pragma: no cover
+            try:
+                import tomli
+            except Exception:
+                tomli = None
 
         with open(BASE_DIR / "pyproject.toml", "rb") as f:
+            if tomli is None:
+                raise RuntimeError("No TOML parser available (tomllib/tomli)")
             pyproject_data = tomli.load(f)
 
         report["package_info"] = {

@@ -73,8 +73,8 @@ class MetricsCollector:
             self._initialize_prometheus_metrics()
 
         # OpenTelemetry setup
-        self.tracer = None
-        self.meter = None
+        self.tracer: Optional[Any] = None
+        self.meter: Optional[Any] = None
         if OPENTELEMETRY_AVAILABLE:
             self._initialize_opentelemetry()
 
@@ -336,7 +336,7 @@ class MetricsCollector:
                 metric.labels(**event.labels).observe(event.value)
 
     @asynccontextmanager
-    async def trace_operation(self, operation_name: str, agent_id: str, **attributes: Any):
+    async def trace_operation(self, operation_name: str, agent_id: str, **attributes: Any) -> Any:
         """Context manager for tracing operations with OpenTelemetry."""
         if not self.tracer:
             yield None

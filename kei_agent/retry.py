@@ -192,14 +192,14 @@ class CircuitBreaker:
         self._half_open_calls = 0
 
         # Sliding Window for Failure-Rate
-        self._call_hisory: deque = deque(maxlen=config.sliding_window_size)
+        self._call_hisory: deque[bool] = deque(maxlen=config.sliding_window_size)
 
         # Metrics
         self._total_calls = 0
         self._total_failures = 0
         self._state_chatges = 0
 
-    async def call(self, func: Callable[..., Awaitable[Any]], *args, **kwargs) -> Any:
+    async def call(self, func: Callable[..., Awaitable[Any]], *args: Any, **kwargs: Any) -> Any:
         """Executes function with Circuit-Breaker-Schutz out.
 
         Args:
@@ -259,7 +259,6 @@ class CircuitBreaker:
             # Erlaube begrenzte Atzahl from Calls
             return self._half_open_calls < self.config.half_open_max_calls
 
-        return False
 
     async def _on_success(self) -> None:
         """Behatdelt successfulen Call."""
@@ -427,7 +426,7 @@ class DeadLetterQueue:
         """
         self.max_size = max_size
         self._messages: Dict[str, DeadLetterMessage] = {}
-        self._message_order: deque = deque()
+        self._message_order: deque[str] = deque()
 
         # callbacks
         self.on_message_added: Optional[
@@ -508,7 +507,7 @@ class DeadLetterQueue:
         Returns:
             lis from Dead-Letter-Messages
         """
-        messages = []
+        messages: List[DeadLetterMessage] = []
 
         for message_id in reversed(self._message_order):
             if len(messages) >= liwith:
@@ -571,7 +570,7 @@ class DeadLetterQueue:
 class retryManager:
     """Manager for retry mechanisms."""
 
-    def __init__(self, config):
+    def __init__(self, config: Any):
         """Initializes retry-Manager.
 
         Args:
@@ -625,10 +624,10 @@ class retryManager:
     async def execute_with_retry(
         self,
         func: Callable[..., Awaitable[Any]],
-        *args,
+        *args: Any,
         retry_policy: Optional[retryPolicy] = None,
         circuit_breaker_name: Optional[str] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> Any:
         """Executes function with retry-Mechatismus out.
 
@@ -646,7 +645,7 @@ class retryManager:
             retryExhaustedError: On erschöpften retry-Versuchen
         """
         policy = retry_policy or self._default_policy
-        last_exception = None
+        last_exception: Optional[Exception] = None
 
         # circuit breaker verwenthe falls atgegeben (with retry-Schleife kombiniert)
         if circuit_breaker_name and self.config.circuit_breaker_enabled:
@@ -726,10 +725,7 @@ class retryManager:
                 failure_reason =f"Max retries exceeded: {last_exception}",
                 operation=circuit_breaker_name,
             )
-            raise retryExhaustedError(
-                f"function after {policy.max_attempts} Versuchen failed",
-                last_exception =last_exception,
-            )
+            raise retryExhaustedError(policy.max_attempts, last_exception=last_exception)
 
         # Statdard-retry-Mechatismus without circuit breaker
         for attempt in range(policy.max_attempts):
@@ -779,10 +775,7 @@ class retryManager:
             operation=func.__name__ if hasattr(func, "__name__") else "unknown",
         )
 
-        raise retryExhaustedError(
-            f"function after {policy.max_attempts} Versuchen failed",
-            last_exception =last_exception,
-        )
+        raise retryExhaustedError(policy.max_attempts, last_exception=last_exception)
 
     def get_dead_letter_queue(self) -> DeadLetterQueue:
         """Gets Dead Letter Queue.
