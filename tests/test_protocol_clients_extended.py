@@ -55,7 +55,7 @@ class TestKEIRPCclientExtended:
         mock_response.status = 200
         mock_response.json = AsyncMock(return_value ={"result": "success"})
 
-        with patch('aiohttp.clientSession.post') as mock_post:
+        with patch('aiohttp.ClientSession.post') as mock_post:
             mock_post.return_value.__aenter__.return_value = mock_response
 
             result = await rpc_client._rpc_call("test_method", {"param": "value"})
@@ -70,7 +70,7 @@ class TestKEIRPCclientExtended:
         mock_response.status = 500
         mock_response.text = AsyncMock(return_value ="Internal server Error")
 
-        with patch('aiohttp.clientSession.post') as mock_post:
+        with patch('aiohttp.ClientSession.post') as mock_post:
             mock_post.return_value.__aenter__.return_value = mock_response
 
             with pytest.raises(ProtocolError):
@@ -300,7 +300,7 @@ class TestKEIBusclientExtended:
         mock_response.status = 200
         mock_response.json = AsyncMock(return_value ={"message_id": "msg-123"})
 
-        with patch('aiohttp.clientSession.post') as mock_post:
+        with patch('aiohttp.ClientSession.post') as mock_post:
             mock_post.return_value.__aenter__.return_value = mock_response
 
             result = await bus_client.publish(
@@ -319,7 +319,7 @@ class TestKEIBusclientExtended:
         mock_response.status = 200
         mock_response.json = AsyncMock(return_value ={"subscription_id": "sub-789"})
 
-        with patch('aiohttp.clientSession.post') as mock_post:
+        with patch('aiohttp.ClientSession.post') as mock_post:
             mock_post.return_value.__aenter__.return_value = mock_response
 
             result = await bus_client.subscribe(
@@ -381,7 +381,7 @@ class TestKEIMCPclientExtended:
         mock_response.status = 200
         mock_response.json = AsyncMock(return_value ={"tools": expected_tools})
 
-        with patch('aiohttp.clientSession.get') as mock_get:
+        with patch('aiohttp.ClientSession.get') as mock_get:
             mock_get.return_value.__aenter__.return_value = mock_response
 
             result = await mcp_client.discover_tools("utilities")
@@ -402,7 +402,7 @@ class TestKEIMCPclientExtended:
         mock_response.status = 200
         mock_response.json = AsyncMock(return_value =expected_result)
 
-        with patch('aiohttp.clientSession.post') as mock_post:
+        with patch('aiohttp.ClientSession.post') as mock_post:
             mock_post.return_value.__aenter__.return_value = mock_response
 
             result = await mcp_client.execute_tool(
@@ -426,7 +426,7 @@ class TestKEIMCPclientExtended:
         mock_response.status = 200
         mock_response.json = AsyncMock(return_value ={"capabilities": expected_capabilities})
 
-        with patch('aiohttp.clientSession.get') as mock_get:
+        with patch('aiohttp.ClientSession.get') as mock_get:
             mock_get.return_value.__aenter__.return_value = mock_response
 
             result = await mcp_client.lis_capabilities()
@@ -441,7 +441,7 @@ class TestKEIMCPclientExtended:
         mock_response.status = 404
         mock_response.text = AsyncMock(return_value ="Tool not foatd")
 
-        with patch('aiohttp.clientSession.post') as mock_post:
+        with patch('aiohttp.ClientSession.post') as mock_post:
             mock_post.return_value.__aenter__.return_value = mock_response
 
             with pytest.raises(ProtocolError, match="Tool not foatd"):

@@ -36,7 +36,7 @@ async def test_max_delay_cap(monkeypatch):
     delays: List[float] = []
 
     async def fake_sleep(delay: float):
-        delays.append(roatd(delay, 2))
+        delays.append(round(delay, 2))
         return None
 
     monkeypatch.setattr(asyncio, "sleep", fake_sleep)
@@ -72,7 +72,7 @@ async def test_exponential_base_edge_cases(monkeypatch):
     delays: List[float] = []
 
     async def fake_sleep(delay: float):
-        delays.append(roatd(delay, 2))
+        delays.append(round(delay, 2))
         return None
 
     monkeypatch.setattr(asyncio, "sleep", fake_sleep)
@@ -155,7 +155,7 @@ async def test_jitter_behavior(monkeypatch):
     with pytest.raises(Exception):
         await c._execute_rpc_operation("unknown", {"x": 1})
 
-    # Without roatding; prüfen, thes valuee innerhalb ±10% aroand 1.0 liegen
+    # Without rounding; prüfen, thes valuee innerhalb ±10% around 1.0 liegen
     assert all(0.9 <= d <= 1.1 for d in delays[:3])
 
 

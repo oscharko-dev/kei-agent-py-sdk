@@ -73,7 +73,12 @@ def ensure_fake_opentelemetry() -> None:
 
     def get_tracer(name, version=None):
         return types.SimpleNamespace(
-            start_as_current_spat =lambda name, **kwargs: types.SimpleNamespace()
+            start_as_current_spat =lambda name, **kwargs: types.SimpleNamespace(),
+            start_as_current_span =lambda name, **kwargs: types.SimpleNamespace(
+                set_attribute=lambda k, v: None,
+                record_exception=lambda e: None,
+                set_status=lambda s: None
+            )
         )
 
     def set_tracer_provithe(provithe):
