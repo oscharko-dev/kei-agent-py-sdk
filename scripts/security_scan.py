@@ -12,9 +12,10 @@ import argparse
 import subprocess
 import sys
 from pathlib import Path
+from typing import List
 
 
-def run_command(cmd: list[str], description: str, timeout: int = 60) -> bool:
+def run_command(cmd: List[str], description: str, timeout: int = 60) -> bool:
     """Run a command and return success status."""
     print(f"🔍 {description}...")
     try:
