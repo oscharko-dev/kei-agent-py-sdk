@@ -62,53 +62,53 @@ test: test-unit ## Führt Standard-Tests aus (Unit Tests)
 test-unit: ## Führt Unit Tests aus
 	@echo "$(BLUE)Führe Unit Tests aus...$(RESET)"
 	$(PIP) install -e .
-	$(PYTHON) run_tests.py --unit --verbose
+	$(PYTHON) kei_agent/run_tests.py --unit --verbose
 
 test-integration: ## Führt Integration Tests aus
 	@echo "$(BLUE)Führe Integration Tests aus...$(RESET)"
-	$(PYTHON) run_tests.py --integration --verbose
+	$(PYTHON) kei_agent/run_tests.py --integration --verbose
 
 test-protocol: ## Führt alle Protokoll Tests aus
 	@echo "$(BLUE)Führe Protokoll Tests aus...$(RESET)"
-	$(PYTHON) run_tests.py --protocol --verbose
+	$(PYTHON) kei_agent/run_tests.py --protocol --verbose
 
 test-protocol-rpc: ## Führt KEI-RPC Tests aus
 	@echo "$(BLUE)Führe KEI-RPC Tests aus...$(RESET)"
-	$(PYTHON) run_tests.py --protocol rpc --verbose
+	$(PYTHON) kei_agent/run_tests.py --protocol rpc --verbose
 
 test-protocol-stream: ## Führt KEI-Stream Tests aus
 	@echo "$(BLUE)Führe KEI-Stream Tests aus...$(RESET)"
-	$(PYTHON) run_tests.py --protocol stream --verbose
+	$(PYTHON) kei_agent/run_tests.py --protocol stream --verbose
 
 test-protocol-bus: ## Führt KEI-Bus Tests aus
 	@echo "$(BLUE)Führe KEI-Bus Tests aus...$(RESET)"
-	$(PYTHON) run_tests.py --protocol bus --verbose
+	$(PYTHON) kei_agent/run_tests.py --protocol bus --verbose
 
 test-protocol-mcp: ## Führt KEI-MCP Tests aus
 	@echo "$(BLUE)Führe KEI-MCP Tests aus...$(RESET)"
-	$(PYTHON) run_tests.py --protocol mcp --verbose
+	$(PYTHON) kei_agent/run_tests.py --protocol mcp --verbose
 
 test-refactored: ## Führt Tests für refactored Komponenten aus
 	@echo "$(BLUE)Führe Refactored Component Tests aus...$(RESET)"
-	$(PYTHON) run_tests.py --refactored --verbose
+	$(PYTHON) kei_agent/run_tests.py --refactored --verbose
 
 test-security: ## Führt Security Tests aus
 	@echo "$(BLUE)Führe Security Tests aus...$(RESET)"
-	$(PYTHON) run_tests.py --security --verbose
+	$(PYTHON) kei_agent/run_tests.py --security --verbose
 
 test-performance: ## Führt Performance Tests aus
 	@echo "$(BLUE)Führe Performance Tests aus...$(RESET)"
-	$(PYTHON) run_tests.py --performance --verbose
+	$(PYTHON) kei_agent/run_tests.py --performance --verbose
 
 test-all: ## Führt alle Tests aus
 	@echo "$(BLUE)Führe alle Tests aus...$(RESET)"
 	$(PIP) install -e .
-	$(PYTHON) run_tests.py --all --verbose
+	$(PYTHON) kei_agent/run_tests.py --all --verbose
 
 test-fast: ## Führt schnelle Tests aus (ohne Coverage)
 	@echo "$(BLUE)Führe schnelle Tests aus...$(RESET)"
 	$(PIP) install -e .
-	$(PYTHON) run_tests.py --unit --no-coverage
+	$(PYTHON) kei_agent/run_tests.py --unit --no-coverage
 
 # =====================================================================
 # Coverage
@@ -116,17 +116,17 @@ test-fast: ## Führt schnelle Tests aus (ohne Coverage)
 
 coverage-report: ## Erstellt Coverage-Report
 	@echo "$(BLUE)Erstelle Coverage-Report...$(RESET)"
-	$(PYTHON) run_tests.py --coverage-report
+	$(PYTHON) kei_agent/run_tests.py --coverage-report
 
 coverage-html: ## Erstellt HTML-Coverage-Report
 	@echo "$(BLUE)Erstelle HTML-Coverage-Report...$(RESET)"
-	$(PYTHON) run_tests.py --coverage-html
+	$(PYTHON) kei_agent/run_tests.py --coverage-html
 	@echo "$(GREEN)✅ HTML-Coverage-Report verfügbar unter htmlcov/index.html$(RESET)"
 
 test-cov: ## Führt Tests mit Coverage aus
 	@echo "$(BLUE)Führe Tests mit Coverage aus...$(RESET)"
-	$(PYTHON) run_tests.py --all --verbose
-	$(PYTHON) run_tests.py --coverage-report
+	$(PYTHON) kei_agent/run_tests.py --all --verbose
+	$(PYTHON) kei_agent/run_tests.py --coverage-report
 
 # =====================================================================
 # Code-Qualität

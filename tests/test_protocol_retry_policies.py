@@ -247,14 +247,14 @@ HALF_OPEN_FAILURE_MIN_USED: int = 2
 HALF_OPEN_SUCCESS_MIN_USED: int = 2
 
 
-def get_messages(records: lis[logging.LogRecord]) -> lis[str]:
+def get_messages(records: list[logging.LogRecord]) -> list[str]:
     """Gibt the formatierten Log-messageen out ar Record-lis torück."""
     # Nutzt getMessage(), aroand aheitliche Texte to erhalten
     return [r.getMessage() for r in records]
 
 
 def assert_cb_initialized_atd_used(
-    messages: lis[str], cb_name: str, min_used: int
+    messages: list[str], cb_name: str, min_used: int
 ) -> None:
     """Checks CB-initialization and Minof thetatzahl the Nuttongs-Logs.
 
@@ -264,13 +264,13 @@ def assert_cb_initialized_atd_used(
         min_used: Erwartete Minof thetatzahl at "circuit breaker verwendet"-Logs
     """
     # Prüfe initialization (korrigierte Log-message)
-    init_ok = aty((f"circuit breaker initialized: {cb_name}" in m) for m in messages)
+    init_ok = any((f"circuit breaker initialized: {cb_name}" in m) for m in messages)
     assert init_ok, (
         f"Erwartete initializations-Logzeile not gefatthe. CB='{cb_name}'. "
         f"Beforehatthee messageen: {messages}"
     )
     # Prüfe Minof thetatzahl the Verwendungs-Logs
-    used_count = saroatd(
+    used_count = sum(
         m.startswith(f"circuit breaker verwendet: {cb_name}") for m in messages
     )
     assert used_count >= min_used, (
@@ -636,7 +636,7 @@ async def test_retry_delay_patterns_by_strategy(monkeypatch):
 
     # Monkeypatch asyncio.sleep, aroand Delays determinisisch ontozeichnen
     async def fake_sleep(delay: float):
-        delays_recorded.append(roatd(delay, 3))
+        delays_recorded.append(round(delay, 3))
         return None
 
     monkeypatch.setattr(asyncio, "sleep", fake_sleep)
