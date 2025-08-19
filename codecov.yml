@@ -1,0 +1,73 @@
+# Codecov-Konfiguration für KEI-Agent Python SDK
+# Definiert Coverage-Ziele und Berichterstattung
+
+# Allgemeine Konfiguration
+codecov:
+  require_ci_to_pass: yes
+  notify:
+    wait_for_ci: yes
+
+# Coverage-Ziele
+coverage:
+  precision: 2
+  round: down
+  range: "70...100"
+  
+  status:
+    project:
+      default:
+        target: 80%
+        threshold: 1%
+        base: auto
+        if_no_uploads: error
+        if_not_found: success
+        if_ci_failed: error
+    
+    patch:
+      default:
+        target: 70%
+        threshold: 5%
+        base: auto
+        if_no_uploads: error
+        if_not_found: success
+        if_ci_failed: error
+
+# Kommentare in Pull Requests
+comment:
+  layout: "reach,diff,flags,tree"
+  behavior: default
+  require_changes: false
+  require_base: no
+  require_head: yes
+
+# Ignorierte Pfade
+ignore:
+  - "tests/"
+  - "docs/"
+  - "scripts/"
+  - "*.md"
+  - "*.txt"
+  - "*.yml"
+  - "*.yaml"
+  - "*.ini"
+  - "*.cfg"
+  - "setup.py"
+  - "conftest.py"
+  - "**/__pycache__/"
+  - "**/.*"
+
+# Flags für verschiedene Test-Typen
+flags:
+  unittests:
+    paths:
+      - kei_agent/
+    carryforward: true
+  
+  integration:
+    paths:
+      - kei_agent/
+    carryforward: true
+
+# GitHub-Integration
+github_checks:
+  annotations: true

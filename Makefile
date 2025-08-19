@@ -114,19 +114,19 @@ test-fast: ## Führt schnelle Tests aus (ohne Coverage)
 # Coverage
 # =====================================================================
 
-coverage-report: ## Erstellt Coverage-Report
+coverage-report: ## Erstellt Coverage-Report (XML + HTML)
 	@echo "$(BLUE)Erstelle Coverage-Report...$(RESET)"
-	$(PYTHON) kei_agent/run_tests.py --coverage-report
+	$(PYTHON) -m pytest tests/ --cov=kei_agent --cov-report=xml --cov-report=html:htmlcov --cov-report=term-missing --cov-branch -q
+	@echo "$(GREEN)✅ Coverage-Report erstellt: coverage.xml und htmlcov/$(RESET)"
 
 coverage-html: ## Erstellt HTML-Coverage-Report
 	@echo "$(BLUE)Erstelle HTML-Coverage-Report...$(RESET)"
-	$(PYTHON) kei_agent/run_tests.py --coverage-html
+	$(PYTHON) -m pytest tests/ --cov=kei_agent --cov-report=html:htmlcov --cov-branch -q
 	@echo "$(GREEN)✅ HTML-Coverage-Report verfügbar unter htmlcov/index.html$(RESET)"
 
 test-cov: ## Führt Tests mit Coverage aus
 	@echo "$(BLUE)Führe Tests mit Coverage aus...$(RESET)"
-	$(PYTHON) kei_agent/run_tests.py --all --verbose
-	$(PYTHON) kei_agent/run_tests.py --coverage-report
+	$(PYTHON) -m pytest tests/ --cov=kei_agent --cov-report=xml --cov-report=html:htmlcov --cov-report=term-missing --cov-branch
 
 # =====================================================================
 # Code-Qualität
