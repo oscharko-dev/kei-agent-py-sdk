@@ -148,11 +148,14 @@ class SecretsManager:
             SecurityError: If required OIDC credentials are missing
         """
         issuer = self.get_secret("OIDC_ISSUER", required=True)
-        assert issuer is not None
+        if issuer is None:
+            raise ValueError("OIDC_ISSUER is required but not found")
         client_id = self.get_secret("OIDC_CLIENT_ID", required=True)
-        assert client_id is not None
+        if client_id is None:
+            raise ValueError("OIDC_CLIENT_ID is required but not found")
         client_secret = self.get_secret("OIDC_CLIENT_SECRET", required=True)
-        assert client_secret is not None
+        if client_secret is None:
+            raise ValueError("OIDC_CLIENT_SECRET is required but not found")
         scope = self.get_secret("OIDC_SCOPE", default="openid profile") or "openid profile"
 
         return {
@@ -172,9 +175,11 @@ class SecretsManager:
             SecurityError: If required certificate paths are missing
         """
         cert_path = self.get_secret("MTLS_CERT_PATH", required=True)
-        assert cert_path is not None
+        if cert_path is None:
+            raise ValueError("MTLS_CERT_PATH is required but not found")
         key_path = self.get_secret("MTLS_KEY_PATH", required=True)
-        assert key_path is not None
+        if key_path is None:
+            raise ValueError("MTLS_KEY_PATH is required but not found")
         ca_path = self.get_secret("MTLS_CA_PATH")
 
         paths: Dict[str, str] = {

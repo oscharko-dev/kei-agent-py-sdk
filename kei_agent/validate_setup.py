@@ -286,8 +286,14 @@ class SetupValidator:
 
         # MkDocs Build testen
         try:
+            import shutil
+            mkdocs_path = shutil.which("mkdocs")
+            if not mkdocs_path:
+                self.add_result("Docaroatthetation", False, "mkdocs command not found")
+                return False
+
             result = subprocess.run(
-                ["mkdocs", "build", "--strict"],
+                [mkdocs_path, "build", "--strict"],
                 cwd=BASE_DIR,
                 capture_output =True,
                 text=True,
@@ -333,8 +339,9 @@ class SetupValidator:
 
         # Pytest ausführen (nur Syntax-Check)
         try:
+            python_path = sys.executable  # Use current Python interpreter
             result = subprocess.run(
-                ["python", "-m", "pytest", "-q"],
+                [python_path, "-m", "pytest", "-q"],
                 cwd=BASE_DIR,
                 capture_output =True,
                 text=True,

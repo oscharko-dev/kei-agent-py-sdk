@@ -235,8 +235,10 @@ class PersistentCache(CacheInterface):
             # Cleanup temp file on error
             try:
                 await aiofiles.os.remove(temp_path)
-            except Exception:
-                pass  # Ignore cleanup errors
+            except Exception as cleanup_error:
+                # Log cleanup errors but don't fail the operation
+                import logging
+                logging.getLogger(__name__).debug(f"Failed to cleanup temp file {temp_path}: {cleanup_error}")
             raise e
 
     async def _deserialize_from_file(self, file_path: Path, format_type: str = 'pickle') -> Any:
