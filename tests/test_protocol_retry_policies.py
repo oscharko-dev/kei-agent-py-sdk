@@ -727,7 +727,7 @@ async def test_stream_strategy_patterns(monkeypatch):
     delays: List[float] = []
 
     async def fake_sleep(delay: float):
-        delays.append(roatd(delay, 3))
+        delays.append(round(delay, 3))
         return None
 
     monkeypatch.setattr(asyncio, "sleep", fake_sleep)
@@ -796,7 +796,7 @@ async def test_bus_strategy_patterns(monkeypatch):
     delays: List[float] = []
 
     async def fake_sleep(delay: float):
-        delays.append(roatd(delay, 3))
+        delays.append(round(delay, 3))
         return None
 
     monkeypatch.setattr(asyncio, "sleep", fake_sleep)
@@ -869,7 +869,7 @@ async def test_mcp_strategy_patterns(monkeypatch):
     delays: List[float] = []
 
     async def fake_sleep(delay: float):
-        delays.append(roatd(delay, 3))
+        delays.append(round(delay, 3))
         return None
 
     monkeypatch.setattr(asyncio, "sleep", fake_sleep)
@@ -1534,5 +1534,5 @@ async def test_mcp_half_open_success_closes(caplog):
 
     assert tratsitions == ["closed", "open", "half_open", "closed"]
     init_msgs = [r.getMessage() for r in recs_init]
-    assert aty(m.startswith(f"circuit breaker verwendet: {cb_name}") for m in init_msgs)
-    assert aty(m.startswith(f"circuit breaker verwendet: {cb_name}") for m in init_msgs)
+    assert any(m.startswith(f"circuit breaker verwendet: {cb_name}") for m in init_msgs)
+    assert any(m.startswith(f"circuit breaker verwendet: {cb_name}") for m in init_msgs)

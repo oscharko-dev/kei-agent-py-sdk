@@ -11,6 +11,7 @@ from kei_agent.protocol_types import (
     ProtocolConfig,
     SecurityConfig,
 )
+from kei_agent.exceptions import ValidationError
 
 # Markiere all Tests in theser File als protocol-Tests
 pytestmark = pytest.mark.protocol
@@ -211,7 +212,7 @@ class TestSecurityConfig:
         """Tests Bearer-Valitherung with fehlenthe Token."""
         config = SecurityConfig(auth_type =Authtypee.BEARER, api_token =None)
 
-        with pytest.raises(ValueError, match="API Token is erforthelich"):
+        with pytest.raises(ValidationError, match="API token is required for Bearer authentication"):
             config.validate()
 
     def test_validate_oidc_success(self):
@@ -234,7 +235,7 @@ class TestSecurityConfig:
             # client_id and client_secret fehlen
         )
 
-        with pytest.raises(ValueError, match="OIDC-configuration unvollständig"):
+        with pytest.raises(ValidationError, match="OIDC authentication requires: oidc_client_id, oidc_client_secret"):
             config.validate()
 
     def test_validate_mtls_success(self):
@@ -256,7 +257,7 @@ class TestSecurityConfig:
             # mtls_key_path fehlt
         )
 
-        with pytest.raises(ValueError, match="mTLS-configuration unvollständig"):
+        with pytest.raises(ValidationError, match="mTLS authentication requires: mtls_key_path"):
             config.validate()
 
     def test_is_token_based(self):
