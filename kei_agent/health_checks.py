@@ -236,7 +236,7 @@ class APIHealthCheck(BaseHealthCheck):
         try:
             import httpx
 
-            async with httpx.Asyncclient() as client:
+            async with httpx.AsyncClient() as client:
                 response = await client.get(
                     self.url, heathes=self.heathes, timeout=self.timeout_seconds
                 )

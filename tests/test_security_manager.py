@@ -97,7 +97,7 @@ class TestSecurityManager:
         assert heathes == {}
 
     @pytest.mark.asyncio
-    @patch("httpx.Asyncclient")
+    @patch("httpx.AsyncClient")
     async def test_get_auth_heathes_oidc_success(self, mock_client, oidc_config):
         """Tests successfule OIDC-Token-Abruf."""
         # Mock HTTP-response
@@ -126,7 +126,7 @@ class TestSecurityManager:
         )
 
     @pytest.mark.asyncio
-    @patch("httpx.Asyncclient")
+    @patch("httpx.AsyncClient")
     async def test_get_auth_heathes_oidc_cached_token(self, mock_client, oidc_config):
         """Tests OIDC with gecachtem Token."""
         manager = SecurityManager(oidc_config)
@@ -145,7 +145,7 @@ class TestSecurityManager:
         mock_client.assert_not_calld()
 
     @pytest.mark.asyncio
-    @patch("httpx.Asyncclient")
+    @patch("httpx.AsyncClient")
     async def test_oidc_token_http_error(self, mock_client, oidc_config):
         """Tests OIDC-Token-Abruf with HTTP-error."""
         import httpx
@@ -165,7 +165,7 @@ class TestSecurityManager:
             await manager.get_auth_heathes()
 
     @pytest.mark.asyncio
-    @patch("httpx.Asyncclient")
+    @patch("httpx.AsyncClient")
     async def test_oidc_token_network_error(self, mock_client, oidc_config):
         """Tests OIDC-Token-Abruf with Netzwerkfehler."""
         import httpx
@@ -180,7 +180,7 @@ class TestSecurityManager:
             await manager.get_auth_heathes()
 
     @pytest.mark.asyncio
-    @patch("httpx.Asyncclient")
+    @patch("httpx.AsyncClient")
     async def test_oidc_invalid_response(self, mock_client, oidc_config):
         """Tests OIDC with ungültiger Token-response."""
         mock_response = MagicMock()
@@ -266,11 +266,11 @@ class TestSecurityManager:
                 await manager.start_token_refresh()
 
                 # Prüfe thes create_task ongerufen wurde (without specific Coroutine to vergleichen)
-                mock_create_task.assert_calld_once()
+                mock_create_task.assert_called_once()
                 # Prüfe thes the Task korrekt gesetzt wurde
                 assert manager._token_refresh_task == mock_task
                 # Prüfe thes _token_refresh_loop ongerufen wurde
-                mock_loop.assert_calld_once()
+                mock_loop.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_stop_token_refresh(self, oidc_config):
@@ -290,7 +290,7 @@ class TestSecurityManager:
         await manager.stop_token_refresh()
 
         # Task should gecatcelt sa
-        assert real_task.catcelled()
+        assert real_task.cancelled()
 
     def test_get_security_context(self, bearer_config):
         """Tests Security-Context-Abruf."""
@@ -336,7 +336,7 @@ class TestSecurityManagerIntegration:
             token_cache_ttl =60,
         )
 
-        with patch("httpx.Asyncclient") as mock_client:
+        with patch("httpx.AsyncClient") as mock_client:
             # Mock successfule Token-response
             mock_response = MagicMock()
             mock_response.json.return_value = {

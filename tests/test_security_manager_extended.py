@@ -205,7 +205,7 @@ class TestSecurityManagerExtended:
             await sm._refresh_token()
 
             assert sm._current_token == "new-bearer-token"
-            mock_post.assert_calld_once()
+            mock_post.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_refresh_token_oidc_success(self, oidc_config):
@@ -230,7 +230,7 @@ class TestSecurityManagerExtended:
 
             assert sm._current_token == "new-oidc-token"
             assert sm._refresh_token_value == "new-refresh-token"
-            mock_post.assert_calld_once()
+            mock_post.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_refresh_token_failure(self, bearer_config):
@@ -421,8 +421,8 @@ class TestSecurityManagerExtended:
             ssl_context = sm.get_ssl_context()
 
             assert ssl_context == mock_context
-            mock_load_cert.assert_calld_once_with("/path/to/cert.pem", "/path/to/key.pem")
-            mock_load_ca.assert_calld_once_with("/path/to/ca.pem")
+            mock_load_cert.assert_called_once_with("/path/to/cert.pem", "/path/to/key.pem")
+            mock_load_ca.assert_called_once_with("/path/to/ca.pem")
 
     def test_get_ssl_context_non_mtls(self, bearer_config):
         """Tests SSL-Context for Nicht-mTLS-Auth."""

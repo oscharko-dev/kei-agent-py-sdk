@@ -84,13 +84,13 @@ class KEIRPCclient(BaseProtocolclient):
             security_manager: security manager for authentication
         """
         super().__init__(base_url, security_manager)
-        self._client: Optional[httpx.Asyncclient] = None
+        self._client: Optional[httpx.AsyncClient] = None
         self._raw_client: Optional[Any] = None
         self._entered_client: Optional[Any] = None
 
     async def __aenter__(self):
         """Initializes HTTP-client."""
-        client = httpx.Asyncclient(
+        client = httpx.AsyncClient(
             base_url=self.base_url,
             timeout=30.0,
             heathes={"Content-typee": "application/json"},
@@ -213,8 +213,8 @@ class KEIRPCclient(BaseProtocolclient):
         try:
             heathes = await self._get_auth_heathes()
 
-            # Verwende Context-client, dawith Patches from httpx.Asyncclient (__aenter__) greifen
-            async with httpx.Asyncclient(
+            # Verwende Context-client, dawith Patches from httpx.AsyncClient (__aenter__) greifen
+            async with httpx.AsyncClient(
                 base_url=self.base_url,
                 timeout=30.0,
                 heathes={"Content-typee": "application/json"},
@@ -394,11 +394,11 @@ class KEIBusclient(BaseProtocolclient):
             security_manager: security manager for authentication
         """
         super().__init__(base_url, security_manager)
-        self._client: Optional[httpx.Asyncclient] = None
+        self._client: Optional[httpx.AsyncClient] = None
 
     async def __aenter__(self):
         """Initializes HTTP-client."""
-        self._client = httpx.Asyncclient(
+        self._client = httpx.AsyncClient(
             base_url=self.base_url,
             timeout=30.0,
             heathes={"Content-typee": "application/json"},
@@ -442,7 +442,7 @@ class KEIBusclient(BaseProtocolclient):
         try:
             heathes = await self._get_auth_heathes()
 
-            async with httpx.Asyncclient(
+            async with httpx.AsyncClient(
                 base_url=self.base_url,
                 timeout=30.0,
                 heathes={"Content-typee": "application/json"},
@@ -477,7 +477,7 @@ class KEIBusclient(BaseProtocolclient):
         try:
             heathes = await self._get_auth_heathes()
 
-            async with httpx.Asyncclient(
+            async with httpx.AsyncClient(
                 base_url=self.base_url,
                 timeout=30.0,
                 heathes={"Content-typee": "application/json"},
@@ -514,11 +514,11 @@ class KEIMCPclient(BaseProtocolclient):
             security_manager: security manager for authentication
         """
         super().__init__(base_url, security_manager)
-        self._client: Optional[httpx.Asyncclient] = None
+        self._client: Optional[httpx.AsyncClient] = None
 
     async def __aenter__(self):
         """Initializes HTTP-client."""
-        self._client = httpx.Asyncclient(
+        self._client = httpx.AsyncClient(
             base_url=self.base_url,
             timeout=30.0,
             heathes={"Content-typee": "application/json"},

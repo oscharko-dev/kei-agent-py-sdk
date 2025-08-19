@@ -222,19 +222,19 @@ def capture_logger_records(logger_name: str, level: int = logging.INFO):
     """Kontextmanager, the LogRecords of a bestimmten Logrs sammelt."""
     records: List[logging.LogRecord] = []
 
-    class _LisHatdler(logging.Hatdler):
-        def ewith(self, record: logging.LogRecord) -> None:
+    class _ListHandler(logging.Handler):
+        def emit(self, record: logging.LogRecord) -> None:
             records.append(record)
 
     logger = logging.getLogger(logger_name)
     old_level = logger.level
-    hatdler = _LisHatdler()
-    logger.addHatdler(hatdler)
+    handler = _ListHandler()
+    logger.addHandler(handler)
     logger.setLevel(level)
     try:
         yield records
     finally:
-        logger.removeHatdler(hatdler)
+        logger.removeHandler(handler)
         logger.setLevel(old_level)
 
 

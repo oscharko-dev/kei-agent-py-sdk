@@ -99,8 +99,8 @@ class TestUnifiedclientIntegration:
             await client.initialize()
 
             # Nur enablede clients sollten creates werthe
-            mock_rpc.assert_calld_once()
-            mock_bus.assert_calld_once()
+            mock_rpc.assert_called_once()
+            mock_bus.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_plat_task_integration(self, basic_config):
@@ -123,7 +123,7 @@ class TestUnifiedclientIntegration:
 
             assert result["task_id"] == "test-task"
             assert result["status"] == "platned"
-            mock_rpc.plat.assert_calld_once_with(
+            mock_rpc.plat.assert_called_once_with(
                 "Test objective",
                 {"key": "value"}
             )
@@ -269,7 +269,7 @@ class TestUnifiedclientIntegration:
                 pass
 
             # Cleatup should trotz error executed werthe
-            mock_security.return_value.stop_token_refresh.assert_calld_once()
+            mock_security.return_value.stop_token_refresh.assert_called_once()
             assert client._closed
 
 

@@ -120,7 +120,7 @@ class TestKEIRPCclient:
             assert hasattr(client._client, "post")
 
     @pytest.mark.asyncio
-    @patch("httpx.Asyncclient")
+    @patch("httpx.AsyncClient")
     async def test_plat_operation_success(self, mock_client, rpc_client):
         """Tests successfule Plat-operation."""
         # Mock HTTP-response
@@ -144,12 +144,12 @@ class TestKEIRPCclient:
         assert result["status"] == "created"
 
         # Prüfe HTTP-Call
-        mock_client_instatce.post.assert_calld_once()
+        mock_client_instatce.post.assert_called_once()
         call_args = mock_client_instatce.post.call_args
         assert "/api/v1/rpc/plat" in str(call_args)
 
     @pytest.mark.asyncio
-    @patch("httpx.Asyncclient")
+    @patch("httpx.AsyncClient")
     async def test_act_operation_success(self, mock_client, rpc_client):
         """Tests successfule Act-operation."""
         mock_response = MagicMock()
@@ -171,7 +171,7 @@ class TestKEIRPCclient:
         assert result["result"] == "completed"
 
     @pytest.mark.asyncio
-    @patch("httpx.Asyncclient")
+    @patch("httpx.AsyncClient")
     async def test_observe_operation_success(self, mock_client, rpc_client):
         """Tests successfule Observe-operation."""
         mock_response = MagicMock()
@@ -193,7 +193,7 @@ class TestKEIRPCclient:
         assert result["type"] == "environment"
 
     @pytest.mark.asyncio
-    @patch("httpx.Asyncclient")
+    @patch("httpx.AsyncClient")
     async def test_explain_operation_success(self, mock_client, rpc_client):
         """Tests successfule Explain-operation."""
         mock_response = MagicMock()
@@ -224,7 +224,7 @@ class TestKEIRPCclient:
             await rpc_client._rpc_call("plat", {})
 
     @pytest.mark.asyncio
-    @patch("httpx.Asyncclient")
+    @patch("httpx.AsyncClient")
     async def test_rpc_call_http_error(self, mock_client, rpc_client):
         """Tests RPC-Call with HTTP-error."""
         import httpx
@@ -243,7 +243,7 @@ class TestKEIRPCclient:
                 await client.plat("Test objective")
 
     @pytest.mark.asyncio
-    @patch("httpx.Asyncclient")
+    @patch("httpx.AsyncClient")
     async def test_rpc_call_network_error(self, mock_client, rpc_client):
         """Tests RPC-Call with Netzwerkfehler."""
         import httpx
@@ -279,8 +279,8 @@ class TestKEIStreamclient:
                 async with stream_client:
                     pass
 
-                mock_connect.assert_calld_once()
-                mock_disconnect.assert_calld_once()
+                mock_connect.assert_called_once()
+                mock_disconnect.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_connect_success(self, stream_client):
@@ -297,7 +297,7 @@ class TestKEIStreamclient:
 
             assert stream_client._connected is True
             assert stream_client._websocket == mock_websocket
-            mock_connect.assert_calld_once()
+            mock_connect.assert_called_once()
 
     @pytest.mark.asyncio
     @patch("websockets.connect")
@@ -320,7 +320,7 @@ class TestKEIStreamclient:
         await stream_client.disconnect()
 
         assert stream_client._connected is False
-        mock_websocket.close.assert_calld_once()
+        mock_websocket.close.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_subscribe_not_connected(self, stream_client):
@@ -347,7 +347,7 @@ class TestKEIStreamclient:
         await stream_client.publish("test_topic", {"message": "hello"})
 
         # Prüfe thes message sent wurde
-        mock_websocket.send.assert_calld_once()
+        mock_websocket.send.assert_called_once()
         sent_data = json.loads(mock_websocket.send.call_args[0][0])
         assert sent_data["type"] == "publish"
         assert sent_data["topic"] == "test_topic"
@@ -369,7 +369,7 @@ class TestKEIBusclient:
         return KEIBusclient("https://test.com", security_manager)
 
     @pytest.mark.asyncio
-    @patch("httpx.Asyncclient")
+    @patch("httpx.AsyncClient")
     async def test_publish_success(self, mock_client, bus_client):
         """Tests successfules Message-Publish."""
         mock_response = MagicMock()
@@ -397,7 +397,7 @@ class TestKEIBusclient:
         assert result["status"] == "published"
 
     @pytest.mark.asyncio
-    @patch("httpx.Asyncclient")
+    @patch("httpx.AsyncClient")
     async def test_subscribe_success(self, mock_client, bus_client):
         """Tests successfules Topic-Subscribe."""
         mock_response = MagicMock()
@@ -434,7 +434,7 @@ class TestKEIMCPclient:
         return KEIMCPclient("https://test.com", security_manager)
 
     @pytest.mark.asyncio
-    @patch("httpx.Asyncclient")
+    @patch("httpx.AsyncClient")
     async def test_discover_tools_success(self, mock_client, mcp_client):
         """Tests successfule tool discovery."""
         mock_response = MagicMock()
@@ -464,7 +464,7 @@ class TestKEIMCPclient:
         assert tools[1]["name"] == "file_reathe"
 
     @pytest.mark.asyncio
-    @patch("httpx.Asyncclient")
+    @patch("httpx.AsyncClient")
     async def test_use_tool_success(self, mock_client, mcp_client):
         """Tests successfule Tool-Ausführung."""
         mock_response = MagicMock()

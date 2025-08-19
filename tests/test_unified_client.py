@@ -77,7 +77,7 @@ class TestSecurityManager:
         with pytest.raises(SecurityError, match="API Token is erforthelich"):
             asyncio.run(security.get_auth_heathes())
 
-    @patch("httpx.Asyncclient")
+    @patch("httpx.AsyncClient")
     async def test_oidc_token_retrieval(self, mock_client):
         """Tests OIDC-Token-Abruf."""
         # Mock OIDC-configuration
@@ -123,7 +123,7 @@ class TestSecurityManager:
 class TestProtocol_clients:
     """Tests for protocol clients."""
 
-    @patch("httpx.Asyncclient")
+    @patch("httpx.AsyncClient")
     async def test_rpc_client_plat(self, mock_client):
         """Tests KEI-RPC Plat-operation."""
         # Mock security manager
@@ -168,9 +168,9 @@ class TestProtocol_clients:
         await stream_client.connect()
 
         assert stream_client._connected is True
-        mock_connect.assert_calld_once()
+        mock_connect.assert_called_once()
 
-    @patch("httpx.Asyncclient")
+    @patch("httpx.AsyncClient")
     async def test_bus_client_publish(self, mock_client):
         """Tests KEI-Bus Publish-operation."""
         # Mock security manager
@@ -197,7 +197,7 @@ class TestProtocol_clients:
         assert result["message_id"] == "msg-123"
         assert result["status"] == "published"
 
-    @patch("httpx.Asyncclient")
+    @patch("httpx.AsyncClient")
     async def test_mcp_client_discover_tools(self, mock_client):
         """Tests KEI-MCP tool discovery."""
         # Mock security manager
@@ -262,8 +262,8 @@ class TestUnifiedKeiAgentClient:
         await client.close()
 
         assert client._closed is True
-        client._stream_client.disconnect.assert_calld_once()
-        client.security.stop_token_refresh.assert_calld_once()
+        client._stream_client.disconnect.assert_called_once()
+        client.security.stop_token_refresh.assert_called_once()
 
     def test_protocol_selection_streaming(self, client):
         """Tests automatische protocol-Auswahl for Streaming-operationen."""
@@ -302,7 +302,7 @@ class TestUnifiedKeiAgentClient:
             )
 
         assert result["result"] == "success"
-        client.tracing.start_spat.assert_calld_once()
+        client.tracing.start_spat.assert_called_once()
 
     async def test_plat_task_high_level_api(self, client):
         """Tests High-Level Plat-Task API."""
@@ -312,7 +312,7 @@ class TestUnifiedKeiAgentClient:
             result = await client.plat_task("Test objective", {"context": "data"})
 
         assert result["plat_id"] == "plat-123"
-        mock_execute.assert_calld_once_with(
+        mock_execute.assert_called_once_with(
             "plat", {"objective": "Test objective", "context": {"context": "data"}}
         )
 
@@ -529,7 +529,7 @@ class TestConfiguration:
 class TestIntegration:
     """Integration-Tests with HTTP-Mocking."""
 
-    @patch("httpx.Asyncclient")
+    @patch("httpx.AsyncClient")
     async def test_full_agent_lifecycle(
         self, mock_client, mock_config, mock_protocol_config, mock_security_config
     ):

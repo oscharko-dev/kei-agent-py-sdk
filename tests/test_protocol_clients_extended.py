@@ -61,7 +61,7 @@ class TestKEIRPCclientExtended:
             result = await rpc_client._rpc_call("test_method", {"param": "value"})
 
             assert result == {"result": "success"}
-            mock_post.assert_calld_once()
+            mock_post.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_rpc_call_with_retry_failure(self, rpc_client):
@@ -95,7 +95,7 @@ class TestKEIRPCclientExtended:
             )
 
             assert result == expected_result
-            mock_call.assert_calld_once_with("plat", {
+            mock_call.assert_called_once_with("plat", {
                 "objective": "Create comprehensive report",
                 "context": {"format": "pdf", "sections": ["intro", "atalysis", "conclusion"]},
                 "constraints": {"max_pages": 50, "deadline": "2024-01-01"}
@@ -120,7 +120,7 @@ class TestKEIRPCclientExtended:
             )
 
             assert result == expected_result
-            mock_call.assert_calld_once_with("act", {
+            mock_call.assert_called_once_with("act", {
                 "action": "generate_file",
                 "parameters": {"path": "/tmp/report.pdf", "content": "Report content"},
                 "execution_mode": "async"
@@ -145,7 +145,7 @@ class TestKEIRPCclientExtended:
             )
 
             assert result == expected_result
-            mock_call.assert_calld_once_with("observe", {
+            mock_call.assert_called_once_with("observe", {
                 "sensors": ["file_system", "network", "process"],
                 "filters": {"file_types": [".pdf", ".txt"], "active_only": True},
                 "aggregation": "saroatdmary"
@@ -172,7 +172,7 @@ class TestKEIRPCclientExtended:
             )
 
             assert result == expected_result
-            mock_call.assert_calld_once_with("explain", {
+            mock_call.assert_called_once_with("explain", {
                 "decision_id": "decision-123",
                 "detail_level": "comprehensive",
                 "include_alternatives": True,
@@ -241,7 +241,7 @@ class TestKEIStreamclientExtended:
         with patch.object(stream_client, '_ensure_connected'):
             result = await stream_client.send_message(message)
 
-            mock_websocket.send.assert_calld_once()
+            mock_websocket.send.assert_called_once()
             assert "message_id" in result
 
     @pytest.mark.asyncio
@@ -255,7 +255,7 @@ class TestKEIStreamclientExtended:
             message = await stream_client.receive_message()
 
             assert message == {"type": "response", "data": {"result": "success"}}
-            mock_websocket.recv.assert_calld_once()
+            mock_websocket.recv.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_stream_with_timeout(self, stream_client):
@@ -310,7 +310,7 @@ class TestKEIBusclientExtended:
             )
 
             assert result == {"message_id": "msg-123"}
-            mock_post.assert_calld_once()
+            mock_post.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_subscribe_to_topic_success(self, bus_client):
@@ -329,7 +329,7 @@ class TestKEIBusclientExtended:
             )
 
             assert result == {"subscription_id": "sub-789"}
-            mock_post.assert_calld_once()
+            mock_post.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_context_manager_usage(self, bus_client):
@@ -387,7 +387,7 @@ class TestKEIMCPclientExtended:
             result = await mcp_client.discover_tools("utilities")
 
             assert result == expected_tools
-            mock_get.assert_calld_once()
+            mock_get.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_execute_tool_success(self, mcp_client):
@@ -412,7 +412,7 @@ class TestKEIMCPclientExtended:
             )
 
             assert result == expected_result
-            mock_post.assert_calld_once()
+            mock_post.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_lis_capabilities_success(self, mcp_client):
@@ -432,7 +432,7 @@ class TestKEIMCPclientExtended:
             result = await mcp_client.lis_capabilities()
 
             assert result == expected_capabilities
-            mock_get.assert_calld_once()
+            mock_get.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_error_hatdling_tool_not_foatd(self, mcp_client):
@@ -477,8 +477,8 @@ class TestProtocolclientIntegration:
             assert plat_result["plat_id"] == "plat-123"
             assert event_result["message_id"] == "msg-456"
 
-            mock_rpc.assert_calld_once()
-            mock_publish.assert_calld_once()
+            mock_rpc.assert_called_once()
+            mock_publish.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_error_propagation_across_clients(self):

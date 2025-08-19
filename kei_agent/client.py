@@ -17,7 +17,12 @@ from urllib.parse import urljoin
 
 import aiohttp
 from opentelemetry import trace
-from opentelemetry.trace import Status, StatusCode
+
+try:
+    from opentelemetry.trace import Status, StatusCode
+except ImportError:
+    # Fallback for older OpenTelemetry versions
+    from opentelemetry.trace.status import Status, StatusCode
 
 from .models import Agent, AgentHealth
 from .exceptions import (

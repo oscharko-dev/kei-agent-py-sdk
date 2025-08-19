@@ -616,7 +616,7 @@ class CapabilityManager:
 
         Args:
             profile: Capability-Profil
-            hatdler: Hatdler-function for Capability
+            handler: Handler-function for Capability
         """
         # Valithere MCP-Integration
         if profile.mcp_profile_url or profile.mcp_schema:

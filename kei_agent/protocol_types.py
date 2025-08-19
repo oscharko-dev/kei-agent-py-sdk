@@ -207,7 +207,9 @@ class SecurityConfig:
         try:
             # Convert to dict for validation
             config_dict = {
-                "auth_type": self.auth_type.value,
+                "auth_type": self.auth_type.value
+                if hasattr(self.auth_type, "value")
+                else str(self.auth_type),
                 "api_token": self.api_token,
                 "oidc_issuer": self.oidc_issuer,
                 "oidc_client_id": self.oidc_client_id,

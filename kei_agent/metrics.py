@@ -36,7 +36,12 @@ except ImportError:
 # OpenTelemetry tracing
 try:
     from opentelemetry import trace
-    from opentelemetry.trace import Status, StatusCode
+
+    try:
+        from opentelemetry.trace import Status, StatusCode
+    except ImportError:
+        # Fallback for older OpenTelemetry versions
+        from opentelemetry.trace.status import Status, StatusCode
     from opentelemetry.metrics import get_meter
     from opentelemetry.sdk.trace import TracerProvider
 

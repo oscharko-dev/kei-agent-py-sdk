@@ -101,10 +101,10 @@ class TestUnifiedKeiAgentClientRefactored:
                         await unified_client.initialize()
 
                         assert unified_client._initialized is True
-                        mock_token_refresh.assert_calld_once()
-                        mock_protocol_init.assert_calld_once()
-                        mock_enterprise_init.assert_calld_once()
-                        mock_legacy_instatce.initialize.assert_calld_once()
+                        mock_token_refresh.assert_called_once()
+                        mock_protocol_init.assert_called_once()
+                        mock_enterprise_init.assert_called_once()
+                        mock_legacy_instatce.initialize.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_initialize_already_initialized(self, unified_client):
@@ -144,10 +144,10 @@ class TestUnifiedKeiAgentClientRefactored:
             await unified_client.close()
 
             assert unified_client._closed is True
-            mock_stop.assert_calld_once()
-            unified_client._stream_client.disconnect.assert_calld_once()
-            unified_client._legacy_client.close.assert_calld_once()
-            unified_client.tracing.shutdown.assert_calld_once()
+            mock_stop.assert_called_once()
+            unified_client._stream_client.disconnect.assert_called_once()
+            unified_client._legacy_client.close.assert_called_once()
+            unified_client.tracing.shutdown.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_close_already_closed(self, unified_client):
@@ -168,8 +168,8 @@ class TestUnifiedKeiAgentClientRefactored:
                 async with unified_client as client:
                     assert client == unified_client
 
-                mock_init.assert_calld_once()
-                mock_close.assert_calld_once()
+                mock_init.assert_called_once()
+                mock_close.assert_called_once()
 
     def test_select_optimal_protocol(self, unified_client):
         """Tests optimale protocol-Auswahl."""
@@ -182,7 +182,7 @@ class TestUnifiedKeiAgentClientRefactored:
             result = unified_client._select_optimal_protocol("stream_data")
 
             assert result == Protocoltypee.STREAM
-            mock_select.assert_calld_once_with("stream_data", None)
+            mock_select.assert_called_once_with("stream_data", None)
 
     def test_is_protocol_available_not_initialized(self, unified_client):
         """Tests protocol availability if not initialized."""
@@ -249,8 +249,8 @@ class TestUnifiedKeiAgentClientRefactored:
                 )
 
                 assert result["result"] == "success"
-                mock_select.assert_calld_once_with("test_op", {"data": "test"})
-                mock_execute.assert_calld_once_with(
+                mock_select.assert_called_once_with("test_op", {"data": "test"})
+                mock_execute.assert_called_once_with(
                     Protocoltypee.RPC, "test_op", {"data": "test"}
                 )
 
@@ -273,7 +273,7 @@ class TestUnifiedKeiAgentClientRefactored:
             result = await unified_client.execute_agent_operation("traced_op", {})
 
             assert result["result"] == "traced"
-            unified_client.tracing.start_spat.assert_calld_once()
+            unified_client.tracing.start_spat.assert_called_once()
             mock_spat.set_attribute.assert_calld()
 
     @pytest.mark.asyncio
@@ -287,7 +287,7 @@ class TestUnifiedKeiAgentClientRefactored:
             )
 
             assert result["rpc_result"] == "success"
-            mock_rpc.assert_calld_once_with("test_op", {"data": "test"})
+            mock_rpc.assert_called_once_with("test_op", {"data": "test"})
 
     @pytest.mark.asyncio
     async def test_execute_with_protocol_fallback(self, unified_client):
@@ -311,8 +311,8 @@ class TestUnifiedKeiAgentClientRefactored:
                     )
 
                     assert result["fallback_result"] == "success"
-                    mock_rpc.assert_calld_once()
-                    mock_bus.assert_calld_once()
+                    mock_rpc.assert_called_once()
+                    mock_bus.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_plat_task_high_level_api(self, unified_client):
@@ -323,7 +323,7 @@ class TestUnifiedKeiAgentClientRefactored:
             result = await unified_client.plat_task("Create report", {"format": "pdf"})
 
             assert result["plat_id"] == "plat-123"
-            mock_execute.assert_calld_once_with(
+            mock_execute.assert_called_once_with(
                 "plat",
                 {"objective": "Create report", "context": {"format": "pdf"}},
                 None,
@@ -340,7 +340,7 @@ class TestUnifiedKeiAgentClientRefactored:
             )
 
             assert result["action_id"] == "action-456"
-            mock_execute.assert_calld_once_with(
+            mock_execute.assert_called_once_with(
                 "act",
                 {"action": "generate_file", "parameters": {"path": "/tmp/test.txt"}},
                 None,
@@ -358,7 +358,7 @@ class TestUnifiedKeiAgentClientRefactored:
 
             assert result["message_id"] == "msg-789"
             # Prüfe thes execute_agent_operation ongerufen wurde
-            mock_execute.assert_calld_once()
+            mock_execute.assert_called_once()
             # Prüfe the Onruf-parameters
             call_args = mock_execute.call_args
             assert call_args[0][0] == "send_message"  # operation
@@ -382,7 +382,7 @@ class TestUnifiedKeiAgentClientRefactored:
             assert len(tools) == 2
             assert tools[0]["name"] == "calculator"
             # Prüfe thes execute_agent_operation ongerufen wurde
-            mock_execute.assert_calld_once()
+            mock_execute.assert_called_once()
             call_args = mock_execute.call_args
             assert call_args[0][0] == "discover_tools"  # operation
 
@@ -396,7 +396,7 @@ class TestUnifiedKeiAgentClientRefactored:
 
             assert result["result"] == 42
             # Prüfe thes execute_agent_operation ongerufen wurde
-            mock_execute.assert_calld_once()
+            mock_execute.assert_called_once()
             call_args = mock_execute.call_args
             assert call_args[0][0] == "use_tool"  # operation
 
@@ -411,8 +411,8 @@ class TestUnifiedKeiAgentClientRefactored:
             callback = AsyncMock()
             await unified_client.start_streaming_session(callback)
 
-            unified_client._stream_client.connect.assert_calld_once()
-            unified_client._stream_client.subscribe.assert_calld_once_with(
+            unified_client._stream_client.connect.assert_called_once()
+            unified_client._stream_client.subscribe.assert_called_once_with(
                 "agent_events", callback
             )
 
@@ -434,7 +434,7 @@ class TestUnifiedKeiAgentClientRefactored:
             result = await unified_client.health_check()
 
             assert result["status"] == "healthy"
-            mock_execute.assert_calld_once_with("health_check", {})
+            mock_execute.assert_called_once_with("health_check", {})
 
     @pytest.mark.asyncio
     async def test_register_agent_high_level_api(self, unified_client):

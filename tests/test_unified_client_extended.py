@@ -141,7 +141,7 @@ class TestUnifiedclientExtended:
                 result = await client.execute_agent_operation("plat", {"objective": "test"})
 
                 assert result == {"plat_id": "test-123"}
-                mock_rpc_client.plat.assert_calld_once()
+                mock_rpc_client.plat.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_execute_agent_operation_stream_success(self, basic_config):
@@ -168,7 +168,7 @@ class TestUnifiedclientExtended:
                 result = await client.execute_agent_operation("plat", {"objective": "test"})
 
                 assert result == {"stream_id": "stream-456"}
-                mock_stream_client.send_message.assert_calld_once()
+                mock_stream_client.send_message.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_execute_agent_operation_bus_success(self, basic_config):
@@ -197,7 +197,7 @@ class TestUnifiedclientExtended:
                 result = await client.execute_agent_operation("plat", {"objective": "test"})
 
                 assert result == {"message_id": "bus-789"}
-                mock_bus_client.publish.assert_calld_once()
+                mock_bus_client.publish.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_execute_agent_operation_mcp_success(self, basic_config):
@@ -224,7 +224,7 @@ class TestUnifiedclientExtended:
                 result = await client.execute_agent_operation("plat", {"objective": "test"})
 
                 assert result == {"tool_result": "mcp-101"}
-                mock_mcp_client.execute_tool.assert_calld_once()
+                mock_mcp_client.execute_tool.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_protocol_fallback_mechatism(self, basic_config):
@@ -257,8 +257,8 @@ class TestUnifiedclientExtended:
                 result = await client.execute_agent_operation("plat", {"objective": "test"})
 
                 assert result == {"fallback": "success"}
-                mock_rpc_client.plat.assert_calld_once()
-                mock_stream_client.send_message.assert_calld_once()
+                mock_rpc_client.plat.assert_called_once()
+                mock_stream_client.send_message.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_high_level_api_plat_task(self, basic_config):
@@ -276,7 +276,7 @@ class TestUnifiedclientExtended:
                 result = await client.plat_task("Create report", {"format": "pdf"})
 
                 assert result == {"plat_id": "high-level-123"}
-                mock_execute.assert_calld_once_with("plat", {
+                mock_execute.assert_called_once_with("plat", {
                     "objective": "Create report",
                     "context": {"format": "pdf"}
                 })
@@ -297,7 +297,7 @@ class TestUnifiedclientExtended:
                 result = await client.execute_action("generate_file", {"path": "/tmp/test.txt"})
 
                 assert result == {"action_id": "action-456"}
-                mock_execute.assert_calld_once_with("act", {
+                mock_execute.assert_called_once_with("act", {
                     "action": "generate_file",
                     "parameters": {"path": "/tmp/test.txt"}
                 })
@@ -318,7 +318,7 @@ class TestUnifiedclientExtended:
                 result = await client.observe_environment(["file_system", "network"])
 
                 assert result == {"observation_id": "obs-789"}
-                mock_execute.assert_calld_once_with("observe", {
+                mock_execute.assert_called_once_with("observe", {
                     "sensors": ["file_system", "network"]
                 })
 
@@ -338,7 +338,7 @@ class TestUnifiedclientExtended:
                 result = await client.explain_reasoning("decision-123", "detailed")
 
                 assert result == {"explatation_id": "exp-101"}
-                mock_execute.assert_calld_once_with("explain", {
+                mock_execute.assert_called_once_with("explain", {
                     "decision_id": "decision-123",
                     "detail_level": "detailed"
                 })
