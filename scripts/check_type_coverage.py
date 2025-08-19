@@ -93,8 +93,23 @@ def run_mypy_and_generate_report(package_dir: Path, report_dir: Path, project_ro
     if config_file.exists():
         cmd.extend(["--config-file", str(config_file)])
 
+    print(f"Führe MyPy aus: {' '.join(cmd)}", file=sys.stderr)
+
     # mypy darf mit Fehlercode != 0 enden; der Report wird dennoch genutzt
-    subprocess.run(cmd, check=False)
+    result = subprocess.run(cmd, check=False, capture_output=True, text=True)
+
+    if result.returncode != 0:
+        print(f"MyPy beendet mit Fehlercode {result.returncode}", file=sys.stderr)
+        if result.stderr:
+            print(f"MyPy stderr: {result.stderr}", file=sys.stderr)
+        if result.stdout:
+            print(f"MyPy stdout: {result.stdout}", file=sys.stderr)
+
+    # Prüfe, ob der Report erstellt wurde
+    index_file = report_dir / "index.txt"
+    if not index_file.exists():
+        print(f"Warnung: MyPy hat keine index.txt erstellt in {report_dir}", file=sys.stderr)
+        print(f"Verfügbare Dateien: {list(report_dir.glob('*')) if report_dir.exists() else 'Verzeichnis existiert nicht'}", file=sys.stderr)
 
 
 def parse_txt_report_index(index_file: Path) -> Tuple[int, int, float, List[Dict[str, Any]]]:
@@ -104,7 +119,10 @@ def parse_txt_report_index(index_file: Path) -> Tuple[int, int, float, List[Dict
     Rückgabe: (annotated_total, lines_total, coverage_percent, module_entries)
     """
     if not index_file.exists():
-        raise FileNotFoundError(f"Report-Datei nicht gefunden: {index_file}")
+        print(f"Report-Datei nicht gefunden: {index_file}", file=sys.stderr)
+        print(f"Verzeichnisinhalt: {list(index_file.parent.glob('*')) if index_file.parent.exists() else 'Verzeichnis existiert nicht'}", file=sys.stderr)
+        # Fallback: Erstelle leeren Report
+        return 0, 0, 0.0, []
 
     total_annotated: Optional[int] = None
     total_lines: Optional[int] = None
