@@ -934,15 +934,32 @@ class UnifiedKeiAgentClient:
         Returns:
             Regisration response
         """
-        return await self.execute_agent_operation(
-            "register",
-            {
-                "name": name,
-                "version": version,
-                "description": description,
-                "capabilities": capabilities or [],
-            },
-        )
+        # Verwende einfache HTTP-Registrierung mit httpx
+        import httpx
+
+        headers = {
+            "Authorization": f"Bearer {self.config.api_token}",
+            "Content-Type": "application/json",
+        }
+
+        registration_data = {
+            "agent_id": self.config.agent_id,
+            "name": name,
+            "description": description,
+            "capabilities": capabilities or [],
+            "version": version,
+            "heartbeat_url": getattr(self.config, "heartbeat_url", None),
+        }
+
+        async with httpx.AsyncClient() as http_client:
+            response = await http_client.post(
+                f"{self.config.base_url}/api/v1/agents-mgmt/register",
+                json=registration_data,
+                headers=headers,
+            )
+
+            response.raise_for_status()
+            return response.json()
 
     def _categorize_error(self, error: Exception) -> ErrorCategory:
         """Categorize an error for aggregation.

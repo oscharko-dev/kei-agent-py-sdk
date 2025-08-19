@@ -122,6 +122,7 @@ class AgentClientConfig:
     tenant_id: Optional[str] = None
     user_agent: str = "KEI-Agent-SDK/1.0.0"
     timeout: Optional[float] = None  # For backward compatibility with tests
+    heartbeat_url: Optional[str] = None  # URL für Agent-Heartbeat-Checks
 
     # Backward compatibility alias
     @property
