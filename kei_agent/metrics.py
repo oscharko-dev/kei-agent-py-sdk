@@ -10,6 +10,8 @@ This module provides:
 - Metrics export to monitoring systems
 """
 
+from __future__ import annotations
+
 import time
 from typing import Dict, Any, Optional, Callable
 from dataclasses import dataclass, field
