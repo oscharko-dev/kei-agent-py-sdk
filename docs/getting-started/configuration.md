@@ -1,123 +1,45 @@
 # Konfiguration
 
-Lernen Sie, wie Sie das KEI-Agent SDK für verschiedene Umgebungen und Anwendungsfälle konfigurieren.
+Client-Setup und Konfigurationsoptionen für das KEI-Agent SDK.
 
 ## 🔧 Basis-Konfiguration
 
-### AgentClientConfig
-
-Die `AgentClientConfig` ist die Hauptkonfigurationsklasse für den Client:
-
 ```python
-from kei_agent import AgentClientConfig, ConnectionConfig, RetryConfig
+from kei_agent import AgentClientConfig
 
 config = AgentClientConfig(
     base_url="https://api.kei-framework.com",
     api_token="your-api-token",
     agent_id="my-agent",
-    connection=ConnectionConfig(timeout=30.0),
-    retry=RetryConfig(max_attempts=3, base_delay=1.0)
+    timeout=30,
+    max_retries=3
 )
 ```
 
-#### Parameter-Referenz
-
-| Parameter     | Typ     | Standard         | Beschreibung                    |
-| ------------- | ------- | ---------------- | ------------------------------- |
-| `base_url`    | `str`   | **Erforderlich** | Basis-URL der KEI-API           |
-| `api_token`   | `str`   | **Erforderlich** | API-Token für Authentifizierung |
-| `agent_id`    | `str`   | **Erforderlich** | Eindeutige Agent-ID             |
-| `connection`  | `ConnectionConfig` | `ConnectionConfig()` | HTTP-Verbindungseinstellungen |
-| `retry`       | `RetryConfig` | `RetryConfig()` | Retry-Mechanismen und Circuit Breaker |
-| `tracing`     | `TracingConfig` | `TracingConfig()` | Distributed Tracing Konfiguration |
-
 ## 🔌 Protokoll-Konfiguration
-
-### ProtocolConfig
-
-Konfiguriert die verfügbaren Protokolle und deren Verhalten:
 
 ```python
 from kei_agent import ProtocolConfig
 
 protocol_config = ProtocolConfig(
-    # Protokoll-Aktivierung
     rpc_enabled=True,
     stream_enabled=True,
     bus_enabled=True,
     mcp_enabled=True,
-
-    # Endpunkt-Konfiguration
-    rpc_endpoint="/api/v1/rpc",
-    stream_endpoint="/api/v1/stream",
-    bus_endpoint="/api/v1/bus",
-    mcp_endpoint="/api/v1/mcp",
-
-    # Intelligente Features
-    auto_protocol_selection=True,
-    protocol_fallback_enabled=True
-)
+    auto_protocol_selection=True
 ```
 
-#### Protokoll-spezifische Endpunkte
-
-```python
-# Custom Endpunkte
-protocol_config = ProtocolConfig(
-    rpc_endpoint="/custom/rpc/v2",
-    stream_endpoint="/ws/stream",
-    bus_endpoint="/messaging/bus",
-    mcp_endpoint="/tools/mcp"
-)
-```
-
-#### Protokoll-Auswahl-Strategien
-
-```python
-# Nur RPC und Bus
-minimal_config = ProtocolConfig(
-    rpc_enabled=True,
-    stream_enabled=False,
-    bus_enabled=True,
-    mcp_enabled=False,
-    auto_protocol_selection=False
-)
-
-# Vollständig mit Fallback
-enterprise_config = ProtocolConfig(
-    rpc_enabled=True,
-    stream_enabled=True,
-    bus_enabled=True,
-    mcp_enabled=True,
-    auto_protocol_selection=True,
-    protocol_fallback_enabled=True
-)
-```
-
-## 🛡️ Sicherheitskonfiguration
-
-### SecurityConfig
-
-Konfiguriert Authentifizierung und Sicherheits-Features:
+## 🛡️ Sicherheit
 
 ```python
 from kei_agent import SecurityConfig, AuthType
 
-# Bearer Token Authentifizierung
-bearer_config = SecurityConfig(
+security_config = SecurityConfig(
     auth_type=AuthType.BEARER,
-    api_token="your-bearer-token",
+    api_token="your-token",
     rbac_enabled=True,
     audit_enabled=True
 )
-
-# OIDC Authentifizierung
-oidc_config = SecurityConfig(
-    auth_type=AuthType.OIDC,
-    oidc_issuer="https://auth.example.com",
-    oidc_client_id="your-client-id",
-    oidc_client_secret="your-client-secret",
-    oidc_scope="openid profile kei-agent",
     token_refresh_enabled=True,
     token_cache_ttl=3600
 )

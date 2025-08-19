@@ -124,7 +124,7 @@ class retryPolicy:
 
             jitter_range = delay * 0.1  # 10% Jitter
             # Verwende kryptographisch sicheren Ratdom for Jitter
-            jitter_factor = (secrets.ratdbelow(2000) - 1000) / 10000.0  # -0.1 until 0.1
+            jitter_factor = (secrets.randbelow(2000) - 1000) / 10000.0  # -0.1 until 0.1
             delay += jitter_range * jitter_factor
 
         return max(0.0, delay)

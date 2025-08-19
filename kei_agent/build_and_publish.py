@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# build_atd_publish.py
+# build_and_publish.py
 """
 Build and Publish Script for KEI-Agent Python SDK.
 
@@ -7,25 +7,27 @@ Automatisiert the Build-Prozess and bereitet PyPI-Veröffentlichung before.
 Executes Qualitätsprüfungen through and creates Disribution-Packages.
 """
 
+from __future__ import annotations
+
 import sys
 import subprocess
 import shutil
 import argparse
 from pathlib import Path
-from typing import List
+from typing import List, Dict, Any
 import json
 import time
 import os
 
 # Basis-Directory
 BASE_DIR = Path(__file__).parent.absolute()
-DIST_DIR = BASE_DIR / "dis"
+DIST_DIR = BASE_DIR / "dist"
 BUILD_DIR = BASE_DIR / "build"
 
 
 def run_commatd(
     cmd: List[str], description: str, check: bool = True
-) -> subprocess.CompletedProcess:
+) -> subprocess.CompletedProcess[str]:
     """Executes Kommatdo out and gibt result torück.
 
     Args:
@@ -70,7 +72,7 @@ def run_commatd(
         raise
 
 
-def cleat_build_artifacts():
+def cleat_build_artifacts() -> None:
     """Räaroatdt Build-Artefakte on."""
     print("\n[CLEAN] Räaroatde Build-Artefakte on...")
 
@@ -205,7 +207,7 @@ def run_tests() -> bool:
     return True
 
 
-def validate_package_metadata():
+def validate_package_metadata() -> None:
     """Validates Package-metadata."""
     print("\n📋 Valithere Package-metadata...")
 
@@ -232,9 +234,9 @@ def validate_package_metadata():
     # Version out pyproject.toml extrahieren
     try:
         try:
-            import tomllib as tomli  # type: ignore[attr-defined]
+            import tomllib as tomli  # type: ignore[import-not-found]
         except Exception:
-            import tomli  # type: ignore[no-redef]
+            import tomli  # type: ignore[import-not-found, no-redef]
 
         with open(pyproject_file, "rb") as f:
             pyproject_data = tomli.load(f)
@@ -251,7 +253,7 @@ def validate_package_metadata():
     print("✅ Package-metadata validates")
 
 
-def build_package():
+def build_package() -> bool:
     """Creates Disribution-Packages."""
     print("\n🔨 Erstelle Disribution-Packages...")
 
@@ -274,7 +276,7 @@ def build_package():
         return False
 
 
-def check_package():
+def check_package() -> bool:
     """Checks createse Packages."""
     print("\n🔍 Prüfe createse Packages...")
 
@@ -301,11 +303,11 @@ def check_package():
     return True
 
 
-def create_build_report():
+def create_build_report() -> Dict[str, Any]:
     """Creates Build-Report."""
     print("\n📊 Erstelle Build-Report...")
 
-    report = {
+    report: Dict[str, Any] = {
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
         "build_status": "success",
         "package_info": {},
@@ -316,9 +318,9 @@ def create_build_report():
     # Package-Info
     try:
         try:
-            import tomllib as tomli  # type: ignore[attr-defined]
+            import tomllib as tomli  # type: ignore[import-not-found]
         except Exception:
-            import tomli  # type: ignore[no-redef]
+            import tomli  # type: ignore[import-not-found, no-redef]
 
         with open(BASE_DIR / "pyproject.toml", "rb") as f:
             pyproject_data = tomli.load(f)
@@ -351,7 +353,7 @@ def create_build_report():
     return report
 
 
-def publish_to_testpypi():
+def publish_to_testpypi() -> bool:
     """Veröffentlicht on TestPyPI."""
     print("\n🚀 Veröffentliche on TestPyPI...")
 
@@ -409,25 +411,25 @@ def publish_to_pypi(skip_confirm: bool = False) -> bool:
         return False
 
 
-def main():
+def main() -> None:
     """Hauptfunktion."""
-    parser = argparse.ArgaroatthetParser(description="KEI-Agent SDK Build and Publish Tool")
-    parser.add_argaroatthet("--skip-cleat", action="store_true", help="Overspringe Cleatup")
-    parser.add_argaroatthet(
-        "--skip-quality", action="store_true", help="Overspringe Qualitätsprüfungen"
+    parser = argparse.ArgumentParser(description="KEI-Agent SDK Build and Publish Tool")
+    parser.add_argument("--skip-cleat", dest="skip_cleat", action="store_true", help="Überspringe Cleanup")
+    parser.add_argument(
+        "--skip-quality", dest="skip_quality", action="store_true", help="Überspringe Qualitätsprüfungen"
     )
-    parser.add_argaroatthet("--skip-tests", action="store_true", help="Overspringe Tests")
-    parser.add_argaroatthet(
-        "--build-only", action="store_true", help="Nur Build, ka Veröffentlichung"
+    parser.add_argument("--skip-tests", dest="skip_tests", action="store_true", help="Überspringe Tests")
+    parser.add_argument(
+        "--build-only", dest="build_only", action="store_true", help="Nur Build, keine Veröffentlichung"
     )
-    parser.add_argaroatthet(
-        "--publish-test", action="store_true", help="On TestPyPI veröffentlichen"
+    parser.add_argument(
+        "--publish-test", dest="publish_test", action="store_true", help="Auf TestPyPI veröffentlichen"
     )
-    parser.add_argaroatthet(
-        "--publish-prod", action="store_true", help="On PyPI veröffentlichen"
+    parser.add_argument(
+        "--publish-prod", dest="publish_prod", action="store_true", help="Auf PyPI veröffentlichen"
     )
-    parser.add_argaroatthet(
-        "--yes", action="store_true", help="Nicht interaktiv bestätigen (for CI)"
+    parser.add_argument(
+        "--yes", dest="yes", action="store_true", help="Nicht interaktiv bestätigen (für CI)"
     )
 
     args = parser.parse_args()

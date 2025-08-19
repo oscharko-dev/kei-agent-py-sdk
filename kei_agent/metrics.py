@@ -13,7 +13,7 @@ This module provides:
 from __future__ import annotations
 
 import time
-from typing import Dict, Any, Optional, Callable
+from typing import Dict, Any, Optional, Callable, List
 from dataclasses import dataclass, field
 from contextlib import asynccontextmanager
 import logging
@@ -63,9 +63,11 @@ class MetricsCollector:
             registry: Prometheus registry to use (creates new if None)
         """
         self.enabled = PROMETHEUS_AVAILABLE
-        self.registry = registry or CollectorRegistry() if PROMETHEUS_AVAILABLE else None
-        self.metrics = {}
-        self.custom_metrics = []
+        self.registry: Optional[CollectorRegistry] = (
+            registry or CollectorRegistry() if PROMETHEUS_AVAILABLE else None
+        )
+        self.metrics: Dict[str, Any] = {}
+        self.custom_metrics: List[MetricEvent] = []
 
         if self.enabled:
             self._initialize_prometheus_metrics()
@@ -334,7 +336,7 @@ class MetricsCollector:
                 metric.labels(**event.labels).observe(event.value)
 
     @asynccontextmanager
-    async def trace_operation(self, operation_name: str, agent_id: str, **attributes):
+    async def trace_operation(self, operation_name: str, agent_id: str, **attributes: Any):
         """Context manager for tracing operations with OpenTelemetry."""
         if not self.tracer:
             yield None
@@ -361,7 +363,7 @@ class MetricsCollector:
 
     def get_prometheus_metrics(self) -> str:
         """Get Prometheus metrics in text format."""
-        if not self.enabled:
+        if not self.enabled or self.registry is None:
             return "# Prometheus not available\n"
 
         return generate_latest(self.registry).decode('utf-8')
