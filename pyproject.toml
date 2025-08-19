@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kei_agent_py_sdk"
-version = "0.1.0b5"
+version = "0.1.0b6"
 description = "Enterprise-Grade Python SDK for Keiko-Personal-Assistant Platform with Multi-Protocol Support and Comprehensive Documentation"
 readme = "README.md"
 license = { text = "MIT" }
@@ -88,7 +88,7 @@ dev = [
     "coverage>=7.3.0,<8.0.0",
     "ruff>=0.1.0,<1.0.0",
     "mypy>=1.5.0,<2.0.0",
-    "lxml>=4.9.0,<7.0.0",  # Required for mypy --txt-report
+    "lxml>=4.9.0,<7.0.0", # Required for mypy --txt-report
     "bandit>=1.7.0,<2.0.0",
     "pre-commit>=3.4.0,<4.0.0",
     "twine>=4.0.0,<5.0.0",
