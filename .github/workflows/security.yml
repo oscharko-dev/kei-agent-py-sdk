@@ -58,8 +58,8 @@ jobs:
     - name: 🛡️ Run Safety Scan
       continue-on-error: true
       run: |
-        safety check --json --output safety-report.json || true
-        safety check --short-report
+        safety scan --output json > safety-report.json || true
+        safety scan --short-report || true
 
     - name: 🔍 Run pip-audit Scan
       continue-on-error: true

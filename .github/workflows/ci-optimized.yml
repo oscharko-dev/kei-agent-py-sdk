@@ -8,6 +8,14 @@ on:
 
 env:
   PYTHON_VERSION: '3.9'
+  # Test credentials (not real secrets, just valid format for validation)
+  KEI_API_TOKEN: "ci_api_token_abcd1234567890efgh1234567890ijkl"
+  KEI_API_URL: "http://localhost:8080"
+  KEI_AGENT_ID: "ci-agent-12345"
+  KEI_AUTH_TYPE: "bearer"
+  OIDC_CLIENT_SECRET: "ci_oidc_secret_abcd1234567890efgh1234567890ijkl"
+  OIDC_CLIENT_ID: "ci-oidc-client-12345"
+  OIDC_ISSUER: "http://localhost:8081"
 
 jobs:
   quality-checks:
@@ -83,7 +91,7 @@ jobs:
     - name: 🛡️ Security Scanning
       run: |
         # Install security scanning tools
-        pip install safety pip-audit cyclonedx-bom pipdeptree tomli
+        pip install safety pip-audit bandit cyclonedx-bom pipdeptree tomli
 
         # Make scripts executable
         chmod +x scripts/security_scan.py scripts/generate_sbom.py

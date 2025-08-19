@@ -238,14 +238,14 @@ class TestSecretsIntegration:
         cli = CLIContext()
 
         with patch.dict(os.environ, {
-            "KEI_API_URL": "https://test.example.com",
-            "KEI_API_TOKEN": "test-token-123456",
-            "KEI_AGENT_ID": "test-agent",
+            "KEI_API_URL": "https://api.ci.example.com",
+            "KEI_API_TOKEN": "ci_api_token_abcd1234567890efgh1234567890ijkl",
+            "KEI_AGENT_ID": "ci-agent-12345",
         }):
             config = cli.load_config()
 
             assert config.base_url == "https://test.example.com"
-            assert config.api_token == "test-token-123456"
+            assert config.api_token == "ci_api_token_abcd1234567890efgh1234567890ijkl"
             assert config.agent_id == "test-agent"
 
     def test_no_hardcoded_secrets_in_production_code(self):

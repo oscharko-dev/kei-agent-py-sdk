@@ -251,8 +251,11 @@ class AgentClientConfigValidation(BaseValidationModel):
         if not url_str.startswith(("https://", "http://localhost", "http://127.0.0.1")):
             raise ValidationError("Base URL must use HTTPS or be localhost")
 
-        # Check for suspicious patterns
-        suspicious_patterns = ["..", "//", "\\", "<", ">", '"', "'"]
+        # Check for suspicious patterns (excluding normal URL patterns)
+        suspicious_patterns = ["..", "\\", "<", ">", '"', "'"]
+        # Check for double slashes not part of protocol
+        if "//" in url_str and not url_str.startswith(("http://", "https://")):
+            raise ValidationError("Base URL contains suspicious characters")
         if any(pattern in url_str for pattern in suspicious_patterns):
             raise ValidationError("Base URL contains suspicious characters")
 

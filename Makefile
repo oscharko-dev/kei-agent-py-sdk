@@ -171,6 +171,8 @@ type-check: ## Führt Type-Checking aus
 
 security-scan: ## Führt Security-Scan aus
 	@echo "$(BLUE)Führe Security-Scan aus...$(RESET)"
+	# Installiere Bandit falls nicht vorhanden
+	$(PIP) install bandit || true
 	# JSON-Report immer erzeugen (rekursiv), Build nicht brechen
 	bandit -r . -f json -o bandit-report.json || true
 	# Konsolen-Ausgabe nur für Medium/High, Build nicht brechen

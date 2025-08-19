@@ -38,9 +38,9 @@ TEST_ENDPOINTS = {
 
 # Test credentials (for testing only)
 TEST_CREDENTIALS = {
-    "api_token": os.getenv("TEST_API_TOKEN", "test-token-integration"),
-    "oidc_client_id": os.getenv("TEST_OIDC_CLIENT_ID", "test-client"),
-    "oidc_client_secret": os.getenv("TEST_OIDC_CLIENT_SECRET", "test-secret"),
+    "api_token": os.getenv("KEI_API_TOKEN", "ci_api_token_abcd1234567890efgh1234567890ijkl"),
+    "oidc_client_id": os.getenv("OIDC_CLIENT_ID", "ci-oidc-client-12345"),
+    "oidc_client_secret": os.getenv("OIDC_CLIENT_SECRET", "ci_oidc_secret_abcd1234567890efgh1234567890ijkl"),
     "mtls_cert_path": os.getenv("TEST_MTLS_CERT_PATH", "tests/fixtures/test-cert.pem"),
     "mtls_key_path": os.getenv("TEST_MTLS_KEY_PATH", "tests/fixtures/test-key.pem"),
 }

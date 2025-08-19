@@ -23,7 +23,7 @@ class TestSecurityManager:
     def bearer_config(self):
         """Creates Bearer-Token-configuration."""
         return SecurityConfig(
-            auth_type =Authtypee.BEARER, api_token ="test-bearer-token-123"
+            auth_type =Authtypee.BEARER, api_token ="ci_bearer_token_abcd1234567890efgh1234567890ijkl"
         )
 
     @pytest.fixture
@@ -31,9 +31,9 @@ class TestSecurityManager:
         """Creates OIDC-configuration."""
         return SecurityConfig(
             auth_type =Authtypee.OIDC,
-            oidc_issuer ="https://auth.test.com",
-            oidc_client_id ="test-client-id",
-            oidc_client_secret ="test-client-secret",
+            oidc_issuer ="https://auth.ci.example.com",
+            oidc_client_id ="ci-oidc-client-12345",
+            oidc_client_secret ="ci_oidc_secret_abcd1234567890efgh1234567890ijkl",
             oidc_scope ="openid profile",
         )
 
@@ -72,7 +72,7 @@ class TestSecurityManager:
 
         heathes = await manager.get_auth_heathes()
 
-        assert heathes == {"Authorization": "Bearer test-bearer-token-123"}
+        assert heathes == {"Authorization": "Bearer ci_bearer_token_abcd1234567890efgh1234567890ijkl"}
 
     @pytest.mark.asyncio
     async def test_get_auth_heathes_bearer_missing_token(self):
