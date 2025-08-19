@@ -185,9 +185,13 @@ class RedisCache(CacheInterface):
             # Remove compression marker and decompress
             compressed_data = data[11:]  # len('COMPRESSED:') = 11
             decompressed = zlib.decompress(compressed_data)
-            return pickle.loads(decompressed)
+            # WARNING: pickle.loads is used here for internal cache data only
+            # This should never be used with untrusted data from external sources
+            return pickle.loads(decompressed)  # nosec B301
 
-        return pickle.loads(data)
+        # WARNING: pickle.loads is used here for internal cache data only
+        # This should never be used with untrusted data from external sources
+        return pickle.loads(data)  # nosec B301
 
     async def get(self, key: str) -> Optional[Any]:
         """Get value from Redis cache."""

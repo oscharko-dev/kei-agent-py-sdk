@@ -362,7 +362,7 @@ class ConfigManager:
     def _generate_change_id(self) -> str:
         """Generate a unique change ID."""
         timestamp = str(time.time())
-        return hashlib.md5(timestamp.encode()).hexdigest()[:8]
+        return hashlib.md5(timestamp.encode(), usedforsecurity=False).hexdigest()[:8]
 
     def _record_change(self, change: ConfigChange) -> None:
         """Record a configuration change in history.

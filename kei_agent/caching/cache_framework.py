@@ -255,7 +255,7 @@ class CacheKeyGenerator:
     @staticmethod
     def generate_tag_key(tag: str) -> str:
         """Generate a key for tag-based invalidation."""
-        return f"tag:{hashlib.md5(tag.encode()).hexdigest()}"
+        return f"tag:{hashlib.md5(tag.encode(), usedforsecurity=False).hexdigest()}"
 
 
 class CacheEventManager:

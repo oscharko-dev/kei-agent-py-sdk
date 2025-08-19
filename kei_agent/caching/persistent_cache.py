@@ -248,9 +248,13 @@ class PersistentCache(CacheInterface):
             return json.loads(data.decode())
         elif format_type == 'compressed':
             decompressed = zlib.decompress(data)
-            return pickle.loads(decompressed)
+            # WARNING: pickle.loads is used here for internal cache data only
+            # This should never be used with untrusted data from external sources
+            return pickle.loads(decompressed)  # nosec B301
         else:  # pickle (default)
-            return pickle.loads(data)
+            # WARNING: pickle.loads is used here for internal cache data only
+            # This should never be used with untrusted data from external sources
+            return pickle.loads(data)  # nosec B301
 
     async def get(self, key: str) -> Optional[Any]:
         """Get value from persistent cache."""

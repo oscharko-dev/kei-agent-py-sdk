@@ -172,7 +172,7 @@ class ResponseCache:
 
     def _hash_url(self, url: str) -> str:
         """Generate hash for URL."""
-        return hashlib.md5(url.encode()).hexdigest()[:16]
+        return hashlib.md5(url.encode(), usedforsecurity=False).hexdigest()[:16]
 
     async def _check_refresh_ahead(self, cache_key: str, cached_response: Dict[str, Any], policy: CachePolicy) -> None:
         """Check if refresh ahead is needed."""

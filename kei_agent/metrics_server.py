@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 class MetricsServer:
     """HTTP server for exposing metrics and monitoring endpoints."""
 
-    def __init__(self, host: str = "0.0.0.0", port: int = 8090,
+    def __init__(self, host: str = "127.0.0.1", port: int = 8090,
                  metrics_collector: Optional[MetricsCollector] = None):
         """Initialize metrics server.
 
@@ -1144,7 +1144,7 @@ class MetricsServer:
 _metrics_server: Optional[MetricsServer] = None
 
 
-def get_metrics_server(host: str = "0.0.0.0", port: int = 8090) -> MetricsServer:
+def get_metrics_server(host: str = "127.0.0.1", port: int = 8090) -> MetricsServer:
     """Get or create the global metrics server instance."""
     global _metrics_server
     if _metrics_server is None:
@@ -1152,7 +1152,7 @@ def get_metrics_server(host: str = "0.0.0.0", port: int = 8090) -> MetricsServer
     return _metrics_server
 
 
-async def start_metrics_server(host: str = "0.0.0.0", port: int = 8090) -> MetricsServer:
+async def start_metrics_server(host: str = "127.0.0.1", port: int = 8090) -> MetricsServer:
     """Start the metrics server."""
     server = get_metrics_server(host, port)
     await server.start()
