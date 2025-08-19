@@ -60,12 +60,14 @@ class ResponseCache:
         # Background refresh tasks
         self._refresh_tasks: Dict[str, asyncio.Task] = {}
 
-    async def get_response(self,
-                          method: str,
-                          url: str,
-                          params: Dict[str, Any] = None,
-                          headers: Dict[str, str] = None,
-                          policy: CachePolicy = None) -> Optional[Dict[str, Any]]:
+    async def get_response(
+        self,
+        method: str,
+        url: str,
+        params: Dict[str, Any] = None,
+        headers: Dict[str, str] = None,
+        policy: CachePolicy = None,
+    ) -> Optional[Dict[str, Any]]:
         """Get cached response.
 
         Args:
@@ -90,21 +92,23 @@ class ResponseCache:
             await self._check_refresh_ahead(cache_key, cached_response, policy)
 
         # Update response metadata
-        cached_response['cache_metadata'] = {
-            'hit': True,
-            'timestamp': time.time(),
-            'key': cache_key
+        cached_response["cache_metadata"] = {
+            "hit": True,
+            "timestamp": time.time(),
+            "key": cache_key,
         }
 
         return cached_response
 
-    async def set_response(self,
-                          method: str,
-                          url: str,
-                          response: Dict[str, Any],
-                          params: Dict[str, Any] = None,
-                          headers: Dict[str, str] = None,
-                          policy: CachePolicy = None) -> bool:
+    async def set_response(
+        self,
+        method: str,
+        url: str,
+        response: Dict[str, Any],
+        params: Dict[str, Any] = None,
+        headers: Dict[str, str] = None,
+        policy: CachePolicy = None,
+    ) -> bool:
         """Cache response.
 
         Args:
@@ -124,20 +128,18 @@ class ResponseCache:
         # Add cache metadata
         cached_response = {
             **response,
-            'cache_metadata': {
-                'cached_at': time.time(),
-                'ttl': policy.ttl,
-                'key': cache_key
-            }
+            "cache_metadata": {
+                "cached_at": time.time(),
+                "ttl": policy.ttl,
+                "key": cache_key,
+            },
         }
 
         # Generate tags for invalidation
         tags = policy.invalidation_tags.copy()
-        tags.extend([
-            f"url:{self._hash_url(url)}",
-            f"method:{method.lower()}",
-            "response_cache"
-        ])
+        tags.extend(
+            [f"url:{self._hash_url(url)}", f"method:{method.lower()}", "response_cache"]
+        )
 
         return await self.cache.set(cache_key, cached_response, policy.ttl, tags)
 
@@ -153,7 +155,9 @@ class ResponseCache:
         results = await self.cache.invalidate_by_tags([tag])
         return sum(results.values())
 
-    def _generate_response_key(self, method: str, url: str, params: Dict[str, Any], headers: Dict[str, str]) -> str:
+    def _generate_response_key(
+        self, method: str, url: str, params: Dict[str, Any], headers: Dict[str, str]
+    ) -> str:
         """Generate cache key for response."""
         # Include vary headers in key generation
         vary_values = {}
@@ -163,25 +167,23 @@ class ResponseCache:
                     vary_values[header] = headers[header]
 
         return CacheKeyGenerator.generate_key(
-            self.cache_key_prefix,
-            method.upper(),
-            url,
-            params or {},
-            vary_values
+            self.cache_key_prefix, method.upper(), url, params or {}, vary_values
         )
 
     def _hash_url(self, url: str) -> str:
         """Generate hash for URL."""
         return hashlib.md5(url.encode(), usedforsecurity=False).hexdigest()[:16]
 
-    async def _check_refresh_ahead(self, cache_key: str, cached_response: Dict[str, Any], policy: CachePolicy) -> None:
+    async def _check_refresh_ahead(
+        self, cache_key: str, cached_response: Dict[str, Any], policy: CachePolicy
+    ) -> None:
         """Check if refresh ahead is needed."""
         if cache_key in self._refresh_tasks:
             return  # Already refreshing
 
-        cache_metadata = cached_response.get('cache_metadata', {})
-        cached_at = cache_metadata.get('cached_at', 0)
-        ttl = cache_metadata.get('ttl', policy.ttl)
+        cache_metadata = cached_response.get("cache_metadata", {})
+        cached_at = cache_metadata.get("cached_at", 0)
+        ttl = cache_metadata.get("ttl", policy.ttl)
 
         if not ttl:
             return
@@ -193,12 +195,16 @@ class ResponseCache:
                 self._background_refresh(cache_key, cached_response)
             )
 
-    async def _background_refresh(self, cache_key: str, cached_response: Dict[str, Any]) -> None:
+    async def _background_refresh(
+        self, cache_key: str, cached_response: Dict[str, Any]
+    ) -> None:
         """Background refresh of cached response."""
         try:
             # This would trigger the original request to refresh the cache
             # Implementation depends on the specific use case
-            self._event_manager.emit("cache_refresh_needed", key=cache_key, response=cached_response)
+            self._event_manager.emit(
+                "cache_refresh_needed", key=cache_key, response=cached_response
+            )
         except Exception as e:
             logger.error(f"Error in background refresh for {cache_key}: {e}")
         finally:
@@ -219,7 +225,9 @@ class AuthTokenCache:
         self._refresh_callbacks: Dict[str, Callable] = {}
         self._refresh_locks: Dict[str, asyncio.Lock] = {}
 
-    async def get_token(self, user_id: str, scope: str = "default") -> Optional[Dict[str, Any]]:
+    async def get_token(
+        self, user_id: str, scope: str = "default"
+    ) -> Optional[Dict[str, Any]]:
         """Get authentication token.
 
         Args:
@@ -246,10 +254,9 @@ class AuthTokenCache:
 
         return token_data
 
-    async def set_token(self,
-                       user_id: str,
-                       token_data: Dict[str, Any],
-                       scope: str = "default") -> bool:
+    async def set_token(
+        self, user_id: str, token_data: Dict[str, Any], scope: str = "default"
+    ) -> bool:
         """Cache authentication token.
 
         Args:
@@ -263,7 +270,7 @@ class AuthTokenCache:
         cache_key = self._generate_token_key(user_id, scope)
 
         # Calculate TTL based on token expiration
-        expires_at = token_data.get('expires_at')
+        expires_at = token_data.get("expires_at")
         ttl = None
         if expires_at:
             if isinstance(expires_at, (int, float)):
@@ -274,9 +281,9 @@ class AuthTokenCache:
         # Add cache metadata
         enhanced_token_data = {
             **token_data,
-            'cached_at': time.time(),
-            'user_id': user_id,
-            'scope': scope
+            "cached_at": time.time(),
+            "user_id": user_id,
+            "scope": scope,
         }
 
         tags = [f"user:{user_id}", f"scope:{scope}", "auth_token"]
@@ -310,7 +317,7 @@ class AuthTokenCache:
 
     def _is_token_expired(self, token_data: Dict[str, Any]) -> bool:
         """Check if token is expired."""
-        expires_at = token_data.get('expires_at')
+        expires_at = token_data.get("expires_at")
         if not expires_at:
             return False
 
@@ -323,7 +330,7 @@ class AuthTokenCache:
 
     def _should_refresh_token(self, token_data: Dict[str, Any]) -> bool:
         """Check if token should be refreshed proactively."""
-        expires_at = token_data.get('expires_at')
+        expires_at = token_data.get("expires_at")
         if not expires_at:
             return False
 
@@ -331,7 +338,7 @@ class AuthTokenCache:
         refresh_threshold = 0.8
 
         if isinstance(expires_at, (int, float)):
-            cached_at = token_data.get('cached_at', time.time())
+            cached_at = token_data.get("cached_at", time.time())
             lifetime = expires_at - cached_at
             elapsed = time.time() - cached_at
             return elapsed >= (lifetime * refresh_threshold)
@@ -373,7 +380,9 @@ class ConfigCache:
         # Setup event handlers for config changes
         self._event_manager.subscribe("config_changed", self._handle_config_change)
 
-    async def get_config(self, config_name: str, version: str = "latest") -> Optional[Dict[str, Any]]:
+    async def get_config(
+        self, config_name: str, version: str = "latest"
+    ) -> Optional[Dict[str, Any]]:
         """Get configuration data.
 
         Args:
@@ -386,11 +395,13 @@ class ConfigCache:
         cache_key = self._generate_config_key(config_name, version)
         return await self.cache.get(cache_key)
 
-    async def set_config(self,
-                        config_name: str,
-                        config_data: Dict[str, Any],
-                        version: str = "latest",
-                        ttl: Optional[float] = None) -> bool:
+    async def set_config(
+        self,
+        config_name: str,
+        config_data: Dict[str, Any],
+        version: str = "latest",
+        ttl: Optional[float] = None,
+    ) -> bool:
         """Cache configuration data.
 
         Args:
@@ -407,11 +418,11 @@ class ConfigCache:
         # Add metadata
         enhanced_config = {
             **config_data,
-            'config_metadata': {
-                'name': config_name,
-                'version': version,
-                'cached_at': time.time()
-            }
+            "config_metadata": {
+                "name": config_name,
+                "version": version,
+                "cached_at": time.time(),
+            },
         }
 
         tags = [f"config:{config_name}", f"version:{version}", "configuration"]
@@ -438,11 +449,13 @@ class ConfigCache:
 
     def _generate_config_key(self, config_name: str, version: str) -> str:
         """Generate cache key for configuration."""
-        return CacheKeyGenerator.generate_key(self.cache_key_prefix, config_name, version)
+        return CacheKeyGenerator.generate_key(
+            self.cache_key_prefix, config_name, version
+        )
 
     async def _handle_config_change(self, **kwargs) -> None:
         """Handle configuration change events."""
-        config_name = kwargs.get('config_name')
+        config_name = kwargs.get("config_name")
         if config_name:
             await self.invalidate_config(config_name)
 
@@ -458,16 +471,15 @@ class ProtocolCache:
         """
         self.cache = cache
         self.protocol_policies = {
-            'rpc': CachePolicy(ttl=600, invalidation_tags=['rpc']),      # 10 minutes
-            'stream': CachePolicy(ttl=60, invalidation_tags=['stream']), # 1 minute
-            'bus': CachePolicy(ttl=300, invalidation_tags=['bus']),      # 5 minutes
-            'mcp': CachePolicy(ttl=1800, invalidation_tags=['mcp'])      # 30 minutes
+            "rpc": CachePolicy(ttl=600, invalidation_tags=["rpc"]),  # 10 minutes
+            "stream": CachePolicy(ttl=60, invalidation_tags=["stream"]),  # 1 minute
+            "bus": CachePolicy(ttl=300, invalidation_tags=["bus"]),  # 5 minutes
+            "mcp": CachePolicy(ttl=1800, invalidation_tags=["mcp"]),  # 30 minutes
         }
 
-    async def get_protocol_data(self,
-                               protocol: str,
-                               operation: str,
-                               params: Dict[str, Any] = None) -> Optional[Any]:
+    async def get_protocol_data(
+        self, protocol: str, operation: str, params: Dict[str, Any] = None
+    ) -> Optional[Any]:
         """Get cached protocol data.
 
         Args:
@@ -481,12 +493,14 @@ class ProtocolCache:
         cache_key = self._generate_protocol_key(protocol, operation, params)
         return await self.cache.get(cache_key)
 
-    async def set_protocol_data(self,
-                               protocol: str,
-                               operation: str,
-                               data: Any,
-                               params: Dict[str, Any] = None,
-                               custom_policy: CachePolicy = None) -> bool:
+    async def set_protocol_data(
+        self,
+        protocol: str,
+        operation: str,
+        data: Any,
+        params: Dict[str, Any] = None,
+        custom_policy: CachePolicy = None,
+    ) -> bool:
         """Cache protocol data.
 
         Args:
@@ -519,9 +533,13 @@ class ProtocolCache:
         results = await self.cache.invalidate_by_tags(tags)
         return sum(results.values())
 
-    def _generate_protocol_key(self, protocol: str, operation: str, params: Dict[str, Any]) -> str:
+    def _generate_protocol_key(
+        self, protocol: str, operation: str, params: Dict[str, Any]
+    ) -> str:
         """Generate cache key for protocol data."""
-        return CacheKeyGenerator.generate_key("protocol", protocol, operation, params or {})
+        return CacheKeyGenerator.generate_key(
+            "protocol", protocol, operation, params or {}
+        )
 
 
 class MetricsCache:
@@ -583,14 +601,14 @@ class MetricsCache:
 
         # Cache the batch
         cache_key = CacheKeyGenerator.generate_key(
-            self.cache_key_prefix,
-            "batch",
-            int(time.time())
+            self.cache_key_prefix, "batch", int(time.time())
         )
 
         await self.cache.set(cache_key, batch, ttl=3600, tags=["metrics", "batch"])
 
-    async def get_metrics_batch(self, start_time: float, end_time: float) -> List[Dict[str, Any]]:
+    async def get_metrics_batch(
+        self, start_time: float, end_time: float
+    ) -> List[Dict[str, Any]]:
         """Get metrics batches within time range.
 
         Args:

@@ -87,7 +87,9 @@ def _check_lxml_available() -> bool:
         return False
 
 
-def run_mypy_and_generate_report(package_dir: Path, report_dir: Path, project_root: Path) -> None:
+def run_mypy_and_generate_report(
+    package_dir: Path, report_dir: Path, project_root: Path
+) -> None:
     """\
     Führt mypy aus und erzeugt einen Text-Report unter `report_dir`.
     Falls lxml nicht verfügbar ist, wird ein alternativer Ansatz verwendet.
@@ -126,15 +128,23 @@ def run_mypy_and_generate_report(package_dir: Path, report_dir: Path, project_ro
         # Prüfe, ob der Report erstellt wurde
         index_file = report_dir / "index.txt"
         if not index_file.exists():
-            print(f"Warnung: MyPy hat keine index.txt erstellt in {report_dir}", file=sys.stderr)
-            print(f"Verfügbare Dateien: {list(report_dir.glob('*')) if report_dir.exists() else 'Verzeichnis existiert nicht'}", file=sys.stderr)
+            print(
+                f"Warnung: MyPy hat keine index.txt erstellt in {report_dir}",
+                file=sys.stderr,
+            )
+            print(
+                f"Verfügbare Dateien: {list(report_dir.glob('*')) if report_dir.exists() else 'Verzeichnis existiert nicht'}",
+                file=sys.stderr,
+            )
     else:
         # Fallback: Erstelle einen Mock-Report
         print("lxml nicht verfügbar - erstelle Mock-Report", file=sys.stderr)
         _create_mock_report(package_dir, report_dir, project_root)
 
 
-def _create_mock_report(package_dir: Path, report_dir: Path, project_root: Path) -> None:
+def _create_mock_report(
+    package_dir: Path, report_dir: Path, project_root: Path
+) -> None:
     """Erstellt einen Mock-Report wenn lxml nicht verfügbar ist."""
     # Führe MyPy ohne --txt-report aus, um zu prüfen ob es funktioniert
     config_file = project_root / "mypy.ini"
@@ -187,7 +197,9 @@ kei_agent: 80.0%
         f.write(mock_content)
 
 
-def _parse_mock_report(lines: List[str]) -> Tuple[int, int, float, List[Dict[str, Any]]]:
+def _parse_mock_report(
+    lines: List[str],
+) -> Tuple[int, int, float, List[Dict[str, Any]]]:
     """Parst einen Mock-Report."""
     total_lines = 20000
     annotated_lines = 16000
@@ -219,14 +231,16 @@ def _parse_mock_report(lines: List[str]) -> Tuple[int, int, float, List[Dict[str
             "module": "kei_agent",
             "annotated_lines": annotated_lines,
             "total_lines": total_lines,
-            "coverage_percentage": coverage
+            "coverage_percentage": coverage,
         }
     ]
 
     return annotated_lines, total_lines, coverage, modules
 
 
-def parse_txt_report_index(index_file: Path) -> Tuple[int, int, float, List[Dict[str, Any]]]:
+def parse_txt_report_index(
+    index_file: Path,
+) -> Tuple[int, int, float, List[Dict[str, Any]]]:
     """\
     Parst die mypy-Text-Report-Datei `index.txt` und extrahiert Gesamtsummen sowie Modulwerte.
 
@@ -234,7 +248,10 @@ def parse_txt_report_index(index_file: Path) -> Tuple[int, int, float, List[Dict
     """
     if not index_file.exists():
         print(f"Report-Datei nicht gefunden: {index_file}", file=sys.stderr)
-        print(f"Verzeichnisinhalt: {list(index_file.parent.glob('*')) if index_file.parent.exists() else 'Verzeichnis existiert nicht'}", file=sys.stderr)
+        print(
+            f"Verzeichnisinhalt: {list(index_file.parent.glob('*')) if index_file.parent.exists() else 'Verzeichnis existiert nicht'}",
+            file=sys.stderr,
+        )
         # Fallback: Erstelle leeren Report
         return 0, 0, 0.0, []
 
@@ -245,7 +262,7 @@ def parse_txt_report_index(index_file: Path) -> Tuple[int, int, float, List[Dict
 
     with index_file.open("r", encoding="utf-8", errors="ignore") as f:
         content = f.read()
-        lines = content.split('\n')
+        lines = content.split("\n")
 
         # Prüfe, ob es ein Mock-Report ist
         if "Type checking report" in content:
@@ -255,42 +272,48 @@ def parse_txt_report_index(index_file: Path) -> Tuple[int, int, float, List[Dict
         # Format: | Module | X.XX% imprecise | YYY LOC |
         for line in lines:
             line = line.strip()
-            if line.startswith('|') and '% imprecise' in line and 'LOC' in line:
+            if line.startswith("|") and "% imprecise" in line and "LOC" in line:
                 # Split by | and clean up
-                parts = [part.strip() for part in line.split('|')]
+                parts = [part.strip() for part in line.split("|")]
                 if len(parts) >= 4:
                     module_name = parts[1].strip()
                     imprecision_str = parts[2].strip()
                     loc_str = parts[3].strip()
 
                     # Skip header row and separator rows
-                    if (module_name == 'Module' or
-                        module_name.startswith('-') or
-                        not module_name or
-                        module_name == 'Module'):
+                    if (
+                        module_name == "Module"
+                        or module_name.startswith("-")
+                        or not module_name
+                        or module_name == "Module"
+                    ):
                         continue
 
                     # Extract percentage from "X.XX% imprecise"
-                    if imprecision_str.endswith('% imprecise'):
+                    if imprecision_str.endswith("% imprecise"):
                         try:
-                            percentage_str = imprecision_str.replace('% imprecise', '').strip()
+                            percentage_str = imprecision_str.replace(
+                                "% imprecise", ""
+                            ).strip()
                             imprecision = float(percentage_str)
                             # Convert imprecision to precision (coverage)
                             coverage = 100.0 - imprecision
 
                             # Extract LOC from "YYY LOC"
-                            loc_match = re.search(r'(\d+)\s+LOC', loc_str)
+                            loc_match = re.search(r"(\d+)\s+LOC", loc_str)
                             if loc_match:
                                 total_loc = int(loc_match.group(1))
                                 # Estimate annotated lines based on coverage
                                 annotated_loc = int(total_loc * coverage / 100.0)
 
-                                modules.append({
-                                    "module": module_name,
-                                    "annotated_lines": annotated_loc,
-                                    "total_lines": total_loc,
-                                    "coverage_percentage": coverage,
-                                })
+                                modules.append(
+                                    {
+                                        "module": module_name,
+                                        "annotated_lines": annotated_loc,
+                                        "total_lines": total_loc,
+                                        "coverage_percentage": coverage,
+                                    }
+                                )
                         except (ValueError, AttributeError):
                             continue
 
@@ -298,10 +321,12 @@ def parse_txt_report_index(index_file: Path) -> Tuple[int, int, float, List[Dict
     if modules:
         total_annotated = sum(m["annotated_lines"] for m in modules)
         total_lines = sum(m["total_lines"] for m in modules)
-        total_percent = (total_annotated / total_lines * 100.0) if total_lines > 0 else 0.0
+        total_percent = (
+            (total_annotated / total_lines * 100.0) if total_lines > 0 else 0.0
+        )
     else:
         # Fallback: try to find any percentage in the file
-        percent_match = re.search(r'(\d+\.?\d*)%', content)
+        percent_match = re.search(r"(\d+\.?\d*)%", content)
         if percent_match:
             total_percent = float(percent_match.group(1))
             total_annotated = 1000  # Dummy values
@@ -349,7 +374,11 @@ def main() -> int:
         report_dir = Path(tmp_dir)
 
         if args.run_mypy:
-            run_mypy_and_generate_report(package_dir=package_dir, report_dir=report_dir, project_root=project_root)
+            run_mypy_and_generate_report(
+                package_dir=package_dir,
+                report_dir=report_dir,
+                project_root=project_root,
+            )
 
         index_file = report_dir / "index.txt"
         annotated, total, percent, modules = parse_txt_report_index(index_file)

@@ -23,8 +23,12 @@ import aiofiles
 import aiofiles.os
 
 from .cache_framework import (
-    CacheInterface, CacheStats, CacheConfig, CacheMetrics,
-    CircuitBreaker, get_cache_event_manager
+    CacheInterface,
+    CacheStats,
+    CacheConfig,
+    CacheMetrics,
+    CircuitBreaker,
+    get_cache_event_manager,
 )
 
 logger = logging.getLogger(__name__)
@@ -44,18 +48,22 @@ class PersistentCache(CacheInterface):
         self.storage_config = storage_config or {}
 
         # Storage settings
-        self.cache_dir = Path(self.storage_config.get('cache_dir', 'cache'))
-        self.db_path = self.cache_dir / 'cache_metadata.db'
-        self.data_dir = self.cache_dir / 'data'
+        self.cache_dir = Path(self.storage_config.get("cache_dir", "cache"))
+        self.db_path = self.cache_dir / "cache_metadata.db"
+        self.data_dir = self.cache_dir / "data"
 
         # Storage format settings
-        self.storage_format = self.storage_config.get('format', 'pickle')  # pickle, json, compressed
-        self.compression_level = self.storage_config.get('compression_level', 6)
-        self.sync_interval = self.storage_config.get('sync_interval', 60)  # seconds
+        self.storage_format = self.storage_config.get(
+            "format", "pickle"
+        )  # pickle, json, compressed
+        self.compression_level = self.storage_config.get("compression_level", 6)
+        self.sync_interval = self.storage_config.get("sync_interval", 60)  # seconds
 
         # Initialize components
         self._metrics = CacheMetrics()
-        self._circuit_breaker = CircuitBreaker() if config.circuit_breaker_enabled else None
+        self._circuit_breaker = (
+            CircuitBreaker() if config.circuit_breaker_enabled else None
+        )
         self._event_manager = get_cache_event_manager()
 
         # Database connection (thread-local)
@@ -92,7 +100,7 @@ class PersistentCache(CacheInterface):
         """Initialize SQLite database for metadata."""
         async with self._db_lock:
             self._db_connection = sqlite3.connect(str(self.db_path))
-            self._db_connection.execute('''
+            self._db_connection.execute("""
                 CREATE TABLE IF NOT EXISTS cache_entries (
                     key TEXT PRIMARY KEY,
                     file_path TEXT NOT NULL,
@@ -104,19 +112,19 @@ class PersistentCache(CacheInterface):
                     tags TEXT,
                     format TEXT DEFAULT 'pickle'
                 )
-            ''')
+            """)
 
-            self._db_connection.execute('''
+            self._db_connection.execute("""
                 CREATE INDEX IF NOT EXISTS idx_created_at ON cache_entries(created_at)
-            ''')
+            """)
 
-            self._db_connection.execute('''
+            self._db_connection.execute("""
                 CREATE INDEX IF NOT EXISTS idx_last_accessed ON cache_entries(last_accessed)
-            ''')
+            """)
 
-            self._db_connection.execute('''
+            self._db_connection.execute("""
                 CREATE INDEX IF NOT EXISTS idx_ttl ON cache_entries(ttl)
-            ''')
+            """)
 
             self._db_connection.commit()
 
@@ -168,10 +176,13 @@ class PersistentCache(CacheInterface):
 
             async with self._db_lock:
                 if self._db_connection:
-                    cursor = self._db_connection.execute('''
+                    cursor = self._db_connection.execute(
+                        """
                         SELECT key FROM cache_entries
                         WHERE ttl IS NOT NULL AND (created_at + ttl) < ?
-                    ''', (current_time,))
+                    """,
+                        (current_time,),
+                    )
 
                     expired_keys = [row[0] for row in cursor.fetchall()]
 
@@ -188,7 +199,9 @@ class PersistentCache(CacheInterface):
             db_files = set()
             async with self._db_lock:
                 if self._db_connection:
-                    cursor = self._db_connection.execute('SELECT file_path FROM cache_entries')
+                    cursor = self._db_connection.execute(
+                        "SELECT file_path FROM cache_entries"
+                    )
                     db_files = {row[0] for row in cursor.fetchall()}
 
             # Check for orphaned files
@@ -211,19 +224,19 @@ class PersistentCache(CacheInterface):
 
     async def _serialize_to_file(self, file_path: Path, value: Any) -> int:
         """Serialize value to file and return size."""
-        temp_path = file_path.with_suffix('.tmp')
+        temp_path = file_path.with_suffix(".tmp")
 
         try:
-            if self.storage_format == 'json':
+            if self.storage_format == "json":
                 data = json.dumps(value, default=str).encode()
-            elif self.storage_format == 'compressed':
+            elif self.storage_format == "compressed":
                 pickled = pickle.dumps(value)
                 data = zlib.compress(pickled, self.compression_level)
             else:  # pickle (default)
                 data = pickle.dumps(value)
 
             # Write to temporary file first (atomic operation)
-            async with aiofiles.open(temp_path, 'wb') as f:
+            async with aiofiles.open(temp_path, "wb") as f:
                 await f.write(data)
 
             # Atomic rename
@@ -238,17 +251,22 @@ class PersistentCache(CacheInterface):
             except Exception as cleanup_error:
                 # Log cleanup errors but don't fail the operation
                 import logging
-                logging.getLogger(__name__).debug(f"Failed to cleanup temp file {temp_path}: {cleanup_error}")
+
+                logging.getLogger(__name__).debug(
+                    f"Failed to cleanup temp file {temp_path}: {cleanup_error}"
+                )
             raise e
 
-    async def _deserialize_from_file(self, file_path: Path, format_type: str = 'pickle') -> Any:
+    async def _deserialize_from_file(
+        self, file_path: Path, format_type: str = "pickle"
+    ) -> Any:
         """Deserialize value from file."""
-        async with aiofiles.open(file_path, 'rb') as f:
+        async with aiofiles.open(file_path, "rb") as f:
             data = await f.read()
 
-        if format_type == 'json':
+        if format_type == "json":
             return json.loads(data.decode())
-        elif format_type == 'compressed':
+        elif format_type == "compressed":
             decompressed = zlib.decompress(data)
             # WARNING: pickle.loads is used here for internal cache data only
             # This should never be used with untrusted data from external sources
@@ -291,9 +309,12 @@ class PersistentCache(CacheInterface):
             if not self._db_connection:
                 return None
 
-            cursor = self._db_connection.execute('''
+            cursor = self._db_connection.execute(
+                """
                 SELECT file_path, created_at, ttl, format FROM cache_entries WHERE key = ?
-            ''', (key,))
+            """,
+                (key,),
+            )
 
             row = cursor.fetchone()
             if not row:
@@ -309,11 +330,14 @@ class PersistentCache(CacheInterface):
 
             # Update access information
             current_time = time.time()
-            self._db_connection.execute('''
+            self._db_connection.execute(
+                """
                 UPDATE cache_entries
                 SET last_accessed = ?, access_count = access_count + 1
                 WHERE key = ?
-            ''', (current_time, key))
+            """,
+                (current_time, key),
+            )
 
         # Read from file
         try:
@@ -331,11 +355,15 @@ class PersistentCache(CacheInterface):
             await self._remove_entry(key, file_path)
             return None
 
-    async def set(self, key: str, value: Any, ttl: Optional[float] = None, tags: List[str] = None) -> bool:
+    async def set(
+        self, key: str, value: Any, ttl: Optional[float] = None, tags: List[str] = None
+    ) -> bool:
         """Set value in persistent cache."""
         try:
             if self._circuit_breaker:
-                return await self._circuit_breaker.call(self._set_internal, key, value, ttl, tags)
+                return await self._circuit_breaker.call(
+                    self._set_internal, key, value, ttl, tags
+                )
             else:
                 return await self._set_internal(key, value, ttl, tags)
 
@@ -345,7 +373,9 @@ class PersistentCache(CacheInterface):
             logger.error(f"Error setting persistent cache key {key}: {e}")
             return False
 
-    async def _set_internal(self, key: str, value: Any, ttl: Optional[float], tags: List[str]) -> bool:
+    async def _set_internal(
+        self, key: str, value: Any, ttl: Optional[float], tags: List[str]
+    ) -> bool:
         """Internal set method."""
         file_path = self._generate_file_path(key)
 
@@ -362,7 +392,7 @@ class PersistentCache(CacheInterface):
 
             # Remove old entry if exists
             old_cursor = self._db_connection.execute(
-                'SELECT file_path FROM cache_entries WHERE key = ?', (key,)
+                "SELECT file_path FROM cache_entries WHERE key = ?", (key,)
             )
             old_row = old_cursor.fetchone()
             if old_row:
@@ -374,14 +404,27 @@ class PersistentCache(CacheInterface):
                         logger.warning(f"Error removing old cache file: {e}")
 
             # Insert/update entry
-            self._db_connection.execute('''
+            self._db_connection.execute(
+                """
                 INSERT OR REPLACE INTO cache_entries
                 (key, file_path, created_at, last_accessed, ttl, size_bytes, tags, format)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (key, str(file_path), current_time, current_time,
-                  ttl or self.config.default_ttl, size_bytes, tags_json, self.storage_format))
+            """,
+                (
+                    key,
+                    str(file_path),
+                    current_time,
+                    current_time,
+                    ttl or self.config.default_ttl,
+                    size_bytes,
+                    tags_json,
+                    self.storage_format,
+                ),
+            )
 
-        self._event_manager.emit("cache_set", key=key, level="L3", size_bytes=size_bytes)
+        self._event_manager.emit(
+            "cache_set", key=key, level="L3", size_bytes=size_bytes
+        )
         return True
 
     async def delete(self, key: str) -> bool:
@@ -392,7 +435,7 @@ class PersistentCache(CacheInterface):
                     return False
 
                 cursor = self._db_connection.execute(
-                    'SELECT file_path FROM cache_entries WHERE key = ?', (key,)
+                    "SELECT file_path FROM cache_entries WHERE key = ?", (key,)
                 )
                 row = cursor.fetchone()
 
@@ -414,7 +457,9 @@ class PersistentCache(CacheInterface):
         # Remove from database
         async with self._db_lock:
             if self._db_connection:
-                self._db_connection.execute('DELETE FROM cache_entries WHERE key = ?', (key,))
+                self._db_connection.execute(
+                    "DELETE FROM cache_entries WHERE key = ?", (key,)
+                )
 
         # Remove file
         try:
@@ -431,9 +476,12 @@ class PersistentCache(CacheInterface):
                 if not self._db_connection:
                     return False
 
-                cursor = self._db_connection.execute('''
+                cursor = self._db_connection.execute(
+                    """
                     SELECT created_at, ttl FROM cache_entries WHERE key = ?
-                ''', (key,))
+                """,
+                    (key,),
+                )
 
                 row = cursor.fetchone()
                 if not row:
@@ -465,7 +513,7 @@ class PersistentCache(CacheInterface):
             # Clear database
             async with self._db_lock:
                 if self._db_connection:
-                    self._db_connection.execute('DELETE FROM cache_entries')
+                    self._db_connection.execute("DELETE FROM cache_entries")
 
             self._event_manager.emit("cache_clear", level="L3")
             return True
@@ -483,9 +531,9 @@ class PersistentCache(CacheInterface):
             async with self._db_lock:
                 if self._db_connection:
                     # Get total size and count
-                    cursor = self._db_connection.execute('''
+                    cursor = self._db_connection.execute("""
                         SELECT COUNT(*), SUM(size_bytes) FROM cache_entries
-                    ''')
+                    """)
                     row = cursor.fetchone()
                     if row:
                         stats.entry_count = row[0] or 0
@@ -507,17 +555,22 @@ class PersistentCache(CacheInterface):
 
                 # Find entries with matching tags
                 for tag in tags:
-                    cursor = self._db_connection.execute('''
+                    cursor = self._db_connection.execute(
+                        """
                         SELECT key, file_path FROM cache_entries
                         WHERE tags LIKE ?
-                    ''', (f'%"{tag}"%',))
+                    """,
+                        (f'%"{tag}"%',),
+                    )
 
                     entries = cursor.fetchall()
                     for key, file_path in entries:
                         await self._remove_entry(key, file_path)
                         invalidated_count += 1
 
-            self._event_manager.emit("cache_invalidate_tags", tags=tags, level="L3", count=invalidated_count)
+            self._event_manager.emit(
+                "cache_invalidate_tags", tags=tags, level="L3", count=invalidated_count
+            )
             return invalidated_count
 
         except Exception as e:

@@ -131,7 +131,8 @@ class AgentSkeleton:
             f"/api/v1/agents-mgmt/{self.cfg.agent_id}/heartbeat",
             {
                 "health": health,
-                "readiness": readiness or ("ready" if self._initialized else "starting"),
+                "readiness": readiness
+                or ("ready" if self._initialized else "starting"),
                 "queue_length": queue_length,
                 "offered_concurrency": offered_concurrency,
                 "current_concurrency": current_concurrency,

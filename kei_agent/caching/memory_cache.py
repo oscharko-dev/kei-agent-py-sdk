@@ -21,9 +21,14 @@ from typing import Any, Dict, List, Optional, Set
 import psutil
 
 from .cache_framework import (
-    CacheInterface, CacheEntry, CacheStats, CacheConfig,
-    InvalidationStrategy, CacheMetrics, CircuitBreaker,
-    get_cache_event_manager
+    CacheInterface,
+    CacheEntry,
+    CacheStats,
+    CacheConfig,
+    InvalidationStrategy,
+    CacheMetrics,
+    CircuitBreaker,
+    get_cache_event_manager,
 )
 
 logger = logging.getLogger(__name__)
@@ -46,7 +51,9 @@ class MemoryCache(CacheInterface):
 
         self._lock = threading.RLock()
         self._metrics = CacheMetrics()
-        self._circuit_breaker = CircuitBreaker() if config.circuit_breaker_enabled else None
+        self._circuit_breaker = (
+            CircuitBreaker() if config.circuit_breaker_enabled else None
+        )
         self._event_manager = get_cache_event_manager()
 
         # Background cleanup task
@@ -162,7 +169,9 @@ class MemoryCache(CacheInterface):
 
             return entry.value
 
-    async def set(self, key: str, value: Any, ttl: Optional[float] = None, tags: List[str] = None) -> bool:
+    async def set(
+        self, key: str, value: Any, ttl: Optional[float] = None, tags: List[str] = None
+    ) -> bool:
         """Set value in cache.
 
         Args:
@@ -176,7 +185,9 @@ class MemoryCache(CacheInterface):
         """
         try:
             if self._circuit_breaker:
-                return self._circuit_breaker.call(self._set_internal, key, value, ttl, tags)
+                return self._circuit_breaker.call(
+                    self._set_internal, key, value, ttl, tags
+                )
             else:
                 return self._set_internal(key, value, ttl, tags)
 
@@ -186,7 +197,9 @@ class MemoryCache(CacheInterface):
             logger.error(f"Error setting cache key {key}: {e}")
             return False
 
-    def _set_internal(self, key: str, value: Any, ttl: Optional[float], tags: List[str]) -> bool:
+    def _set_internal(
+        self, key: str, value: Any, ttl: Optional[float], tags: List[str]
+    ) -> bool:
         """Internal set method without circuit breaker."""
         with self._lock:
             # Calculate entry size
@@ -207,7 +220,7 @@ class MemoryCache(CacheInterface):
                 last_accessed=time.time(),
                 ttl=ttl or self.config.default_ttl,
                 size_bytes=size_bytes,
-                tags=tags or []
+                tags=tags or [],
             )
 
             # Remove old entry if exists
@@ -227,7 +240,9 @@ class MemoryCache(CacheInterface):
             # Update metrics
             self._update_size_metrics()
 
-            self._event_manager.emit("cache_set", key=key, level="L1", size_bytes=size_bytes)
+            self._event_manager.emit(
+                "cache_set", key=key, level="L1", size_bytes=size_bytes
+            )
 
             return True
 
@@ -237,8 +252,8 @@ class MemoryCache(CacheInterface):
         current_count = len(self.cache)
 
         return (
-            current_size + new_entry_size > self.config.max_size_bytes or
-            current_count >= self.config.max_entries
+            current_size + new_entry_size > self.config.max_size_bytes
+            or current_count >= self.config.max_entries
         )
 
     def _evict_for_space(self, needed_size: int) -> None:
@@ -254,7 +269,9 @@ class MemoryCache(CacheInterface):
                 current_size -= entry.size_bytes
                 self._remove_entry(key_to_evict)
                 self._metrics.record_eviction()
-                self._event_manager.emit("cache_eviction", key=key_to_evict, level="L1", reason="space")
+                self._event_manager.emit(
+                    "cache_eviction", key=key_to_evict, level="L1", reason="space"
+                )
             else:
                 break
 
@@ -275,7 +292,9 @@ class MemoryCache(CacheInterface):
             if key in self.cache:
                 self._remove_entry(key)
                 self._metrics.record_eviction()
-                self._event_manager.emit("cache_eviction", key=key, level="L1", reason=reason)
+                self._event_manager.emit(
+                    "cache_eviction", key=key, level="L1", reason=reason
+                )
 
     def _select_eviction_candidate(self) -> Optional[str]:
         """Select a key for eviction based on strategy."""
@@ -408,7 +427,9 @@ class MemoryCache(CacheInterface):
             if await self.delete(key):
                 invalidated_count += 1
 
-        self._event_manager.emit("cache_invalidate_tags", tags=tags, level="L1", count=invalidated_count)
+        self._event_manager.emit(
+            "cache_invalidate_tags", tags=tags, level="L1", count=invalidated_count
+        )
         return invalidated_count
 
     async def shutdown(self) -> None:

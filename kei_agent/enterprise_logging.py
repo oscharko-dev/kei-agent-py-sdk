@@ -33,6 +33,7 @@ def _get_package_version() -> str:
     """
     try:
         from importlib.metadata import version
+
         return version("kei_agent_py_sdk")
     except Exception:
         return "0.0.0-dev"
@@ -103,7 +104,9 @@ class StructuredFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         """Formats LogRecord as JSON."""
         log_data = {
-            "timestamp": datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat(),
+            "timestamp": datetime.fromtimestamp(
+                record.created, tz=timezone.utc
+            ).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
@@ -120,7 +123,9 @@ class StructuredFormatter(logging.Formatter):
             log_data["exception"] = {
                 "type": record.exc_info[0].__name__ if record.exc_info[0] else None,
                 "message": str(record.exc_info[1]) if record.exc_info[1] else None,
-                "traceback": self.formatException(record.exc_info) if record.exc_info else None,
+                "traceback": self.formatException(record.exc_info)
+                if record.exc_info
+                else None,
             }
         if self.include_context:
             context = {
@@ -134,10 +139,28 @@ class StructuredFormatter(logging.Formatter):
         extra_data = {}
         for key, value in record.__dict__.items():
             if key not in {
-                "name","msg","args","levelname","levelno","pathname","filename",
-                "module","lineno","funcName","created","msecs","relativeCreated",
-                "thread","threadName","processName","process","getMessage","exc_info",
-                "exc_text","stack_info","message",
+                "name",
+                "msg",
+                "args",
+                "levelname",
+                "levelno",
+                "pathname",
+                "filename",
+                "module",
+                "lineno",
+                "funcName",
+                "created",
+                "msecs",
+                "relativeCreated",
+                "thread",
+                "threadName",
+                "processName",
+                "process",
+                "getMessage",
+                "exc_info",
+                "exc_text",
+                "stack_info",
+                "message",
             }:
                 extra_data[key] = value
         if extra_data:
@@ -214,7 +237,9 @@ class EnterpriseLogger:
 
         # Structured Formatter
         if enable_structured:
-            formatter: Union[StructuredFormatter, logging.Formatter] = StructuredFormatter(extra_fields=extra_fields)
+            formatter: Union[StructuredFormatter, logging.Formatter] = (
+                StructuredFormatter(extra_fields=extra_fields)
+            )
         else:
             formatter = logging.Formatter(
                 "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -303,8 +328,8 @@ class EnterpriseLogger:
         self.info(
             f"operation startingd: {operation}",
             operation=operation,
-            operation_id =operation_id,
-            operation_start_time =start_time,
+            operation_id=operation_id,
+            operation_start_time=start_time,
             **kwargs,
         )
 
@@ -336,8 +361,8 @@ class EnterpriseLogger:
         level_method(
             f"operation {status}: {operation}",
             operation=operation,
-            operation_id =operation_id,
-            operation_end_time =end_time,
+            operation_id=operation_id,
+            operation_end_time=end_time,
             duration=duration,
             success=success,
             **kwargs,
@@ -364,8 +389,8 @@ class EnterpriseLogger:
             f"Performatce-Metrik: {operation}",
             operation=operation,
             duration=duration_ms,
-            memory_usage =memory_usage,
-            cpu_usage =cpu_usage,
+            memory_usage=memory_usage,
+            cpu_usage=cpu_usage,
             **kwargs,
         )
 
@@ -391,8 +416,8 @@ class EnterpriseLogger:
 
         log_method(
             f"securitysereignis: {description}",
-            security_event_type =event_type,
-            security_severity =severity,
+            security_event_type=event_type,
+            security_severity=severity,
             security_description=description,
             **kwargs,
         )
@@ -417,9 +442,9 @@ def get_logger(name: str = "kei_agent") -> EnterpriseLogger:
         _sdk_logger = EnterpriseLogger(
             name=name,
             level=logging.INFO,
-            enable_structured =True,
-            enable_console =True,
-            extra_fields ={
+            enable_structured=True,
+            enable_console=True,
+            extra_fields={
                 "service": "kei-agent-sdk",
                 "version": _get_package_version(),
             },
@@ -452,11 +477,11 @@ def configure_logging(
     _sdk_logger = EnterpriseLogger(
         name="kei_agent",
         level=level,
-        enable_structured =enable_structured,
-        enable_console =True,
-        enable_file =enable_file,
-        file_path =file_path,
-        extra_fields =extra_fields,
+        enable_structured=enable_structured,
+        enable_console=True,
+        enable_file=enable_file,
+        file_path=file_path,
+        extra_fields=extra_fields,
     )
 
     return _sdk_logger

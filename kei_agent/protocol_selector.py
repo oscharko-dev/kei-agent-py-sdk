@@ -199,7 +199,9 @@ class ProtocolSelector:
         # Wähle protocol with höchster Priorität
         return max(available_protocols, key=lambda p: self._protocol_priorities[p])
 
-    def get_fallback_chain(self, primary_protocol: Protocoltypee) -> List[Protocoltypee]:
+    def get_fallback_chain(
+        self, primary_protocol: Protocoltypee
+    ) -> List[Protocoltypee]:
         """Creates fallback chain for protocol.
 
         Args:

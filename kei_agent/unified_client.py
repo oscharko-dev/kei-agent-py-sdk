@@ -24,7 +24,11 @@ from .retry import retryManager
 from .capabilities import CapabilityManager
 from .discovery import ServiceDiscovery
 from .utils import create_correlation_id
-from .metrics import get_metrics_collector, record_request_metric, record_connection_metric
+from .metrics import (
+    get_metrics_collector,
+    record_request_metric,
+    record_connection_metric,
+)
 from .error_aggregation import record_error, ErrorCategory, ErrorSeverity
 
 # Initialize module logger
@@ -83,10 +87,10 @@ class UnifiedKeiAgentClient:
         self.config = config
         self.protocol_config = protocol_config or ProtocolConfig()
         self.security_config = security_config or SecurityConfig(
-            auth_type =self.protocol_config.auth_type
+            auth_type=self.protocol_config.auth_type
             if hasattr(self.protocol_config, "auth_type")
             else "bearer",
-            api_token =config.api_token,
+            api_token=config.api_token,
         )
 
         # Initialize core components
@@ -183,8 +187,8 @@ class UnifiedKeiAgentClient:
                         extra={
                             "error": str(e),
                             "error_type": type(e).__name__,
-                            "agent_id": self.config.agent_id
-                        }
+                            "agent_id": self.config.agent_id,
+                        },
                     )
                 except Exception as e:
                     # Log unexpected error (keep broad catch for backward compatibility)
@@ -193,8 +197,8 @@ class UnifiedKeiAgentClient:
                         extra={
                             "error": str(e),
                             "error_type": type(e).__name__,
-                            "agent_id": self.config.agent_id
-                        }
+                            "agent_id": self.config.agent_id,
+                        },
                     )
                     # Re-raise to surface init failures appropriately
                     raise
@@ -210,10 +214,16 @@ class UnifiedKeiAgentClient:
 
         except (KeiSDKError, ProtocolError) as e:
             # Already meaningful SDK exceptions
-            _logger.error("client initialization failed", extra={"error": str(e), "type": type(e).__name__})
+            _logger.error(
+                "client initialization failed",
+                extra={"error": str(e), "type": type(e).__name__},
+            )
             raise
         except Exception as e:
-            _logger.error("client initialization failed", extra={"error": str(e), "type": type(e).__name__})
+            _logger.error(
+                "client initialization failed",
+                extra={"error": str(e), "type": type(e).__name__},
+            )
             raise KeiSDKError(f"initialization failed: {e}") from e
 
     async def _initialize_protocol_clients(self) -> None:
@@ -309,10 +319,16 @@ class UnifiedKeiAgentClient:
             _logger.info("Unified KEI-Agent client closed")
 
         except (ConnectionError, TimeoutError) as e:
-            _logger.error("Error during client shutdown", extra={"error": str(e), "type": type(e).__name__})
+            _logger.error(
+                "Error during client shutdown",
+                extra={"error": str(e), "type": type(e).__name__},
+            )
             raise
         except Exception as e:
-            _logger.error("Unexpected error during client shutdown", extra={"error": str(e), "type": type(e).__name__})
+            _logger.error(
+                "Unexpected error during client shutdown",
+                extra={"error": str(e), "type": type(e).__name__},
+            )
             raise
 
     async def __aenter__(self):
@@ -327,9 +343,9 @@ class UnifiedKeiAgentClient:
         # Set agent info
         self.metrics_collector.set_agent_info(
             agent_id=self.config.agent_id,
-            version=getattr(self.config, 'version', '1.0.0'),
-            protocol_version='1.0',
-            enabled_protocols=','.join(enabled_protocols)
+            version=getattr(self.config, "version", "1.0.0"),
+            protocol_version="1.0",
+            enabled_protocols=",".join(enabled_protocols),
         )
 
         return self
@@ -462,7 +478,7 @@ class UnifiedKeiAgentClient:
                     start_spat(f"agent_operation_{operation}")
                     if callable(start_spat)
                     else self.tracing.trace_operation(
-                        f"agent_operation_{operation}", agent_id =self.config.agent_id
+                        f"agent_operation_{operation}", agent_id=self.config.agent_id
                     )
                 )
                 with cm as spat:
@@ -481,7 +497,7 @@ class UnifiedKeiAgentClient:
                         operation,
                         "success",
                         duration,
-                        selected_protocol
+                        selected_protocol,
                     )
 
                     return result
@@ -497,7 +513,7 @@ class UnifiedKeiAgentClient:
                     operation,
                     "success",
                     duration,
-                    selected_protocol
+                    selected_protocol,
                 )
 
                 return result
@@ -506,11 +522,7 @@ class UnifiedKeiAgentClient:
             # Record failed request metrics
             duration = time.time() - start_time
             record_request_metric(
-                self.config.agent_id,
-                operation,
-                "error",
-                duration,
-                selected_protocol
+                self.config.agent_id, operation, "error", duration, selected_protocol
             )
 
             # Record error for aggregation and alerting
@@ -524,9 +536,9 @@ class UnifiedKeiAgentClient:
                 context={
                     "operation": operation,
                     "protocol": selected_protocol,
-                    "duration": duration
+                    "duration": duration,
                 },
-                correlation_id=correlation_id
+                correlation_id=correlation_id,
             )
 
             _logger.error(
@@ -583,7 +595,7 @@ class UnifiedKeiAgentClient:
                     except Exception as e:
                         _logger.warning(
                             f"Fallback failed with {fallback_protocol}: {e}",
-                            exc_info =True,
+                            exc_info=True,
                         )
                         continue
 
@@ -617,7 +629,7 @@ class UnifiedKeiAgentClient:
                     return await client._rpc_call(operation, data)
 
         cb_name = f"rpc.{operation}"
-        return await rm.execute_with_retry(_call, circuit_breaker_name =cb_name)
+        return await rm.execute_with_retry(_call, circuit_breaker_name=cb_name)
 
     async def _execute_stream_operation(
         self, operation: str, data: Dict[str, Any]
@@ -655,7 +667,7 @@ class UnifiedKeiAgentClient:
                 raise ProtocolError(f"Unbekatnte stream operation: {operation}")
 
         cb_name = f"stream.{operation}"
-        return await rm.execute_with_retry(_call, circuit_breaker_name =cb_name)
+        return await rm.execute_with_retry(_call, circuit_breaker_name=cb_name)
 
     async def _execute_bus_operation(
         self, operation: str, data: Dict[str, Any]
@@ -695,7 +707,7 @@ class UnifiedKeiAgentClient:
                     return await client.publish({"operation": operation, **data})
 
         cb_name = f"bus.{operation}"
-        return await rm.execute_with_retry(_call, circuit_breaker_name =cb_name)
+        return await rm.execute_with_retry(_call, circuit_breaker_name=cb_name)
 
     async def _execute_mcp_operation(
         self, operation: str, data: Dict[str, Any]
@@ -729,7 +741,7 @@ class UnifiedKeiAgentClient:
                     raise ProtocolError(f"Unbekatnte MCP operation: {operation}")
 
         cb_name = f"mcp.{operation}"
-        return await rm.execute_with_retry(_call, circuit_breaker_name =cb_name)
+        return await rm.execute_with_retry(_call, circuit_breaker_name=cb_name)
 
     # ============================================================================
     # HIGH-LEVEL API METHODS
@@ -944,23 +956,37 @@ class UnifiedKeiAgentClient:
         error_message = str(error).lower()
 
         # Authentication errors
-        if any(term in error_message for term in ["auth", "token", "credential", "unauthorized"]):
+        if any(
+            term in error_message
+            for term in ["auth", "token", "credential", "unauthorized"]
+        ):
             return ErrorCategory.AUTHENTICATION
 
         # Network errors
-        if any(term in error_message for term in ["connection", "network", "timeout", "dns"]):
+        if any(
+            term in error_message
+            for term in ["connection", "network", "timeout", "dns"]
+        ):
             return ErrorCategory.NETWORK
 
         # Validation errors
-        if any(term in error_message for term in ["validation", "invalid", "malformed", "schema"]):
+        if any(
+            term in error_message
+            for term in ["validation", "invalid", "malformed", "schema"]
+        ):
             return ErrorCategory.VALIDATION
 
         # Security errors
-        if any(term in error_message for term in ["security", "forbidden", "access denied"]):
+        if any(
+            term in error_message for term in ["security", "forbidden", "access denied"]
+        ):
             return ErrorCategory.SECURITY
 
         # Protocol errors
-        if any(term in error_message for term in ["protocol", "rpc", "stream", "bus", "mcp"]):
+        if any(
+            term in error_message
+            for term in ["protocol", "rpc", "stream", "bus", "mcp"]
+        ):
             return ErrorCategory.PROTOCOL
 
         # Configuration errors
@@ -981,11 +1007,17 @@ class UnifiedKeiAgentClient:
         error_message = str(error).lower()
 
         # Critical errors
-        if any(term in error_message for term in ["critical", "fatal", "security", "unauthorized"]):
+        if any(
+            term in error_message
+            for term in ["critical", "fatal", "security", "unauthorized"]
+        ):
             return ErrorSeverity.CRITICAL
 
         # High severity errors
-        if any(term in error_message for term in ["connection", "timeout", "failed", "error"]):
+        if any(
+            term in error_message
+            for term in ["connection", "timeout", "failed", "error"]
+        ):
             return ErrorSeverity.HIGH
 
         # Medium severity errors

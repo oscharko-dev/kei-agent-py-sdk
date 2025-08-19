@@ -23,22 +23,26 @@ import hashlib
 try:
     from watchdog.observers import Observer
     from watchdog.events import FileSystemEventHandler
+
     WATCHDOG_AVAILABLE = True
 except ImportError:
     WATCHDOG_AVAILABLE = False
 
 try:
     import yaml
+
     YAML_AVAILABLE = True
 except ImportError:
     YAML_AVAILABLE = False
 
 try:
     import tomllib
+
     TOML_AVAILABLE = True
 except ImportError:
     try:
         import tomli as tomllib
+
         TOML_AVAILABLE = True
     except ImportError:
         TOML_AVAILABLE = False
@@ -73,7 +77,7 @@ class ConfigChange:
             "applied": self.applied,
             "rollback_available": self.rollback_available,
             "user_id": self.user_id,
-            "reason": self.reason
+            "reason": self.reason,
         }
 
 
@@ -91,6 +95,7 @@ class ConfigValidator:
 
     def _add_default_rules(self) -> None:
         """Add default validation rules."""
+
         # Required fields validation
         def validate_required_fields(config: Dict[str, Any]) -> bool:
             for field in self.required_fields:
@@ -103,7 +108,9 @@ class ConfigValidator:
         def validate_field_types(config: Dict[str, Any]) -> bool:
             for field, expected_type in self.field_types.items():
                 if field in config and not isinstance(config[field], expected_type):
-                    logger.error(f"Field {field} has wrong type. Expected {expected_type}, got {type(config[field])}")
+                    logger.error(
+                        f"Field {field} has wrong type. Expected {expected_type}, got {type(config[field])}"
+                    )
                     return False
             return True
 
@@ -156,7 +163,7 @@ class ConfigValidator:
 class ConfigFileHandler(FileSystemEventHandler):
     """Handles configuration file system events."""
 
-    def __init__(self, config_manager: 'ConfigManager'):
+    def __init__(self, config_manager: "ConfigManager"):
         """Initialize file handler.
 
         Args:
@@ -233,7 +240,9 @@ class ConfigManager:
 
         # Start watching the file's directory
         if self.observer and file_path.parent.exists():
-            self.observer.schedule(self.file_handler, str(file_path.parent), recursive=False)
+            self.observer.schedule(
+                self.file_handler, str(file_path.parent), recursive=False
+            )
 
             if not self.observer.is_alive():
                 self.observer.start()
@@ -249,22 +258,24 @@ class ConfigManager:
             True if loaded successfully
         """
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
             # Parse based on file extension
-            if file_path.suffix.lower() == '.json':
+            if file_path.suffix.lower() == ".json":
                 new_config = json.loads(content)
-            elif file_path.suffix.lower() in ['.yml', '.yaml'] and YAML_AVAILABLE:
+            elif file_path.suffix.lower() in [".yml", ".yaml"] and YAML_AVAILABLE:
                 new_config = yaml.safe_load(content)
-            elif file_path.suffix.lower() == '.toml' and TOML_AVAILABLE:
+            elif file_path.suffix.lower() == ".toml" and TOML_AVAILABLE:
                 new_config = tomllib.loads(content)
             else:
                 logger.error(f"Unsupported configuration file format: {file_path}")
                 return False
 
             # Validate and apply configuration
-            return await self._apply_config_change(new_config, source='file', file_path=str(file_path))
+            return await self._apply_config_change(
+                new_config, source="file", file_path=str(file_path)
+            )
 
         except Exception as e:
             logger.error(f"Error loading configuration file {file_path}: {e}")
@@ -290,10 +301,10 @@ class ConfigManager:
     async def _apply_config_change(
         self,
         new_config: Dict[str, Any],
-        source: str = 'manual',
+        source: str = "manual",
         user_id: Optional[str] = None,
         reason: Optional[str] = None,
-        file_path: Optional[str] = None
+        file_path: Optional[str] = None,
     ) -> bool:
         """Apply a configuration change with validation and logging.
 
@@ -328,7 +339,7 @@ class ConfigManager:
                     validation_result=False,
                     applied=False,
                     user_id=user_id,
-                    reason=reason
+                    reason=reason,
                 )
                 self._record_change(change)
                 return False
@@ -349,7 +360,7 @@ class ConfigManager:
                 validation_result=True,
                 applied=True,
                 user_id=user_id,
-                reason=reason
+                reason=reason,
             )
             self._record_change(change)
 
@@ -374,7 +385,7 @@ class ConfigManager:
 
         # Limit history size
         if len(self.change_history) > self.max_history_size:
-            self.change_history = self.change_history[-self.max_history_size:]
+            self.change_history = self.change_history[-self.max_history_size :]
 
         logger.info(f"Recorded configuration change: {change.change_id}")
 
@@ -422,7 +433,7 @@ class ConfigManager:
             Configuration value or default
         """
         with self.config_lock:
-            keys = key.split('.')
+            keys = key.split(".")
             value = self.current_config
 
             for k in keys:
@@ -437,7 +448,7 @@ class ConfigManager:
         self,
         updates: Dict[str, Any],
         user_id: Optional[str] = None,
-        reason: Optional[str] = None
+        reason: Optional[str] = None,
     ) -> bool:
         """Update configuration with new values.
 
@@ -453,7 +464,9 @@ class ConfigManager:
             new_config = self.current_config.copy()
             new_config.update(updates)
 
-        return await self._apply_config_change(new_config, source='api', user_id=user_id, reason=reason)
+        return await self._apply_config_change(
+            new_config, source="api", user_id=user_id, reason=reason
+        )
 
     async def rollback_config(self, change_id: Optional[str] = None) -> bool:
         """Rollback to previous configuration.
@@ -487,8 +500,10 @@ class ConfigManager:
 
         return await self._apply_config_change(
             rollback_config,
-            source='rollback',
-            reason=f"Rollback to change {change_id}" if change_id else "Rollback to previous configuration"
+            source="rollback",
+            reason=f"Rollback to change {change_id}"
+            if change_id
+            else "Rollback to previous configuration",
         )
 
     def get_change_history(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
@@ -566,7 +581,9 @@ def get_config_value(key: str, default: Any = None) -> Any:
     return get_config_manager().get_config_value(key, default)
 
 
-async def update_config_value(key: str, value: Any, user_id: Optional[str] = None, reason: Optional[str] = None) -> bool:
+async def update_config_value(
+    key: str, value: Any, user_id: Optional[str] = None, reason: Optional[str] = None
+) -> bool:
     """Update a single configuration value.
 
     Args:
@@ -578,7 +595,7 @@ async def update_config_value(key: str, value: Any, user_id: Optional[str] = Non
     Returns:
         True if update was successful
     """
-    keys = key.split('.')
+    keys = key.split(".")
     updates = {}
     current = updates
 
@@ -588,4 +605,6 @@ async def update_config_value(key: str, value: Any, user_id: Optional[str] = Non
 
     current[keys[-1]] = value
 
-    return await get_config_manager().update_config(updates, user_id=user_id, reason=reason)
+    return await get_config_manager().update_config(
+        updates, user_id=user_id, reason=reason
+    )

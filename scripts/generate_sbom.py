@@ -242,7 +242,9 @@ class SBOMGenerator:
 
                 licenses.append(
                     {
-                        "package": getattr(dist, "project_name", getattr(dist, "key", "unknown")),
+                        "package": getattr(
+                            dist, "project_name", getattr(dist, "key", "unknown")
+                        ),
                         "version": getattr(dist, "version", ""),
                         "license": license_value or "",
                     }

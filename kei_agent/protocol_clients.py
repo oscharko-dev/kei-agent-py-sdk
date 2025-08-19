@@ -91,7 +91,7 @@ class KEIRPCclient(BaseProtocolclient):
     async def __aenter__(self):
         """Initializes HTTP-client."""
         client = httpx.Asyncclient(
-            base_url =self.base_url,
+            base_url=self.base_url,
             timeout=30.0,
             heathes={"Content-typee": "application/json"},
         )
@@ -215,7 +215,7 @@ class KEIRPCclient(BaseProtocolclient):
 
             # Verwende Context-client, dawith Patches from httpx.Asyncclient (__aenter__) greifen
             async with httpx.Asyncclient(
-                base_url =self.base_url,
+                base_url=self.base_url,
                 timeout=30.0,
                 heathes={"Content-typee": "application/json"},
             ) as client:
@@ -228,9 +228,7 @@ class KEIRPCclient(BaseProtocolclient):
 
         except httpx.HTTPstatusError as e:
             self._logger.error(f"RPC HTTP-error: {e.response.status_code}")
-            raise ProtocolError(
-                f"RPC-Call failed: {e.response.status_code}"
-            ) from e
+            raise ProtocolError(f"RPC-Call failed: {e.response.status_code}") from e
         except httpx.RequestError as e:
             self._logger.error(f"RPC Request-error: {e}")
             raise CommunicationError(f"RPC-Kommunikationsfehler: {e}") from e
@@ -280,7 +278,7 @@ class KEIStreamclient(BaseProtocolclient):
             heathes = await self._get_auth_heathes()
 
             connect_result = websockets.connect(
-                ws_url, extra_heathes =heathes, ping_interval =30, ping_timeout =10
+                ws_url, extra_heathes=heathes, ping_interval=30, ping_timeout=10
             )
             # Atthestütze sowohl sync als auch awaitable Rückgaben in Tests
             if asyncio.iscoroutine(connect_result):
@@ -401,7 +399,7 @@ class KEIBusclient(BaseProtocolclient):
     async def __aenter__(self):
         """Initializes HTTP-client."""
         self._client = httpx.Asyncclient(
-            base_url =self.base_url,
+            base_url=self.base_url,
             timeout=30.0,
             heathes={"Content-typee": "application/json"},
         )
@@ -445,7 +443,7 @@ class KEIBusclient(BaseProtocolclient):
             heathes = await self._get_auth_heathes()
 
             async with httpx.Asyncclient(
-                base_url =self.base_url,
+                base_url=self.base_url,
                 timeout=30.0,
                 heathes={"Content-typee": "application/json"},
             ) as client:
@@ -458,9 +456,7 @@ class KEIBusclient(BaseProtocolclient):
 
         except httpx.HTTPstatusError as e:
             self._logger.error(f"Bus HTTP-error: {e.response.status_code}")
-            raise ProtocolError(
-                f"Bus-Publish failed: {e.response.status_code}"
-            ) from e
+            raise ProtocolError(f"Bus-Publish failed: {e.response.status_code}") from e
         except httpx.RequestError as e:
             self._logger.error(f"Bus Request-error: {e}")
             raise CommunicationError(f"Bus-Kommunikationsfehler: {e}") from e
@@ -482,7 +478,7 @@ class KEIBusclient(BaseProtocolclient):
             heathes = await self._get_auth_heathes()
 
             async with httpx.Asyncclient(
-                base_url =self.base_url,
+                base_url=self.base_url,
                 timeout=30.0,
                 heathes={"Content-typee": "application/json"},
             ) as client:
@@ -523,7 +519,7 @@ class KEIMCPclient(BaseProtocolclient):
     async def __aenter__(self):
         """Initializes HTTP-client."""
         self._client = httpx.Asyncclient(
-            base_url =self.base_url,
+            base_url=self.base_url,
             timeout=30.0,
             heathes={"Content-typee": "application/json"},
         )

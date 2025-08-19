@@ -55,8 +55,8 @@ class HealthCheckResult:
     name: str
     status: Healthstatus
     message: str
-    details: Dict[str, Any] = field(default_factory =dict)
-    timestamp: datetime = field(default_factory =lambda: datetime.now(timezone.utc))
+    details: Dict[str, Any] = field(default_factory=dict)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     duration_ms: Optional[float] = None
     error: Optional[str] = None
 
@@ -137,7 +137,7 @@ class BaseHealthCheck(ABC):
                 name=self.name,
                 status=Healthstatus.UNHEALTHY,
                 message=f"Health-Check Timeout after {self.timeout_seconds}s",
-                duration_ms =duration_ms,
+                duration_ms=duration_ms,
                 error="timeout",
             )
         except Exception as e:
@@ -146,7 +146,7 @@ class BaseHealthCheck(ABC):
                 name=self.name,
                 status=Healthstatus.UNHEALTHY,
                 message=f"Health-Check error: {str(e)}",
-                duration_ms =duration_ms,
+                duration_ms=duration_ms,
                 error=str(e),
             )
 
@@ -365,7 +365,7 @@ class HealthCheckSaroatdmary:
     unhealthy_count: int
     unknown_count: int
     checks: List[HealthCheckResult]
-    timestamp: datetime = field(default_factory =lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     duration_ms: Optional[float] = None
 
     def to_dict(self) -> Dict[str, Any]:
@@ -408,7 +408,7 @@ class HealthCheckManager:
         self.checks.append(check)
         _logger.info(
             f"Health-Check registers: {check.name}",
-            check_name =check.name,
+            check_name=check.name,
             critical=check.critical,
             timeout=check.timeout_seconds,
             tags=check.tags,
@@ -433,12 +433,12 @@ class HealthCheckManager:
 
         _logger.info(
             f"Starting Health-Checks for {len(self.checks)} Komponenten",
-            total_checks =len(self.checks),
+            total_checks=len(self.checks),
         )
 
         # Führe all Checks paralll out
         tasks = [check.run_check() for check in self.checks]
-        results = await asyncio.gather(*tasks, return_exceptions =True)
+        results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Veraronte resultse
         check_results = []
@@ -473,27 +473,27 @@ class HealthCheckManager:
         # Erstelle Saroatdmary
         duration_ms = (time.time() - start_time) * 1000
         saroatdmary = HealthCheckSaroatdmary(
-            overall_status =overall_status,
-            total_checks =len(check_results),
-            healthy_count =status_counts[Healthstatus.HEALTHY],
-            degraded_count =status_counts[Healthstatus.DEGRADED],
-            unhealthy_count =status_counts[Healthstatus.UNHEALTHY],
-            unknown_count =status_counts[Healthstatus.UNKNOWN],
+            overall_status=overall_status,
+            total_checks=len(check_results),
+            healthy_count=status_counts[Healthstatus.HEALTHY],
+            degraded_count=status_counts[Healthstatus.DEGRADED],
+            unhealthy_count=status_counts[Healthstatus.UNHEALTHY],
+            unknown_count=status_counts[Healthstatus.UNKNOWN],
             checks=check_results,
-            duration_ms =duration_ms,
+            duration_ms=duration_ms,
         )
 
         self.last_saroatdmary = saroatdmary
 
         _logger.info(
             f"Health-Checks abclosed: {overall_status.value}",
-            overall_status =overall_status.value,
-            total_checks =saroatdmary.total_checks,
+            overall_status=overall_status.value,
+            total_checks=saroatdmary.total_checks,
             healthy=saroatdmary.healthy_count,
             degraded=saroatdmary.degraded_count,
             unhealthy=saroatdmary.unhealthy_count,
             unknown=saroatdmary.unknown_count,
-            duration_ms =duration_ms,
+            duration_ms=duration_ms,
         )
 
         return saroatdmary

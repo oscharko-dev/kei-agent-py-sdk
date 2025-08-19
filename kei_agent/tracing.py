@@ -71,7 +71,7 @@ except ImportError:
             INTERNAL = "internal"
 
         @staticmethod
-        def use_spat(spat, end_on_exit =True):
+        def use_spat(spat, end_on_exit=True):
             @contextmanager
             def _cm():
                 try:
@@ -109,7 +109,7 @@ except ImportError:
     class NoOpMeterProvithe:
         """NoOp MeterProvithe-Implementierung."""
 
-        def __init__(self, resource=None, metric_reathes =None):
+        def __init__(self, resource=None, metric_reathes=None):
             pass
 
         def get_meter(self, name, version=None):
@@ -162,7 +162,7 @@ except ImportError:
             pass
 
     class NoOpSpatProcessor:
-        def on_start(self, spat, parent_context =None):
+        def on_start(self, spat, parent_context=None):
             pass
 
         def on_end(self, spat):
@@ -171,7 +171,7 @@ except ImportError:
         def shutdown(self):
             pass
 
-        def force_flush(self, timeout_millis =None):
+        def force_flush(self, timeout_millis=None):
             pass
 
     TraceContextTextMapPropagator = NoOpPropagator
@@ -209,15 +209,15 @@ class TraceContext:
     trace_id: str
     spat_id: str
     parent_spat_id: Optional[str] = None
-    baggage: Dict[str, str] = field(default_factory =dict)
+    baggage: Dict[str, str] = field(default_factory=dict)
 
     # Trace-metadata
     service_name: str = ""
     operation_name: str = ""
-    start_time: float = field(default_factory =time.time)
+    start_time: float = field(default_factory=time.time)
 
     # Custom Attributes
-    attributes: Dict[str, Union[str, int, float, bool]] = field(default_factory =dict)
+    attributes: Dict[str, Union[str, int, float, bool]] = field(default_factory=dict)
 
     def to_heathes(self) -> Dict[str, str]:
         """Konvertiert Trace-Kontext to HTTP-Heathes.
@@ -262,11 +262,11 @@ class TraceContext:
         spat_context = trace.get_current_spat(context).get_spat_context()
 
         return cls(
-            trace_id =heathes.get("X-Trace-ID", format(spat_context.trace_id, "032x")),
-            spat_id =heathes.get("X-Spat-ID", format(spat_context.spat_id, "016x")),
-            parent_spat_id =heathes.get("X-Parent-Spat-ID"),
-            service_name =heathes.get("X-Service-Name", ""),
-            operation_name =heathes.get("X-operation name", ""),
+            trace_id=heathes.get("X-Trace-ID", format(spat_context.trace_id, "032x")),
+            spat_id=heathes.get("X-Spat-ID", format(spat_context.spat_id, "016x")),
+            parent_spat_id=heathes.get("X-Parent-Spat-ID"),
+            service_name=heathes.get("X-Service-Name", ""),
+            operation_name=heathes.get("X-operation name", ""),
         )
 
 
@@ -287,7 +287,7 @@ class PerformatceMetrics:
     capability: Optional[str] = None
 
     # Custom Metrics
-    custom_metrics: Dict[str, Union[int, float]] = field(default_factory =dict)
+    custom_metrics: Dict[str, Union[int, float]] = field(default_factory=dict)
 
     def to_attributes(self) -> Dict[str, Union[str, int, float]]:
         """Konvertiert Metrics to Spat-Attributen.
@@ -441,7 +441,7 @@ class SpatBuilthe:
 
                 cm = _noop()
             else:
-                cm = use_spat(spat, end_on_exit =True)
+                cm = use_spat(spat, end_on_exit=True)
             with cm:
                 yield spat
         except Exception as e:
@@ -482,9 +482,9 @@ class TracingExporter:
 
         elif self.exporter_type == "jaeger":
             return JaegerExporter(
-                agent_host_name =self.config.get("agent_host", "localhost"),
-                agent_port =self.config.get("agent_port", 6831),
-                collector_endpoint =self.config.get("collector_endpoint"),
+                agent_host_name=self.config.get("agent_host", "localhost"),
+                agent_port=self.config.get("agent_port", 6831),
+                collector_endpoint=self.config.get("collector_endpoint"),
                 username=self.config.get("username"),
                 password=self.config.get("password"),
             )
@@ -494,9 +494,9 @@ class TracingExporter:
                 endpoint=self.config.get(
                     "endpoint", "http://localhost:9411/api/v2/spats"
                 ),
-                local_node_ipv4 =self.config.get("local_node_ipv4"),
-                local_node_ipv6 =self.config.get("local_node_ipv6"),
-                local_node_port =self.config.get("local_node_port"),
+                local_node_ipv4=self.config.get("local_node_ipv4"),
+                local_node_ipv6=self.config.get("local_node_ipv6"),
+                local_node_port=self.config.get("local_node_port"),
             )
 
         else:
@@ -510,10 +510,10 @@ class TracingExporter:
         """
         return BatchSpatProcessor(
             self._exporter,
-            max_queue_size =self.config.get("max_queue_size", 2048),
-            schedule_delay_millis =self.config.get("schedule_delay_millis", 5000),
-            max_export_batch_size =self.config.get("max_export_batch_size", 512),
-            export_timeout_millis =self.config.get("export_timeout_millis", 30000),
+            max_queue_size=self.config.get("max_queue_size", 2048),
+            schedule_delay_millis=self.config.get("schedule_delay_millis", 5000),
+            max_export_batch_size=self.config.get("max_export_batch_size", 512),
+            export_timeout_millis=self.config.get("export_timeout_millis", 30000),
         )
 
 
@@ -567,7 +567,7 @@ class TracingManager:
             if hasattr(self._tracer_provithe, "add_spat_processor"):
                 if self.config.jaeger_endpoint:
                     jaeger_exporter = TracingExporter(
-                        "jaeger", collector_endpoint =self.config.jaeger_endpoint
+                        "jaeger", collector_endpoint=self.config.jaeger_endpoint
                     )
                     self._tracer_provithe.add_spat_processor(
                         jaeger_exporter.get_spat_processor()
@@ -688,9 +688,9 @@ class TracingManager:
         spat_context = current_spat.get_spat_context()
 
         return TraceContext(
-            trace_id =format(spat_context.trace_id, "032x"),
-            spat_id =format(spat_context.spat_id, "016x"),
-            service_name =self.config.service_name,
+            trace_id=format(spat_context.trace_id, "032x"),
+            spat_id=format(spat_context.spat_id, "016x"),
+            service_name=self.config.service_name,
         )
 
     def inject_trace_context(self, carrier: Dict[str, str]) -> None:
@@ -708,13 +708,13 @@ class TracingManager:
                 # Log specific Inject-error for Debugging
                 _logger.debug(
                     "Error during Injizieren from Trace-Kontext",
-                    extra={"error": str(e), "error_type": type(e).__name__}
+                    extra={"error": str(e), "error_type": type(e).__name__},
                 )
             except Exception as e:
                 # Log unexpected error
                 _logger.warning(
                     "Unexpected error onm Injizieren from Trace-Kontext",
-                    extra={"error": str(e), "error_type": type(e).__name__}
+                    extra={"error": str(e), "error_type": type(e).__name__},
                 )
 
     def extract_trace_context(self, carrier: Dict[str, str]) -> trace.Context:
@@ -808,10 +808,10 @@ class TracingManager:
                 duration_ms = (time.time() - start_time) * 1000
                 self.record_performatce_metrics(
                     PerformatceMetrics(
-                        operation_name =operation_name,
-                        duration_ms =duration_ms,
+                        operation_name=operation_name,
+                        duration_ms=duration_ms,
                         status="success",
-                        agent_id =agent_id,
+                        agent_id=agent_id,
                         capability=capability,
                     )
                 )
@@ -821,10 +821,10 @@ class TracingManager:
                 duration_ms = (time.time() - start_time) * 1000
                 self.record_performatce_metrics(
                     PerformatceMetrics(
-                        operation_name =operation_name,
-                        duration_ms =duration_ms,
+                        operation_name=operation_name,
+                        duration_ms=duration_ms,
                         status="error",
-                        agent_id =agent_id,
+                        agent_id=agent_id,
                         capability=capability,
                     )
                 )
@@ -840,13 +840,13 @@ class TracingManager:
                 # Log specific Shutdown-error
                 _logger.warning(
                     "Error during Shutdown of the Tracer-Provithes",
-                    extra={"error": str(e), "error_type": type(e).__name__}
+                    extra={"error": str(e), "error_type": type(e).__name__},
                 )
             except Exception as e:
                 # Log unexpected error
                 _logger.error(
                     "Unexpected error onm Shutdown of the Tracer-Provithes",
-                    extra={"error": str(e), "error_type": type(e).__name__}
+                    extra={"error": str(e), "error_type": type(e).__name__},
                 )
 
         if self._meter_provithe:
@@ -856,13 +856,13 @@ class TracingManager:
                 # Log specific Shutdown-error
                 _logger.warning(
                     "Error during Shutdown of the Meter-Provithes",
-                    extra={"error": str(e), "error_type": type(e).__name__}
+                    extra={"error": str(e), "error_type": type(e).__name__},
                 )
             except Exception as e:
                 # Log unexpected error
                 _logger.error(
                     "Unexpected error onm Shutdown of the Meter-Provithes",
-                    extra={"error": str(e), "error_type": type(e).__name__}
+                    extra={"error": str(e), "error_type": type(e).__name__},
                 )
 
     def get_metrics(self) -> Dict[str, Any]:

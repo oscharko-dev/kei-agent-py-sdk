@@ -14,7 +14,12 @@ from typing import Dict, Optional, Any
 import logging
 
 import httpx
-from tenacity import AsyncRetrying, stop_after_attempt, wait_random_exponential, retry_if_exception_type
+from tenacity import (
+    AsyncRetrying,
+    stop_after_attempt,
+    wait_random_exponential,
+    retry_if_exception_type,
+)
 
 from .protocol_types import SecurityConfig, Authtypee
 from .exceptions import SecurityError
@@ -36,7 +41,9 @@ class SecurityManager:
         _refresh_lock: Lock for Thread-sichere Token-Erneuerung
     """
 
-    def __init__(self, config: SecurityConfig, client_factory: Optional[Any] = None) -> None:
+    def __init__(
+        self, config: SecurityConfig, client_factory: Optional[Any] = None
+    ) -> None:
         """Initializes security manager.
 
         Args:
@@ -54,7 +61,9 @@ class SecurityManager:
 
         # Factory for creating an AsyncClient-like context manager
         if client_factory is None:
-            self._client_factory = lambda timeout, verify: httpx.AsyncClient(timeout=timeout, verify=verify)
+            self._client_factory = lambda timeout, verify: httpx.AsyncClient(
+                timeout=timeout, verify=verify
+            )
         else:
             self._client_factory = client_factory
 
@@ -99,7 +108,9 @@ class SecurityManager:
                 "Configuration error during auth header creation",
                 extra={"error": str(e), "auth_type": self.config.auth_type},
             )
-            raise SecurityError(f"Invalid configuration for auth type {self.config.auth_type}: {e}") from e
+            raise SecurityError(
+                f"Invalid configuration for auth type {self.config.auth_type}: {e}"
+            ) from e
         except (ConnectionError, TimeoutError) as e:
             _logger.error(
                 "Network error during auth header creation",
@@ -109,7 +120,11 @@ class SecurityManager:
         except Exception as e:
             _logger.error(
                 "Unexpected error during auth header creation",
-                extra={"error": str(e), "auth_type": self.config.auth_type, "error_type": type(e).__name__},
+                extra={
+                    "error": str(e),
+                    "auth_type": self.config.auth_type,
+                    "error_type": type(e).__name__,
+                },
             )
             raise SecurityError(f"Unexpected authentication error: {e}") from e
 
@@ -123,9 +138,7 @@ class SecurityManager:
             SecurityError: If ka API Token configures is
         """
         if not self.config.api_token:
-            raise SecurityError(
-                "API Token is erforthelich for Bearer-authentication"
-            )
+            raise SecurityError("API Token is erforthelich for Bearer-authentication")
 
         return {"Authorization": f"Bearer {self.config.api_token}"}
 
@@ -179,7 +192,9 @@ class SecurityManager:
                     "Network error during OIDC token fetch",
                     extra={"error": str(e), "issuer": self.config.oidc_issuer},
                 )
-                raise SecurityError(f"Network error during OIDC token fetch: {e}") from e
+                raise SecurityError(
+                    f"Network error during OIDC token fetch: {e}"
+                ) from e
             except (ValueError, KeyError) as e:
                 _logger.error(
                     "Invalid OIDC response format",
@@ -189,7 +204,11 @@ class SecurityManager:
             except Exception as e:
                 _logger.error(
                     "Unexpected error during OIDC token fetch",
-                    extra={"error": str(e), "error_type": type(e).__name__, "issuer": self.config.oidc_issuer},
+                    extra={
+                        "error": str(e),
+                        "error_type": type(e).__name__,
+                        "issuer": self.config.oidc_issuer,
+                    },
                 )
 
                 raise SecurityError(f"Unexpected OIDC token error: {e}") from e
@@ -237,16 +256,21 @@ class SecurityManager:
                 pinned = getattr(self.config, "tls_pinned_sha256", None)
                 if pinned and hasattr(response, "extensions"):
                     try:
-                        sslobj = response.extensions.get("network_stream").get_extra_info("ssl_object")  # type: ignore[attr-defined]
+                        sslobj = response.extensions.get(
+                            "network_stream"
+                        ).get_extra_info("ssl_object")  # type: ignore[attr-defined]
                         cert = sslobj.getpeercert(binary_form=True) if sslobj else None
                     except Exception:
                         cert = None
                     if cert is not None:
                         import hashlib
+
                         fp = hashlib.sha256(cert).hexdigest()
                         normalized = pinned.replace(":", "").lower()
                         if fp != normalized:
-                            raise SecurityError("TLS certificate pinning validation failed")
+                            raise SecurityError(
+                                "TLS certificate pinning validation failed"
+                            )
 
                 return response.json()
 
@@ -371,7 +395,11 @@ class SecurityManager:
             except Exception as e:
                 _logger.error(
                     "Unexpected error during automatic token refresh",
-                    extra={"error": str(e), "error_type": type(e).__name__, "auth_type": self.config.auth_type},
+                    extra={
+                        "error": str(e),
+                        "error_type": type(e).__name__,
+                        "auth_type": self.config.auth_type,
+                    },
                 )
                 # Warte before erneutem Versuch
                 await asyncio.sleep(60)

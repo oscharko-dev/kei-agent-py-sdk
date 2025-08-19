@@ -38,7 +38,7 @@ class AgentCapability:
     name: str
     version: str = "1.0.0"
     description: str = ""
-    parameters: Dict[str, Any] = field(default_factory =dict)
+    parameters: Dict[str, Any] = field(default_factory=dict)
     required: bool = False
 
     def to_dict(self) -> Dict[str, Any]:
@@ -111,8 +111,8 @@ class Agent:
     description: str = ""
     status: Agentstatus = Agentstatus.AVAILABLE
     capabilities: List[AgentCapability] = field(default_factory=list)
-    metadata: AgentMetadata = field(default_factory =AgentMetadata)
-    health: AgentHealth = field(default_factory =AgentHealth)
+    metadata: AgentMetadata = field(default_factory=AgentMetadata)
+    health: AgentHealth = field(default_factory=AgentHealth)
     endpoint: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
@@ -138,7 +138,7 @@ class Agent:
         return cls(
             agent_id=data.get("agent_id", ""),
             name=data.get("name", ""),
-            description=data.get("description", "")
+            description=data.get("description", ""),
         )
 
 

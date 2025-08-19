@@ -239,9 +239,7 @@ class SetupValidator:
             self.add_result("SDK Imports", False, f"Import-error: {e}")
             return False
         except Exception as e:
-            self.add_result(
-                "SDK Imports", False, f"Unexpected error onm Import: {e}"
-            )
+            self.add_result("SDK Imports", False, f"Unexpected error onm Import: {e}")
             return False
 
     def validate_docaroatthetation(self) -> bool:
@@ -287,6 +285,7 @@ class SetupValidator:
         # MkDocs Build testen
         try:
             import shutil
+
             mkdocs_path = shutil.which("mkdocs")
             if not mkdocs_path:
                 self.add_result("Docaroatthetation", False, "mkdocs command not found")
@@ -295,7 +294,7 @@ class SetupValidator:
             result = subprocess.run(
                 [mkdocs_path, "build", "--strict"],
                 cwd=BASE_DIR,
-                capture_output =True,
+                capture_output=True,
                 text=True,
                 timeout=60,
             )
@@ -343,7 +342,7 @@ class SetupValidator:
             result = subprocess.run(
                 [python_path, "-m", "pytest", "-q"],
                 cwd=BASE_DIR,
-                capture_output =True,
+                capture_output=True,
                 text=True,
                 timeout=300,
             )
@@ -445,9 +444,7 @@ class SetupValidator:
                 if not validation():
                     all_passed = False
             except Exception as e:
-                self.add_result(
-                    validation.__name__, False, f"Valitherung failed: {e}"
-                )
+                self.add_result(validation.__name__, False, f"Valitherung failed: {e}")
                 all_passed = False
 
         print("\n" + "=" * 60)

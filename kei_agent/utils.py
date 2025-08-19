@@ -109,7 +109,9 @@ def calculate_backoff(
         import secrets
 
         # Use cryptographically secure random for jitter
-        jitter_factor: float = 0.5 + (float(secrets.randbelow(500)) / 1000.0)  # 0.5..1.0
+        jitter_factor: float = 0.5 + (
+            float(secrets.randbelow(500)) / 1000.0
+        )  # 0.5..1.0
         delay = delay * jitter_factor
 
     return delay

@@ -19,12 +19,16 @@ import logging
 try:
     from aiohttp import web, WSMsgType
     from aiohttp.web import Request, Response, WebSocketResponse
+
     AIOHTTP_AVAILABLE = True
 except ImportError:
     AIOHTTP_AVAILABLE = False
 
 from .metrics import get_metrics_collector, MetricsCollector
-from .dashboard_generators import generate_security_dashboard_html, generate_business_dashboard_html
+from .dashboard_generators import (
+    generate_security_dashboard_html,
+    generate_business_dashboard_html,
+)
 from .config_api import get_config_api
 
 logger = logging.getLogger(__name__)
@@ -33,8 +37,12 @@ logger = logging.getLogger(__name__)
 class MetricsServer:
     """HTTP server for exposing metrics and monitoring endpoints."""
 
-    def __init__(self, host: str = "127.0.0.1", port: int = 8090,
-                 metrics_collector: Optional[MetricsCollector] = None):
+    def __init__(
+        self,
+        host: str = "127.0.0.1",
+        port: int = 8090,
+        metrics_collector: Optional[MetricsCollector] = None,
+    ):
         """Initialize metrics server.
 
         Args:
@@ -63,32 +71,34 @@ class MetricsServer:
         app = web.Application()
 
         # Metrics endpoints
-        app.router.add_get('/metrics', self.metrics_handler)
-        app.router.add_get('/health', self.health_handler)
-        app.router.add_get('/ready', self.readiness_handler)
-        app.router.add_get('/live', self.liveness_handler)
+        app.router.add_get("/metrics", self.metrics_handler)
+        app.router.add_get("/health", self.health_handler)
+        app.router.add_get("/ready", self.readiness_handler)
+        app.router.add_get("/live", self.liveness_handler)
 
         # Dashboard endpoints
-        app.router.add_get('/', self.dashboard_handler)
-        app.router.add_get('/dashboard', self.dashboard_handler)
-        app.router.add_get('/dashboard/health', self.health_dashboard_handler)
-        app.router.add_get('/dashboard/performance', self.performance_dashboard_handler)
-        app.router.add_get('/dashboard/security', self.security_dashboard_handler)
-        app.router.add_get('/dashboard/business', self.business_dashboard_handler)
-        app.router.add_get('/api/metrics/summary', self.metrics_summary_handler)
-        app.router.add_get('/api/health/status', self.health_status_handler)
-        app.router.add_get('/api/performance/stats', self.performance_stats_handler)
-        app.router.add_get('/api/security/events', self.security_events_handler)
-        app.router.add_get('/api/business/metrics', self.business_metrics_handler)
+        app.router.add_get("/", self.dashboard_handler)
+        app.router.add_get("/dashboard", self.dashboard_handler)
+        app.router.add_get("/dashboard/health", self.health_dashboard_handler)
+        app.router.add_get("/dashboard/performance", self.performance_dashboard_handler)
+        app.router.add_get("/dashboard/security", self.security_dashboard_handler)
+        app.router.add_get("/dashboard/business", self.business_dashboard_handler)
+        app.router.add_get("/api/metrics/summary", self.metrics_summary_handler)
+        app.router.add_get("/api/health/status", self.health_status_handler)
+        app.router.add_get("/api/performance/stats", self.performance_stats_handler)
+        app.router.add_get("/api/security/events", self.security_events_handler)
+        app.router.add_get("/api/business/metrics", self.business_metrics_handler)
 
         # Real-time metrics streaming
-        app.router.add_get('/ws/metrics', self.websocket_metrics_handler)
+        app.router.add_get("/ws/metrics", self.websocket_metrics_handler)
 
         # Configuration API endpoints
         self.config_api.create_routes(app)
 
         # Static files for dashboard
-        app.router.add_static('/static/', path=Path(__file__).parent / 'static', name='static')
+        app.router.add_static(
+            "/static/", path=Path(__file__).parent / "static", name="static"
+        )
 
         return app
 
@@ -99,14 +109,14 @@ class MetricsServer:
 
             return Response(
                 text=metrics_text,
-                content_type='text/plain; version=0.0.4; charset=utf-8'
+                content_type="text/plain; version=0.0.4; charset=utf-8",
             )
         except Exception as e:
             logger.error(f"Error generating metrics: {e}")
             return Response(
                 text=f"# Error generating metrics: {e}\n",
                 status=500,
-                content_type='text/plain'
+                content_type="text/plain",
             )
 
     async def health_handler(self, request: Request) -> Response:
@@ -118,8 +128,9 @@ class MetricsServer:
             "metrics_collector": {
                 "enabled": self.metrics_collector.enabled,
                 "prometheus_available": self.metrics_collector.enabled,
-                "opentelemetry_available": hasattr(self.metrics_collector, 'tracer') and self.metrics_collector.tracer is not None
-            }
+                "opentelemetry_available": hasattr(self.metrics_collector, "tracer")
+                and self.metrics_collector.tracer is not None,
+            },
         }
 
         return web.json_response(health_data)
@@ -133,8 +144,7 @@ class MetricsServer:
             return web.json_response({"status": "ready", "timestamp": time.time()})
         else:
             return web.json_response(
-                {"status": "not_ready", "timestamp": time.time()},
-                status=503
+                {"status": "not_ready", "timestamp": time.time()}, status=503
             )
 
     async def liveness_handler(self, request: Request) -> Response:
@@ -145,27 +155,27 @@ class MetricsServer:
     async def dashboard_handler(self, request: Request) -> Response:
         """Handle main metrics dashboard."""
         dashboard_html = self._generate_main_dashboard_html()
-        return Response(text=dashboard_html, content_type='text/html')
+        return Response(text=dashboard_html, content_type="text/html")
 
     async def health_dashboard_handler(self, request: Request) -> Response:
         """Handle health monitoring dashboard."""
         dashboard_html = self._generate_health_dashboard_html()
-        return Response(text=dashboard_html, content_type='text/html')
+        return Response(text=dashboard_html, content_type="text/html")
 
     async def performance_dashboard_handler(self, request: Request) -> Response:
         """Handle performance monitoring dashboard."""
         dashboard_html = self._generate_performance_dashboard_html()
-        return Response(text=dashboard_html, content_type='text/html')
+        return Response(text=dashboard_html, content_type="text/html")
 
     async def security_dashboard_handler(self, request: Request) -> Response:
         """Handle security monitoring dashboard."""
         dashboard_html = self._generate_security_dashboard_html()
-        return Response(text=dashboard_html, content_type='text/html')
+        return Response(text=dashboard_html, content_type="text/html")
 
     async def business_dashboard_handler(self, request: Request) -> Response:
         """Handle business metrics dashboard."""
         dashboard_html = self._generate_business_dashboard_html()
-        return Response(text=dashboard_html, content_type='text/html')
+        return Response(text=dashboard_html, content_type="text/html")
 
     async def metrics_summary_handler(self, request: Request) -> Response:
         """Handle metrics summary API endpoint."""
@@ -173,21 +183,22 @@ class MetricsServer:
             summary = self.metrics_collector.get_metrics_summary()
 
             # Add server information
-            summary.update({
-                "server": {
-                    "host": self.host,
-                    "port": self.port,
-                    "uptime_seconds": time.time() - self.start_time,
-                    "websocket_connections": len(self.websocket_connections)
+            summary.update(
+                {
+                    "server": {
+                        "host": self.host,
+                        "port": self.port,
+                        "uptime_seconds": time.time() - self.start_time,
+                        "websocket_connections": len(self.websocket_connections),
+                    }
                 }
-            })
+            )
 
             return web.json_response(summary)
         except Exception as e:
             logger.error(f"Error generating metrics summary: {e}")
             return web.json_response(
-                {"error": f"Failed to generate summary: {e}"},
-                status=500
+                {"error": f"Failed to generate summary: {e}"}, status=500
             )
 
     async def health_status_handler(self, request: Request) -> Response:
@@ -200,7 +211,9 @@ class MetricsServer:
 
             # Calculate health score based on error rates
             recent_errors = error_stats.get("recent_errors", 0)
-            error_rate_1min = error_stats.get("error_rates", {}).get("per_minute_1min", 0)
+            error_rate_1min = error_stats.get("error_rates", {}).get(
+                "per_minute_1min", 0
+            )
 
             if error_rate_1min > 10:
                 health_status = "critical"
@@ -223,7 +236,7 @@ class MetricsServer:
                 "error_rate_1min": error_rate_1min,
                 "recent_errors": recent_errors,
                 "metrics_collector_enabled": self.metrics_collector.enabled,
-                "websocket_connections": len(self.websocket_connections)
+                "websocket_connections": len(self.websocket_connections),
             }
 
             return web.json_response(health_data)
@@ -231,8 +244,7 @@ class MetricsServer:
         except Exception as e:
             logger.error(f"Error generating health status: {e}")
             return web.json_response(
-                {"error": f"Failed to generate health status: {e}"},
-                status=500
+                {"error": f"Failed to generate health status: {e}"}, status=500
             )
 
     async def performance_stats_handler(self, request: Request) -> Response:
@@ -245,19 +257,19 @@ class MetricsServer:
                     "total_requests": 0,
                     "avg_response_time": 0,
                     "error_rate": 0,
-                    "throughput": 0
+                    "throughput": 0,
                 },
                 "system_metrics": {
                     "memory_usage_mb": 0,
                     "cpu_usage_percent": 0,
-                    "active_connections": len(self.websocket_connections)
+                    "active_connections": len(self.websocket_connections),
                 },
                 "protocol_metrics": {
                     "rpc_requests": 0,
                     "stream_connections": 0,
                     "bus_messages": 0,
-                    "mcp_executions": 0
-                }
+                    "mcp_executions": 0,
+                },
             }
 
             return web.json_response(performance_data)
@@ -265,8 +277,7 @@ class MetricsServer:
         except Exception as e:
             logger.error(f"Error generating performance stats: {e}")
             return web.json_response(
-                {"error": f"Failed to generate performance stats: {e}"},
-                status=500
+                {"error": f"Failed to generate performance stats: {e}"}, status=500
             )
 
     async def security_events_handler(self, request: Request) -> Response:
@@ -279,13 +290,23 @@ class MetricsServer:
 
             # Filter security-related events
             security_events = [
-                error for error in recent_errors
-                if error.category in [ErrorCategory.SECURITY, ErrorCategory.AUTHENTICATION]
+                error
+                for error in recent_errors
+                if error.category
+                in [ErrorCategory.SECURITY, ErrorCategory.AUTHENTICATION]
             ]
 
             # Categorize security events
-            auth_failures = len([e for e in security_events if e.category == ErrorCategory.AUTHENTICATION])
-            security_violations = len([e for e in security_events if e.category == ErrorCategory.SECURITY])
+            auth_failures = len(
+                [
+                    e
+                    for e in security_events
+                    if e.category == ErrorCategory.AUTHENTICATION
+                ]
+            )
+            security_violations = len(
+                [e for e in security_events if e.category == ErrorCategory.SECURITY]
+            )
 
             security_data = {
                 "timestamp": time.time(),
@@ -298,10 +319,10 @@ class MetricsServer:
                         "type": event.error_type,
                         "message": event.error_message,
                         "severity": event.severity.value,
-                        "agent_id": event.agent_id
+                        "agent_id": event.agent_id,
                     }
                     for event in security_events[-10:]  # Last 10 events
-                ]
+                ],
             }
 
             return web.json_response(security_data)
@@ -309,8 +330,7 @@ class MetricsServer:
         except Exception as e:
             logger.error(f"Error generating security events: {e}")
             return web.json_response(
-                {"error": f"Failed to generate security events: {e}"},
-                status=500
+                {"error": f"Failed to generate security events: {e}"}, status=500
             )
 
     async def business_metrics_handler(self, request: Request) -> Response:
@@ -321,24 +341,24 @@ class MetricsServer:
                 "agent_metrics": {
                     "total_agents": 1,  # This would come from actual agent registry
                     "active_agents": 1,
-                    "agent_uptime_avg": time.time() - self.start_time
+                    "agent_uptime_avg": time.time() - self.start_time,
                 },
                 "protocol_usage": {
                     "rpc_usage_percent": 40,
                     "stream_usage_percent": 30,
                     "bus_usage_percent": 20,
-                    "mcp_usage_percent": 10
+                    "mcp_usage_percent": 10,
                 },
                 "operation_metrics": {
                     "successful_operations": 0,
                     "failed_operations": 0,
-                    "avg_operation_time": 0
+                    "avg_operation_time": 0,
                 },
                 "resource_utilization": {
                     "memory_efficiency": 85,
                     "cpu_efficiency": 90,
-                    "network_efficiency": 95
-                }
+                    "network_efficiency": 95,
+                },
             }
 
             return web.json_response(business_data)
@@ -346,8 +366,7 @@ class MetricsServer:
         except Exception as e:
             logger.error(f"Error generating business metrics: {e}")
             return web.json_response(
-                {"error": f"Failed to generate business metrics: {e}"},
-                status=500
+                {"error": f"Failed to generate business metrics: {e}"}, status=500
             )
 
     async def websocket_metrics_handler(self, request: Request) -> WebSocketResponse:
@@ -356,16 +375,18 @@ class MetricsServer:
         await ws.prepare(request)
 
         self.websocket_connections.add(ws)
-        logger.info(f"WebSocket connection established. Total connections: {len(self.websocket_connections)}")
+        logger.info(
+            f"WebSocket connection established. Total connections: {len(self.websocket_connections)}"
+        )
 
         try:
             # Send initial metrics
             summary = self.metrics_collector.get_metrics_summary()
-            await ws.send_str(json.dumps({
-                "type": "initial",
-                "data": summary,
-                "timestamp": time.time()
-            }))
+            await ws.send_str(
+                json.dumps(
+                    {"type": "initial", "data": summary, "timestamp": time.time()}
+                )
+            )
 
             # Keep connection alive and send periodic updates
             async for msg in ws:
@@ -373,10 +394,9 @@ class MetricsServer:
                     try:
                         data = json.loads(msg.data)
                         if data.get("type") == "ping":
-                            await ws.send_str(json.dumps({
-                                "type": "pong",
-                                "timestamp": time.time()
-                            }))
+                            await ws.send_str(
+                                json.dumps({"type": "pong", "timestamp": time.time()})
+                            )
                     except json.JSONDecodeError:
                         pass
                 elif msg.type == WSMsgType.ERROR:
@@ -388,7 +408,9 @@ class MetricsServer:
 
         finally:
             self.websocket_connections.discard(ws)
-            logger.info(f"WebSocket connection closed. Remaining connections: {len(self.websocket_connections)}")
+            logger.info(
+                f"WebSocket connection closed. Remaining connections: {len(self.websocket_connections)}"
+            )
 
         return ws
 
@@ -397,11 +419,9 @@ class MetricsServer:
         if not self.websocket_connections:
             return
 
-        message = json.dumps({
-            "type": "update",
-            "data": metrics_data,
-            "timestamp": time.time()
-        })
+        message = json.dumps(
+            {"type": "update", "data": metrics_data, "timestamp": time.time()}
+        )
 
         # Send to all connected clients
         disconnected = set()
@@ -1152,7 +1172,9 @@ def get_metrics_server(host: str = "127.0.0.1", port: int = 8090) -> MetricsServ
     return _metrics_server
 
 
-async def start_metrics_server(host: str = "127.0.0.1", port: int = 8090) -> MetricsServer:
+async def start_metrics_server(
+    host: str = "127.0.0.1", port: int = 8090
+) -> MetricsServer:
     """Start the metrics server."""
     server = get_metrics_server(host, port)
     await server.start()

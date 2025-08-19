@@ -64,22 +64,19 @@ class InputSanitizer:
     # Dangerous patterns to detect
     DANGEROUS_PATTERNS = [
         # Script injection
-        r'<script[^>]*>.*?</script>',
-        r'javascript:',
-        r'vbscript:',
-        r'data:text/html',
-
+        r"<script[^>]*>.*?</script>",
+        r"javascript:",
+        r"vbscript:",
+        r"data:text/html",
         # SQL injection patterns
-        r'(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|UNION)\b)',
-        r'(\b(OR|AND)\s+\d+\s*=\s*\d+)',
+        r"(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|UNION)\b)",
+        r"(\b(OR|AND)\s+\d+\s*=\s*\d+)",
         r'(\b(OR|AND)\s+[\'"][^\'"]*[\'"])',
-
         # Command injection
-        r'[;&|`$(){}[\]\\]',
-        r'\b(rm|del|format|shutdown|reboot|kill)\b',
-
+        r"[;&|`$(){}[\]\\]",
+        r"\b(rm|del|format|shutdown|reboot|kill)\b",
         # Path traversal
-        r'\.\./|\.\.\\'
+        r"\.\./|\.\.\\",
     ]
 
     def __init__(self, rate_limiter: Optional[RateLimiter] = None):
@@ -89,7 +86,9 @@ class InputSanitizer:
             rate_limiter: Optional rate limiter instance
         """
         self.rate_limiter = rate_limiter or RateLimiter()
-        self.compiled_patterns = [re.compile(pattern, re.IGNORECASE) for pattern in self.DANGEROUS_PATTERNS]
+        self.compiled_patterns = [
+            re.compile(pattern, re.IGNORECASE) for pattern in self.DANGEROUS_PATTERNS
+        ]
 
     def check_rate_limit(self) -> None:
         """Check rate limit for input validation.
@@ -100,8 +99,9 @@ class InputSanitizer:
         if not self.rate_limiter.is_allowed():
             raise ValidationError("Rate limit exceeded for input validation")
 
-    def sanitize_string(self, value: Any, max_length: Optional[int] = None,
-                       field_name: str = "input") -> str:
+    def sanitize_string(
+        self, value: Any, max_length: Optional[int] = None, field_name: str = "input"
+    ) -> str:
         """Sanitize string input with comprehensive validation.
 
         Args:
@@ -130,15 +130,16 @@ class InputSanitizer:
             raise ValidationError(f"{field_name} exceeds maximum length of {max_len}")
 
         # Remove null bytes and control characters (except common whitespace)
-        sanitized = ''.join(
-            char for char in str_value
-            if ord(char) >= 32 or char in '\t\n\r'
+        sanitized = "".join(
+            char for char in str_value if ord(char) >= 32 or char in "\t\n\r"
         )
 
         # Check for dangerous patterns
         for pattern in self.compiled_patterns:
             if pattern.search(sanitized):
-                raise ValidationError(f"{field_name} contains potentially dangerous content")
+                raise ValidationError(
+                    f"{field_name} contains potentially dangerous content"
+                )
 
         return sanitized.strip()
 
@@ -164,7 +165,7 @@ class InputSanitizer:
             raise ValidationError(f"Invalid {field_name} format: {e}")
 
         # Validate scheme
-        if parsed.scheme not in ['http', 'https']:
+        if parsed.scheme not in ["http", "https"]:
             raise ValidationError(f"{field_name} must use HTTP or HTTPS protocol")
 
         # Validate netloc
@@ -172,7 +173,7 @@ class InputSanitizer:
             raise ValidationError(f"{field_name} must have a valid domain")
 
         # Check for suspicious patterns in URL
-        suspicious_patterns = ['..', '//', '\\', '<', '>', '"', "'", '`']
+        suspicious_patterns = ["..", "//", "\\", "<", ">", '"', "'", "`"]
         if any(pattern in sanitized for pattern in suspicious_patterns):
             raise ValidationError(f"{field_name} contains suspicious characters")
 
@@ -194,15 +195,23 @@ class InputSanitizer:
         sanitized = self.sanitize_string(value, 500, field_name)
 
         # Check for path traversal
-        if '..' in sanitized:
+        if ".." in sanitized:
             path = Path(sanitized)
-            if '..' in path.parts:
+            if ".." in path.parts:
                 raise ValidationError(f"{field_name} contains path traversal")
 
         # Validate file extension if present
         path = Path(sanitized)
         if path.suffix:
-            dangerous_extensions = ['.exe', '.bat', '.cmd', '.sh', '.ps1', '.vbs', '.js']
+            dangerous_extensions = [
+                ".exe",
+                ".bat",
+                ".cmd",
+                ".sh",
+                ".ps1",
+                ".vbs",
+                ".js",
+            ]
             if path.suffix.lower() in dangerous_extensions:
                 raise ValidationError(f"{field_name} has dangerous file extension")
 
@@ -295,7 +304,9 @@ class InputSanitizer:
 
         return sanitized_args
 
-    def _validate_json_structure(self, obj: Any, field_name: str, depth: int = 0) -> None:
+    def _validate_json_structure(
+        self, obj: Any, field_name: str, depth: int = 0
+    ) -> None:
         """Validate JSON structure depth and size.
 
         Args:
@@ -307,7 +318,9 @@ class InputSanitizer:
             ValidationError: If validation fails
         """
         if depth > self.MAX_JSON_DEPTH:
-            raise ValidationError(f"{field_name} exceeds maximum depth of {self.MAX_JSON_DEPTH}")
+            raise ValidationError(
+                f"{field_name} exceeds maximum depth of {self.MAX_JSON_DEPTH}"
+            )
 
         if isinstance(obj, dict):
             if len(obj) > self.MAX_ARRAY_LENGTH:

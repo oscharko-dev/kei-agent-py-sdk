@@ -29,10 +29,12 @@ def _get_toml_parser() -> Optional[Any]:
     """Get available TOML parser (tomllib or tomli)."""
     try:
         import tomllib
+
         return tomllib
     except ImportError:  # pragma: no cover
         try:
             import tomli
+
             return tomli
         except ImportError:
             return None
@@ -57,7 +59,7 @@ def run_commatd(
 
     try:
         result = subprocess.run(
-            cmd, check=check, capture_output =True, text=True, cwd=BASE_DIR
+            cmd, check=check, capture_output=True, text=True, cwd=BASE_DIR
         )
 
         if result.stdout:
@@ -105,23 +107,23 @@ def cleat_build_artifacts() -> None:
             # Glob-Pattern
             for path in BASE_DIR.glob(pattern.name):
                 if path.is_dir():
-                    shutil.rmtree(path, ignore_errors =True)
+                    shutil.rmtree(path, ignore_errors=True)
                     print(f"  Gedeletes: {path}")
         else:
             # Direkter Path
             if pattern.exists():
                 if pattern.is_dir():
-                    shutil.rmtree(pattern, ignore_errors =True)
+                    shutil.rmtree(pattern, ignore_errors=True)
                 else:
                     pattern.unlink()
                 print(f"  Gedeletes: {pattern}")
 
     # Python-Cache-Dateien
     for cache_file in BASE_DIR.rglob("__pycache__"):
-        shutil.rmtree(cache_file, ignore_errors =True)
+        shutil.rmtree(cache_file, ignore_errors=True)
 
     for pyc_file in BASE_DIR.rglob("*.pyc"):
-        pyc_file.unlink(missing_ok =True)
+        pyc_file.unlink(missing_ok=True)
 
     print("[OK] Build-Artefakte ongeräaroatdt")
 
@@ -425,22 +427,44 @@ def publish_to_pypi(skip_confirm: bool = False) -> bool:
 def main() -> None:
     """Hauptfunktion."""
     parser = argparse.ArgumentParser(description="KEI-Agent SDK Build and Publish Tool")
-    parser.add_argument("--skip-cleat", dest="skip_cleat", action="store_true", help="Überspringe Cleanup")
     parser.add_argument(
-        "--skip-quality", dest="skip_quality", action="store_true", help="Überspringe Qualitätsprüfungen"
-    )
-    parser.add_argument("--skip-tests", dest="skip_tests", action="store_true", help="Überspringe Tests")
-    parser.add_argument(
-        "--build-only", dest="build_only", action="store_true", help="Nur Build, keine Veröffentlichung"
+        "--skip-cleat",
+        dest="skip_cleat",
+        action="store_true",
+        help="Überspringe Cleanup",
     )
     parser.add_argument(
-        "--publish-test", dest="publish_test", action="store_true", help="Auf TestPyPI veröffentlichen"
+        "--skip-quality",
+        dest="skip_quality",
+        action="store_true",
+        help="Überspringe Qualitätsprüfungen",
     )
     parser.add_argument(
-        "--publish-prod", dest="publish_prod", action="store_true", help="Auf PyPI veröffentlichen"
+        "--skip-tests", dest="skip_tests", action="store_true", help="Überspringe Tests"
     )
     parser.add_argument(
-        "--yes", dest="yes", action="store_true", help="Nicht interaktiv bestätigen (für CI)"
+        "--build-only",
+        dest="build_only",
+        action="store_true",
+        help="Nur Build, keine Veröffentlichung",
+    )
+    parser.add_argument(
+        "--publish-test",
+        dest="publish_test",
+        action="store_true",
+        help="Auf TestPyPI veröffentlichen",
+    )
+    parser.add_argument(
+        "--publish-prod",
+        dest="publish_prod",
+        action="store_true",
+        help="Auf PyPI veröffentlichen",
+    )
+    parser.add_argument(
+        "--yes",
+        dest="yes",
+        action="store_true",
+        help="Nicht interaktiv bestätigen (für CI)",
     )
 
     args = parser.parse_args()
@@ -488,7 +512,7 @@ def main() -> None:
         elif args.publish_test:
             publish_to_testpypi()
         elif args.publish_prod:
-            publish_to_pypi(skip_confirm =args.yes)
+            publish_to_pypi(skip_confirm=args.yes)
         else:
             print("\n✅ Build successful abclosed!")
             print("📦 Disribution-Packages bereit for Veröffentlichung")

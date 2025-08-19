@@ -19,7 +19,14 @@ from dataclasses import dataclass, asdict
 
 from .cache_framework import get_cache_event_manager
 from .multi_level_cache import MultiLevelCache, MultiLevelCacheConfig
-from .specialized_caches import ResponseCache, AuthTokenCache, ConfigCache, ProtocolCache, MetricsCache, CachePolicy
+from .specialized_caches import (
+    ResponseCache,
+    AuthTokenCache,
+    ConfigCache,
+    ProtocolCache,
+    MetricsCache,
+    CachePolicy,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -95,22 +102,22 @@ class CacheManager:
     def _initialize_specialized_caches(self) -> None:
         """Initialize specialized cache instances."""
         if self.config.enable_response_cache:
-            self.specialized_caches['response'] = ResponseCache(
+            self.specialized_caches["response"] = ResponseCache(
                 self.multi_level_cache,
-                CachePolicy(ttl=300, invalidation_tags=['api_response'])
+                CachePolicy(ttl=300, invalidation_tags=["api_response"]),
             )
 
         if self.config.enable_auth_cache:
-            self.specialized_caches['auth'] = AuthTokenCache(self.multi_level_cache)
+            self.specialized_caches["auth"] = AuthTokenCache(self.multi_level_cache)
 
         if self.config.enable_config_cache:
-            self.specialized_caches['config'] = ConfigCache(self.multi_level_cache)
+            self.specialized_caches["config"] = ConfigCache(self.multi_level_cache)
 
         if self.config.enable_protocol_cache:
-            self.specialized_caches['protocol'] = ProtocolCache(self.multi_level_cache)
+            self.specialized_caches["protocol"] = ProtocolCache(self.multi_level_cache)
 
         if self.config.enable_metrics_cache:
-            self.specialized_caches['metrics'] = MetricsCache(self.multi_level_cache)
+            self.specialized_caches["metrics"] = MetricsCache(self.multi_level_cache)
 
     def _setup_event_handlers(self) -> None:
         """Setup event handlers for cache operations."""
@@ -138,7 +145,9 @@ class CacheManager:
 
         if self.config.enable_cache_warming:
             for strategy_name, strategy_func in self._warming_strategies.items():
-                task = asyncio.create_task(self._warming_loop(strategy_name, strategy_func))
+                task = asyncio.create_task(
+                    self._warming_loop(strategy_name, strategy_func)
+                )
                 self._warming_tasks.append(task)
 
     async def _monitoring_loop(self) -> None:
@@ -199,12 +208,14 @@ class CacheManager:
             logger.error(f"Error getting cache key {key}: {e}")
             return None
 
-    async def set(self,
-                 key: str,
-                 value: Any,
-                 ttl: Optional[float] = None,
-                 tags: List[str] = None,
-                 cache_type: str = "default") -> bool:
+    async def set(
+        self,
+        key: str,
+        value: Any,
+        ttl: Optional[float] = None,
+        tags: List[str] = None,
+        cache_type: str = "default",
+    ) -> bool:
         """Set value in cache.
 
         Args:
@@ -265,7 +276,7 @@ class CacheManager:
             if cache_type == "all":
                 success = await self.multi_level_cache.clear()
                 for specialized_cache in self.specialized_caches.values():
-                    if hasattr(specialized_cache, 'cache'):
+                    if hasattr(specialized_cache, "cache"):
                         success &= await specialized_cache.cache.clear()
                 return success
             elif cache_type == "default":
@@ -281,7 +292,9 @@ class CacheManager:
             logger.error(f"Error clearing cache {cache_type}: {e}")
             return False
 
-    async def invalidate_by_tags(self, tags: List[str], cache_type: str = "all") -> Dict[str, int]:
+    async def invalidate_by_tags(
+        self, tags: List[str], cache_type: str = "all"
+    ) -> Dict[str, int]:
         """Invalidate cache entries by tags.
 
         Args:
@@ -295,17 +308,23 @@ class CacheManager:
 
         try:
             if cache_type == "all" or cache_type == "default":
-                results["multi_level"] = sum((await self.multi_level_cache.invalidate_by_tags(tags)).values())
+                results["multi_level"] = sum(
+                    (await self.multi_level_cache.invalidate_by_tags(tags)).values()
+                )
 
             if cache_type == "all":
                 for cache_name, specialized_cache in self.specialized_caches.items():
-                    if hasattr(specialized_cache, 'cache'):
-                        cache_results = await specialized_cache.cache.invalidate_by_tags(tags)
+                    if hasattr(specialized_cache, "cache"):
+                        cache_results = (
+                            await specialized_cache.cache.invalidate_by_tags(tags)
+                        )
                         results[cache_name] = sum(cache_results.values())
             elif cache_type != "default":
                 specialized_cache = self.specialized_caches.get(cache_type)
-                if specialized_cache and hasattr(specialized_cache, 'cache'):
-                    cache_results = await specialized_cache.cache.invalidate_by_tags(tags)
+                if specialized_cache and hasattr(specialized_cache, "cache"):
+                    cache_results = await specialized_cache.cache.invalidate_by_tags(
+                        tags
+                    )
                     results[cache_type] = sum(cache_results.values())
 
             return results
@@ -321,12 +340,12 @@ class CacheManager:
                 "multi_level": await self.multi_level_cache.get_stats(),
                 "analytics": await self.multi_level_cache.get_analytics(),
                 "performance": self._get_performance_stats(),
-                "operation_counts": self._operation_counts.copy()
+                "operation_counts": self._operation_counts.copy(),
             }
 
             # Add specialized cache stats
             for cache_name, specialized_cache in self.specialized_caches.items():
-                if hasattr(specialized_cache, 'cache'):
+                if hasattr(specialized_cache, "cache"):
                     cache_stats = await specialized_cache.cache.get_stats()
                     stats[f"specialized_{cache_name}"] = cache_stats
 
@@ -336,7 +355,9 @@ class CacheManager:
             logger.error(f"Error getting cache stats: {e}")
             return {}
 
-    async def warm_cache(self, strategy: str = "predictive", **kwargs) -> Dict[str, Any]:
+    async def warm_cache(
+        self, strategy: str = "predictive", **kwargs
+    ) -> Dict[str, Any]:
         """Manually trigger cache warming.
 
         Args:
@@ -357,7 +378,7 @@ class CacheManager:
             return {
                 "strategy": strategy,
                 "duration_seconds": time.time() - start_time,
-                "result": result
+                "result": result,
             }
 
         except Exception as e:
@@ -402,7 +423,9 @@ class CacheManager:
     async def _handle_cache_event(self, **kwargs) -> None:
         """Handle cache events for monitoring."""
         event_type = kwargs.get("event_type", "unknown")
-        self._operation_counts[event_type] = self._operation_counts.get(event_type, 0) + 1
+        self._operation_counts[event_type] = (
+            self._operation_counts.get(event_type, 0) + 1
+        )
 
         if self.config.performance_tracking:
             latency = kwargs.get("latency_ms", 0)
@@ -418,7 +441,9 @@ class CacheManager:
 
         # Keep only recent data (last 1000 operations)
         if len(self._performance_data[operation]) > 1000:
-            self._performance_data[operation] = self._performance_data[operation][-1000:]
+            self._performance_data[operation] = self._performance_data[operation][
+                -1000:
+            ]
 
     def _get_performance_stats(self) -> Dict[str, Dict[str, float]]:
         """Get performance statistics."""
@@ -430,8 +455,10 @@ class CacheManager:
                     "avg_latency_ms": sum(latencies) / len(latencies),
                     "min_latency_ms": min(latencies),
                     "max_latency_ms": max(latencies),
-                    "p95_latency_ms": sorted(latencies)[int(len(latencies) * 0.95)] if len(latencies) > 20 else max(latencies),
-                    "operation_count": len(latencies)
+                    "p95_latency_ms": sorted(latencies)[int(len(latencies) * 0.95)]
+                    if len(latencies) > 20
+                    else max(latencies),
+                    "operation_count": len(latencies),
                 }
 
         return stats
@@ -478,30 +505,30 @@ class CacheManager:
             "multi_level_config": asdict(self.config.multi_level_config),
             "specialized_caches": list(self.specialized_caches.keys()),
             "warming_strategies": list(self._warming_strategies.keys()),
-            "monitoring_enabled": self.config.enable_monitoring
+            "monitoring_enabled": self.config.enable_monitoring,
         }
 
     # Specialized Cache Access
 
     def get_response_cache(self) -> Optional[ResponseCache]:
         """Get response cache instance."""
-        return self.specialized_caches.get('response')
+        return self.specialized_caches.get("response")
 
     def get_auth_cache(self) -> Optional[AuthTokenCache]:
         """Get auth token cache instance."""
-        return self.specialized_caches.get('auth')
+        return self.specialized_caches.get("auth")
 
     def get_config_cache(self) -> Optional[ConfigCache]:
         """Get configuration cache instance."""
-        return self.specialized_caches.get('config')
+        return self.specialized_caches.get("config")
 
     def get_protocol_cache(self) -> Optional[ProtocolCache]:
         """Get protocol cache instance."""
-        return self.specialized_caches.get('protocol')
+        return self.specialized_caches.get("protocol")
 
     def get_metrics_cache(self) -> Optional[MetricsCache]:
         """Get metrics cache instance."""
-        return self.specialized_caches.get('metrics')
+        return self.specialized_caches.get("metrics")
 
     # Shutdown and Cleanup
 
@@ -525,7 +552,7 @@ class CacheManager:
 
             # Shutdown specialized caches
             for cache in self.specialized_caches.values():
-                if hasattr(cache, 'shutdown'):
+                if hasattr(cache, "shutdown"):
                     await cache.shutdown()
 
             # Shutdown multi-level cache

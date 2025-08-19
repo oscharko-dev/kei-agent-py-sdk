@@ -21,6 +21,7 @@ try:
     import redis.asyncio as redis
     from redis.asyncio import ConnectionPool, Redis
     from redis.exceptions import RedisError, ConnectionError, TimeoutError
+
     REDIS_AVAILABLE = True
 except ImportError:
     REDIS_AVAILABLE = False
@@ -32,8 +33,12 @@ except ImportError:
     TimeoutError = Exception
 
 from .cache_framework import (
-    CacheInterface, CacheStats, CacheConfig, CacheMetrics,
-    CircuitBreaker, get_cache_event_manager
+    CacheInterface,
+    CacheStats,
+    CacheConfig,
+    CacheMetrics,
+    CircuitBreaker,
+    get_cache_event_manager,
 )
 
 logger = logging.getLogger(__name__)
@@ -56,27 +61,31 @@ class RedisCache(CacheInterface):
         self.redis_config = redis_config or {}
 
         # Redis connection settings
-        self.host = self.redis_config.get('host', 'localhost')
-        self.port = self.redis_config.get('port', 6379)
-        self.db = self.redis_config.get('db', 0)
-        self.password = self.redis_config.get('password')
-        self.ssl = self.redis_config.get('ssl', False)
-        self.key_prefix = self.redis_config.get('key_prefix', 'kei_agent:cache:')
+        self.host = self.redis_config.get("host", "localhost")
+        self.port = self.redis_config.get("port", 6379)
+        self.db = self.redis_config.get("db", 0)
+        self.password = self.redis_config.get("password")
+        self.ssl = self.redis_config.get("ssl", False)
+        self.key_prefix = self.redis_config.get("key_prefix", "kei_agent:cache:")
 
         # Connection pool settings
-        self.max_connections = self.redis_config.get('max_connections', 20)
-        self.connection_timeout = self.redis_config.get('connection_timeout', 5.0)
-        self.socket_timeout = self.redis_config.get('socket_timeout', 5.0)
+        self.max_connections = self.redis_config.get("max_connections", 20)
+        self.connection_timeout = self.redis_config.get("connection_timeout", 5.0)
+        self.socket_timeout = self.redis_config.get("socket_timeout", 5.0)
 
         # Compression settings
-        self.compression_threshold = self.redis_config.get('compression_threshold', 1024)  # 1KB
-        self.compression_level = self.redis_config.get('compression_level', 6)
+        self.compression_threshold = self.redis_config.get(
+            "compression_threshold", 1024
+        )  # 1KB
+        self.compression_level = self.redis_config.get("compression_level", 6)
 
         # Initialize components
         self._pool: Optional[ConnectionPool] = None
         self._redis: Optional[Redis] = None
         self._metrics = CacheMetrics()
-        self._circuit_breaker = CircuitBreaker() if config.circuit_breaker_enabled else None
+        self._circuit_breaker = (
+            CircuitBreaker() if config.circuit_breaker_enabled else None
+        )
         self._event_manager = get_cache_event_manager()
 
         # Pub/Sub for invalidation
@@ -100,7 +109,7 @@ class RedisCache(CacheInterface):
                 max_connections=self.max_connections,
                 socket_timeout=self.socket_timeout,
                 socket_connect_timeout=self.connection_timeout,
-                decode_responses=False  # We handle encoding ourselves
+                decode_responses=False,  # We handle encoding ourselves
             )
 
             # Create Redis client
@@ -125,7 +134,9 @@ class RedisCache(CacheInterface):
             if self._redis:
                 self._pubsub = self._redis.pubsub()
                 await self._pubsub.subscribe(self._invalidation_channel)
-                self._pubsub_task = asyncio.create_task(self._handle_invalidation_messages())
+                self._pubsub_task = asyncio.create_task(
+                    self._handle_invalidation_messages()
+                )
         except Exception as e:
             logger.error(f"Failed to setup Redis pub/sub: {e}")
 
@@ -136,18 +147,20 @@ class RedisCache(CacheInterface):
                 return
 
             async for message in self._pubsub.listen():
-                if message['type'] == 'message':
+                if message["type"] == "message":
                     try:
-                        data = json.loads(message['data'].decode())
-                        event_type = data.get('type')
+                        data = json.loads(message["data"].decode())
+                        event_type = data.get("type")
 
-                        if event_type == 'invalidate_tags':
-                            tags = data.get('tags', [])
+                        if event_type == "invalidate_tags":
+                            tags = data.get("tags", [])
                             await self._local_invalidate_by_tags(tags)
-                        elif event_type == 'invalidate_key':
-                            key = data.get('key')
+                        elif event_type == "invalidate_key":
+                            key = data.get("key")
                             if key:
-                                self._event_manager.emit("cache_invalidate_remote", key=key, level="L2")
+                                self._event_manager.emit(
+                                    "cache_invalidate_remote", key=key, level="L2"
+                                )
 
                     except Exception as e:
                         logger.error(f"Error processing invalidation message: {e}")
@@ -171,17 +184,19 @@ class RedisCache(CacheInterface):
         serialized = pickle.dumps(value)
 
         # Compress if enabled and above threshold
-        if (self.config.enable_compression and
-            len(serialized) > self.compression_threshold):
+        if (
+            self.config.enable_compression
+            and len(serialized) > self.compression_threshold
+        ):
             compressed = zlib.compress(serialized, self.compression_level)
             # Add compression marker
-            return b'COMPRESSED:' + compressed
+            return b"COMPRESSED:" + compressed
 
         return serialized
 
     def _deserialize_value(self, data: bytes) -> Any:
         """Deserialize and decompress value."""
-        if data.startswith(b'COMPRESSED:'):
+        if data.startswith(b"COMPRESSED:"):
             # Remove compression marker and decompress
             compressed_data = data[11:]  # len('COMPRESSED:') = 11
             decompressed = zlib.decompress(compressed_data)
@@ -232,7 +247,9 @@ class RedisCache(CacheInterface):
 
         return self._deserialize_value(data)
 
-    async def set(self, key: str, value: Any, ttl: Optional[float] = None, tags: List[str] = None) -> bool:
+    async def set(
+        self, key: str, value: Any, ttl: Optional[float] = None, tags: List[str] = None
+    ) -> bool:
         """Set value in Redis cache."""
         if not self._redis:
             return False
@@ -242,7 +259,9 @@ class RedisCache(CacheInterface):
 
         try:
             if self._circuit_breaker:
-                return await self._circuit_breaker.call(self._set_internal, redis_key, key, value, ttl, tags)
+                return await self._circuit_breaker.call(
+                    self._set_internal, redis_key, key, value, ttl, tags
+                )
             else:
                 return await self._set_internal(redis_key, key, value, ttl, tags)
 
@@ -252,7 +271,9 @@ class RedisCache(CacheInterface):
             logger.error(f"Error setting Redis cache key {key}: {e}")
             return False
 
-    async def _set_internal(self, redis_key: str, key: str, value: Any, ttl: float, tags: List[str]) -> bool:
+    async def _set_internal(
+        self, redis_key: str, key: str, value: Any, ttl: float, tags: List[str]
+    ) -> bool:
         """Internal set method."""
         # Serialize value
         serialized_value = self._serialize_value(value)
@@ -279,7 +300,9 @@ class RedisCache(CacheInterface):
 
         # Calculate size for metrics
         size_bytes = len(serialized_value)
-        self._event_manager.emit("cache_set", key=key, level="L2", size_bytes=size_bytes)
+        self._event_manager.emit(
+            "cache_set", key=key, level="L2", size_bytes=size_bytes
+        )
 
         return True
 
@@ -349,8 +372,8 @@ class RedisCache(CacheInterface):
         # Add Redis-specific stats if available
         if self._redis:
             try:
-                info = await self._redis.info('memory')
-                stats.total_size_bytes = info.get('used_memory', 0)
+                info = await self._redis.info("memory")
+                stats.total_size_bytes = info.get("used_memory", 0)
 
                 # Count keys with our prefix
                 pattern = f"{self.key_prefix}*"
@@ -378,7 +401,9 @@ class RedisCache(CacheInterface):
             for tag in tags:
                 tag_key = self._make_tag_key(tag)
                 keys = await self._redis.smembers(tag_key)
-                all_keys.update(key.decode() if isinstance(key, bytes) else key for key in keys)
+                all_keys.update(
+                    key.decode() if isinstance(key, bytes) else key for key in keys
+                )
 
             # Delete the keys
             if all_keys:
@@ -396,7 +421,9 @@ class RedisCache(CacheInterface):
             # Publish invalidation message
             await self._publish_invalidation("invalidate_tags", {"tags": tags})
 
-            self._event_manager.emit("cache_invalidate_tags", tags=tags, level="L2", count=invalidated_count)
+            self._event_manager.emit(
+                "cache_invalidate_tags", tags=tags, level="L2", count=invalidated_count
+            )
             return invalidated_count
 
         except Exception as e:
@@ -411,7 +438,9 @@ class RedisCache(CacheInterface):
         # Just emit local events
         self._event_manager.emit("cache_invalidate_tags_remote", tags=tags, level="L2")
 
-    async def _publish_invalidation(self, event_type: str, data: Dict[str, Any]) -> None:
+    async def _publish_invalidation(
+        self, event_type: str, data: Dict[str, Any]
+    ) -> None:
         """Publish cache invalidation message."""
         try:
             if self._redis:
@@ -434,7 +463,7 @@ class RedisCache(CacheInterface):
                 "connected_clients": info.get("connected_clients"),
                 "total_commands_processed": info.get("total_commands_processed"),
                 "keyspace_hits": info.get("keyspace_hits"),
-                "keyspace_misses": info.get("keyspace_misses")
+                "keyspace_misses": info.get("keyspace_misses"),
             }
         except Exception as e:
             logger.error(f"Error getting Redis connection info: {e}")

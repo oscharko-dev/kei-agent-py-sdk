@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 class ErrorSeverity(Enum):
     """Error severity levels."""
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -33,6 +34,7 @@ class ErrorSeverity(Enum):
 
 class ErrorCategory(Enum):
     """Error categories for classification."""
+
     AUTHENTICATION = "authentication"
     AUTHORIZATION = "authorization"
     VALIDATION = "validation"
@@ -81,7 +83,7 @@ class ErrorEvent:
             "user_id": self.user_id,
             "request_id": self.request_id,
             "protocol": self.protocol,
-            "endpoint": self.endpoint
+            "endpoint": self.endpoint,
         }
 
 
@@ -173,29 +175,33 @@ class ErrorAggregator:
             error: Error event to record
         """
         # Record error count metric
-        self.metrics_collector.record_custom_metric(MetricEvent(
-            name="error_events_total",
-            value=1,
-            labels={
-                "agent_id": error.agent_id,
-                "error_type": error.error_type,
-                "category": error.category.value,
-                "severity": error.severity.value,
-                "protocol": error.protocol or "unknown"
-            },
-            metric_type="counter"
-        ))
+        self.metrics_collector.record_custom_metric(
+            MetricEvent(
+                name="error_events_total",
+                value=1,
+                labels={
+                    "agent_id": error.agent_id,
+                    "error_type": error.error_type,
+                    "category": error.category.value,
+                    "severity": error.severity.value,
+                    "protocol": error.protocol or "unknown",
+                },
+                metric_type="counter",
+            )
+        )
 
         # Record error rate metric
         recent_errors = self._get_recent_errors(minutes=5)
         error_rate = len(recent_errors) / 5.0  # errors per minute
 
-        self.metrics_collector.record_custom_metric(MetricEvent(
-            name="error_rate_per_minute",
-            value=error_rate,
-            labels={"agent_id": error.agent_id},
-            metric_type="gauge"
-        ))
+        self.metrics_collector.record_custom_metric(
+            MetricEvent(
+                name="error_rate_per_minute",
+                value=error_rate,
+                labels={"agent_id": error.agent_id},
+                metric_type="gauge",
+            )
+        )
 
     def _get_recent_errors(self, minutes: int = None) -> List[ErrorEvent]:
         """Get errors from recent time window.
@@ -217,58 +223,80 @@ class ErrorAggregator:
 
         # High error rate alert
         def high_error_rate(errors: List[ErrorEvent]) -> bool:
-            recent_errors = [e for e in errors if e.timestamp >= time.time() - 300]  # 5 minutes
+            recent_errors = [
+                e for e in errors if e.timestamp >= time.time() - 300
+            ]  # 5 minutes
             return len(recent_errors) > 50  # More than 50 errors in 5 minutes
 
-        self.alert_rules.append(AlertRule(
-            name="high_error_rate",
-            description="High error rate detected",
-            condition=high_error_rate,
-            severity=ErrorSeverity.HIGH,
-            cooldown_minutes=10
-        ))
+        self.alert_rules.append(
+            AlertRule(
+                name="high_error_rate",
+                description="High error rate detected",
+                condition=high_error_rate,
+                severity=ErrorSeverity.HIGH,
+                cooldown_minutes=10,
+            )
+        )
 
         # Critical error alert
         def critical_errors(errors: List[ErrorEvent]) -> bool:
-            recent_errors = [e for e in errors if e.timestamp >= time.time() - 60]  # 1 minute
-            critical_errors = [e for e in recent_errors if e.severity == ErrorSeverity.CRITICAL]
+            recent_errors = [
+                e for e in errors if e.timestamp >= time.time() - 60
+            ]  # 1 minute
+            critical_errors = [
+                e for e in recent_errors if e.severity == ErrorSeverity.CRITICAL
+            ]
             return len(critical_errors) > 0
 
-        self.alert_rules.append(AlertRule(
-            name="critical_error",
-            description="Critical error detected",
-            condition=critical_errors,
-            severity=ErrorSeverity.CRITICAL,
-            cooldown_minutes=5
-        ))
+        self.alert_rules.append(
+            AlertRule(
+                name="critical_error",
+                description="Critical error detected",
+                condition=critical_errors,
+                severity=ErrorSeverity.CRITICAL,
+                cooldown_minutes=5,
+            )
+        )
 
         # Authentication failure spike
         def auth_failure_spike(errors: List[ErrorEvent]) -> bool:
-            recent_errors = [e for e in errors if e.timestamp >= time.time() - 300]  # 5 minutes
-            auth_errors = [e for e in recent_errors if e.category == ErrorCategory.AUTHENTICATION]
+            recent_errors = [
+                e for e in errors if e.timestamp >= time.time() - 300
+            ]  # 5 minutes
+            auth_errors = [
+                e for e in recent_errors if e.category == ErrorCategory.AUTHENTICATION
+            ]
             return len(auth_errors) > 10  # More than 10 auth failures in 5 minutes
 
-        self.alert_rules.append(AlertRule(
-            name="auth_failure_spike",
-            description="Authentication failure spike detected",
-            condition=auth_failure_spike,
-            severity=ErrorSeverity.MEDIUM,
-            cooldown_minutes=15
-        ))
+        self.alert_rules.append(
+            AlertRule(
+                name="auth_failure_spike",
+                description="Authentication failure spike detected",
+                condition=auth_failure_spike,
+                severity=ErrorSeverity.MEDIUM,
+                cooldown_minutes=15,
+            )
+        )
 
         # Security event alert
         def security_events(errors: List[ErrorEvent]) -> bool:
-            recent_errors = [e for e in errors if e.timestamp >= time.time() - 60]  # 1 minute
-            security_errors = [e for e in recent_errors if e.category == ErrorCategory.SECURITY]
+            recent_errors = [
+                e for e in errors if e.timestamp >= time.time() - 60
+            ]  # 1 minute
+            security_errors = [
+                e for e in recent_errors if e.category == ErrorCategory.SECURITY
+            ]
             return len(security_errors) > 0
 
-        self.alert_rules.append(AlertRule(
-            name="security_event",
-            description="Security event detected",
-            condition=security_events,
-            severity=ErrorSeverity.HIGH,
-            cooldown_minutes=5
-        ))
+        self.alert_rules.append(
+            AlertRule(
+                name="security_event",
+                description="Security event detected",
+                condition=security_events,
+                severity=ErrorSeverity.HIGH,
+                cooldown_minutes=5,
+            )
+        )
 
     def _check_alert_rules(self) -> None:
         """Check all alert rules against recent errors."""
@@ -300,8 +328,10 @@ class ErrorAggregator:
                 "rule_name": rule.name,
                 "rule_description": rule.description,
                 "triggered_by_count": len(errors),
-                "recent_errors": [e.error_id for e in errors[-10:]]  # Last 10 error IDs
-            }
+                "recent_errors": [
+                    e.error_id for e in errors[-10:]
+                ],  # Last 10 error IDs
+            },
         )
 
         # Notify alert handlers
@@ -340,16 +370,24 @@ class ErrorAggregator:
         recent_errors = self._get_recent_errors()
 
         # Calculate error rates
-        error_rate_1min = len([e for e in recent_errors if e.timestamp >= time.time() - 60]) / 1.0
-        error_rate_5min = len([e for e in recent_errors if e.timestamp >= time.time() - 300]) / 5.0
-        error_rate_15min = len([e for e in recent_errors if e.timestamp >= time.time() - 900]) / 15.0
+        error_rate_1min = (
+            len([e for e in recent_errors if e.timestamp >= time.time() - 60]) / 1.0
+        )
+        error_rate_5min = (
+            len([e for e in recent_errors if e.timestamp >= time.time() - 300]) / 5.0
+        )
+        error_rate_15min = (
+            len([e for e in recent_errors if e.timestamp >= time.time() - 900]) / 15.0
+        )
 
         # Top error types
         error_type_counts = defaultdict(int)
         for error in recent_errors:
             error_type_counts[error.error_type] += 1
 
-        top_error_types = sorted(error_type_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+        top_error_types = sorted(
+            error_type_counts.items(), key=lambda x: x[1], reverse=True
+        )[:10]
 
         # Category distribution
         category_distribution = {}
@@ -376,14 +414,14 @@ class ErrorAggregator:
             "error_rates": {
                 "per_minute_1min": error_rate_1min,
                 "per_minute_5min": error_rate_5min,
-                "per_minute_15min": error_rate_15min
+                "per_minute_15min": error_rate_15min,
             },
             "top_error_types": top_error_types,
             "category_distribution": category_distribution,
             "severity_distribution": severity_distribution,
             "agent_distribution": dict(agent_distribution),
             "active_alert_rules": len([r for r in self.alert_rules if r.enabled]),
-            "window_minutes": self.window_minutes
+            "window_minutes": self.window_minutes,
         }
 
     def get_error_trends(self, hours: int = 24) -> Dict[str, Any]:
@@ -408,7 +446,11 @@ class ErrorAggregator:
         if len(hourly_counts) >= 2:
             recent_hours = sorted(hourly_counts.keys())[-2:]
             if len(recent_hours) == 2:
-                trend_direction = "increasing" if hourly_counts[recent_hours[1]] > hourly_counts[recent_hours[0]] else "decreasing"
+                trend_direction = (
+                    "increasing"
+                    if hourly_counts[recent_hours[1]] > hourly_counts[recent_hours[0]]
+                    else "decreasing"
+                )
             else:
                 trend_direction = "stable"
         else:
@@ -419,8 +461,10 @@ class ErrorAggregator:
             "total_errors": len(trend_errors),
             "hourly_distribution": dict(hourly_counts),
             "trend_direction": trend_direction,
-            "peak_hour": max(hourly_counts.items(), key=lambda x: x[1])[0] if hourly_counts else None,
-            "average_per_hour": len(trend_errors) / hours if hours > 0 else 0
+            "peak_hour": max(hourly_counts.items(), key=lambda x: x[1])[0]
+            if hourly_counts
+            else None,
+            "average_per_hour": len(trend_errors) / hours if hours > 0 else 0,
         }
 
 
@@ -436,7 +480,9 @@ def get_error_aggregator() -> ErrorAggregator:
     return _error_aggregator
 
 
-def initialize_error_aggregation(window_minutes: int = 60, max_events: int = 10000) -> ErrorAggregator:
+def initialize_error_aggregation(
+    window_minutes: int = 60, max_events: int = 10000
+) -> ErrorAggregator:
     """Initialize the global error aggregator.
 
     Args:
@@ -457,7 +503,7 @@ def record_error(
     category: ErrorCategory = ErrorCategory.UNKNOWN,
     severity: ErrorSeverity = ErrorSeverity.MEDIUM,
     context: Optional[Dict[str, Any]] = None,
-    correlation_id: Optional[str] = None
+    correlation_id: Optional[str] = None,
 ) -> str:
     """Record an error event.
 
@@ -486,7 +532,7 @@ def record_error(
         severity=severity,
         context=context or {},
         stack_trace=traceback.format_exc(),
-        correlation_id=correlation_id
+        correlation_id=correlation_id,
     )
 
     get_error_aggregator().add_error(error_event)
@@ -496,19 +542,27 @@ def record_error(
 # Convenience functions for common error categories
 def record_authentication_error(agent_id: str, error: Exception, **kwargs) -> str:
     """Record an authentication error."""
-    return record_error(agent_id, error, ErrorCategory.AUTHENTICATION, ErrorSeverity.HIGH, **kwargs)
+    return record_error(
+        agent_id, error, ErrorCategory.AUTHENTICATION, ErrorSeverity.HIGH, **kwargs
+    )
 
 
 def record_security_error(agent_id: str, error: Exception, **kwargs) -> str:
     """Record a security error."""
-    return record_error(agent_id, error, ErrorCategory.SECURITY, ErrorSeverity.CRITICAL, **kwargs)
+    return record_error(
+        agent_id, error, ErrorCategory.SECURITY, ErrorSeverity.CRITICAL, **kwargs
+    )
 
 
 def record_network_error(agent_id: str, error: Exception, **kwargs) -> str:
     """Record a network error."""
-    return record_error(agent_id, error, ErrorCategory.NETWORK, ErrorSeverity.MEDIUM, **kwargs)
+    return record_error(
+        agent_id, error, ErrorCategory.NETWORK, ErrorSeverity.MEDIUM, **kwargs
+    )
 
 
 def record_validation_error(agent_id: str, error: Exception, **kwargs) -> str:
     """Record a validation error."""
-    return record_error(agent_id, error, ErrorCategory.VALIDATION, ErrorSeverity.LOW, **kwargs)
+    return record_error(
+        agent_id, error, ErrorCategory.VALIDATION, ErrorSeverity.LOW, **kwargs
+    )

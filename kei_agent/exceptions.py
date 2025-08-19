@@ -25,7 +25,7 @@ class ValidationError(KeiSDKError):
     """Ausnahme for Valitherungsfehler in the Agabeprüfung."""
 
     def __init__(self, message: str, **kwargs: Any) -> None:
-        super().__init__(message, error_code ="VALIDATION_ERROR", **kwargs)
+        super().__init__(message, error_code="VALIDATION_ERROR", **kwargs)
 
 
 class AgentNotFoatdError(KeiSDKError):
@@ -38,7 +38,7 @@ class AgentNotFoundError(KeiSDKError):
     def __init__(self, agent_id: str, **kwargs: Any) -> None:
         message = f"Agent not gefatthe: {agent_id}"
         super().__init__(
-            message, error_code ="AGENT_NOT_FOUND", agent_id =agent_id, **kwargs
+            message, error_code="AGENT_NOT_FOUND", agent_id=agent_id, **kwargs
         )
         self.agent_id = agent_id
 
@@ -49,7 +49,7 @@ class CommunicationError(KeiSDKError):
     def __init__(
         self, message: str, status_code: Optional[int] = None, **kwargs: Any
     ) -> None:
-        super().__init__(message, error_code ="COMMUNICATION_ERROR", **kwargs)
+        super().__init__(message, error_code="COMMUNICATION_ERROR", **kwargs)
         self.status_code = status_code
 
 
@@ -57,7 +57,7 @@ class DiscoveryError(KeiSDKError):
     """Ausnahme for service discovery-error."""
 
     def __init__(self, message: str, **kwargs: Any) -> None:
-        super().__init__(message, error_code ="DISCOVERY_ERROR", **kwargs)
+        super().__init__(message, error_code="DISCOVERY_ERROR", **kwargs)
 
 
 class retryExhaustedError(KeiSDKError):
@@ -68,7 +68,7 @@ class retryExhaustedError(KeiSDKError):
     ) -> None:
         message = f"retry-Versuche erschöpft after {attempts} Versuchen"
         super().__init__(
-            message, error_code ="RETRY_EXHAUSTED", attempts=attempts, **kwargs
+            message, error_code="RETRY_EXHAUSTED", attempts=attempts, **kwargs
         )
         self.attempts = attempts
         self.last_error = last_error
@@ -81,8 +81,8 @@ class CircuitBreakerOpenError(KeiSDKError):
         message = f"circuit breaker is geopens for Service: {service_name}"
         super().__init__(
             message,
-            error_code ="CIRCUIT_BREAKER_OPEN",
-            service_name =service_name,
+            error_code="CIRCUIT_BREAKER_OPEN",
+            service_name=service_name,
             **kwargs,
         )
         self.service_name = service_name
@@ -95,7 +95,7 @@ class CapabilityError(KeiSDKError):
         self, message: str, capability: Optional[str] = None, **kwargs: Any
     ) -> None:
         super().__init__(
-            message, error_code ="CAPABILITY_ERROR", capability=capability, **kwargs
+            message, error_code="CAPABILITY_ERROR", capability=capability, **kwargs
         )
         self.capability = capability
 
@@ -104,7 +104,7 @@ class TracingError(KeiSDKError):
     """Ausnahme for Tracing-bezogene error."""
 
     def __init__(self, message: str, **kwargs: Any) -> None:
-        super().__init__(message, error_code ="TRACING_ERROR", **kwargs)
+        super().__init__(message, error_code="TRACING_ERROR", **kwargs)
 
 
 class ConfigurationError(KeiSDKError):
@@ -114,7 +114,7 @@ class ConfigurationError(KeiSDKError):
         self, message: str, config_key: Optional[str] = None, **kwargs: Any
     ) -> None:
         super().__init__(
-            message, error_code ="CONFIGURATION_ERROR", config_key =config_key, **kwargs
+            message, error_code="CONFIGURATION_ERROR", config_key=config_key, **kwargs
         )
         self.config_key = config_key
 
@@ -122,10 +122,8 @@ class ConfigurationError(KeiSDKError):
 class AuthenticationError(KeiSDKError):
     """Ausnahme for authenticationsfehler."""
 
-    def __init__(
-        self, message: str = "authentication failed", **kwargs: Any
-    ) -> None:
-        super().__init__(message, error_code ="AUTHENTICATION_ERROR", **kwargs)
+    def __init__(self, message: str = "authentication failed", **kwargs: Any) -> None:
+        super().__init__(message, error_code="AUTHENTICATION_ERROR", **kwargs)
 
 
 class TimeoutError(KeiSDKError):
@@ -139,8 +137,8 @@ class TimeoutError(KeiSDKError):
             message += f" for operation: {operation}"
         super().__init__(
             message,
-            error_code ="TIMEOUT_ERROR",
-            timeout_seconds =timeout_seconds,
+            error_code="TIMEOUT_ERROR",
+            timeout_seconds=timeout_seconds,
             **kwargs,
         )
         self.timeout_seconds = timeout_seconds
@@ -154,7 +152,7 @@ class ProtocolError(KeiSDKError):
         self, message: str, protocol: Optional[str] = None, **kwargs: Any
     ) -> None:
         super().__init__(
-            message, error_code ="PROTOCOL_ERROR", protocol=protocol, **kwargs
+            message, error_code="PROTOCOL_ERROR", protocol=protocol, **kwargs
         )
         self.protocol = protocol
 
@@ -167,8 +165,8 @@ class SecurityError(KeiSDKError):
     ) -> None:
         super().__init__(
             message,
-            error_code ="SECURITY_ERROR",
-            security_context =security_context,
+            error_code="SECURITY_ERROR",
+            security_context=security_context,
             **kwargs,
         )
         self.security_context = security_context

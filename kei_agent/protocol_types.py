@@ -207,28 +207,30 @@ class SecurityConfig:
         try:
             # Convert to dict for validation
             config_dict = {
-                'auth_type': self.auth_type.value,
-                'api_token': self.api_token,
-                'oidc_issuer': self.oidc_issuer,
-                'oidc_client_id': self.oidc_client_id,
-                'oidc_client_secret': self.oidc_client_secret,
-                'oidc_scope': self.oidc_scope,
-                'mtls_cert_path': self.mtls_cert_path,
-                'mtls_key_path': self.mtls_key_path,
-                'mtls_ca_path': self.mtls_ca_path,
-                'rbac_enabled': self.rbac_enabled,
-                'audit_enabled': self.audit_enabled,
-                'token_refresh_enabled': self.token_refresh_enabled,
-                'token_cache_ttl': self.token_cache_ttl,
+                "auth_type": self.auth_type.value,
+                "api_token": self.api_token,
+                "oidc_issuer": self.oidc_issuer,
+                "oidc_client_id": self.oidc_client_id,
+                "oidc_client_secret": self.oidc_client_secret,
+                "oidc_scope": self.oidc_scope,
+                "mtls_cert_path": self.mtls_cert_path,
+                "mtls_key_path": self.mtls_key_path,
+                "mtls_ca_path": self.mtls_ca_path,
+                "rbac_enabled": self.rbac_enabled,
+                "audit_enabled": self.audit_enabled,
+                "token_refresh_enabled": self.token_refresh_enabled,
+                "token_cache_ttl": self.token_cache_ttl,
             }
 
             # Validate using Pydantic model
-            validate_configuration(config_dict, 'security')
+            validate_configuration(config_dict, "security")
 
         except ValidationError:
             raise
         except Exception as e:
-            raise ValidationError(f"Security configuration validation failed: {e}") from e
+            raise ValidationError(
+                f"Security configuration validation failed: {e}"
+            ) from e
 
     def is_token_based(self) -> bool:
         """Checks ob Token-basierte authentication verwendet is.
@@ -247,4 +249,11 @@ class SecurityConfig:
         return self.token_refresh_enabled and self.is_token_based()
 
 
-__all__ = ["Protocoltypee", "Authtypee", "ProtocolType", "AuthType", "ProtocolConfig", "SecurityConfig"]
+__all__ = [
+    "Protocoltypee",
+    "Authtypee",
+    "ProtocolType",
+    "AuthType",
+    "ProtocolConfig",
+    "SecurityConfig",
+]

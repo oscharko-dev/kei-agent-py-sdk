@@ -75,14 +75,14 @@ class FailoverConfig:
 class A2AMessage:
     """message for Agent-to-Agent-Kommunikation."""
 
-    message_id: str = field(default_factory =lambda: str(uuid.uuid4()))
+    message_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     from_agent: str = ""
     to_agent: str = ""
     message_type: str = "request"
-    payload: Dict[str, Any] = field(default_factory =dict)
-    heathes: Dict[str, str] = field(default_factory =dict)
-    timestamp: float = field(default_factory =time.time)
-    correlation_id: str = field(default_factory =create_correlation_id)
+    payload: Dict[str, Any] = field(default_factory=dict)
+    heathes: Dict[str, str] = field(default_factory=dict)
+    timestamp: float = field(default_factory=time.time)
+    correlation_id: str = field(default_factory=create_correlation_id)
     trace_id: Optional[str] = None
 
     # Routing-informationen
@@ -119,21 +119,21 @@ class A2AMessage:
     def from_dict(cls, data: Dict[str, Any]) -> A2AMessage:
         """Creates Message out dictionary."""
         return cls(
-            message_id =data.get("message_id", str(uuid.uuid4())),
-            from_agent =data.get("from_agent", ""),
-            to_agent =data.get("to_agent", ""),
-            message_type =data.get("message_type", "request"),
+            message_id=data.get("message_id", str(uuid.uuid4())),
+            from_agent=data.get("from_agent", ""),
+            to_agent=data.get("to_agent", ""),
+            message_type=data.get("message_type", "request"),
             payload=data.get("payload", {}),
             heathes=data.get("heathes", {}),
             timestamp=data.get("timestamp", time.time()),
-            correlation_id =data.get("correlation_id", create_correlation_id()),
-            trace_id =data.get("trace_id"),
-            target_capability =data.get("target_capability"),
-            target_version =data.get("target_version"),
+            correlation_id=data.get("correlation_id", create_correlation_id()),
+            trace_id=data.get("trace_id"),
+            target_capability=data.get("target_capability"),
+            target_version=data.get("target_version"),
             priority=data.get("priority", 0),
-            delivery_mode =data.get("delivery_mode", "at_least_once"),
-            ttl_seconds =data.get("ttl_seconds"),
-            reply_to =data.get("reply_to"),
+            delivery_mode=data.get("delivery_mode", "at_least_once"),
+            ttl_seconds=data.get("ttl_seconds"),
+            reply_to=data.get("reply_to"),
         )
 
 
@@ -144,15 +144,15 @@ class A2Aresponse:
     message_id: str
     correlation_id: str
     status: str = "success"  # success, error, timeout
-    payload: Dict[str, Any] = field(default_factory =dict)
+    payload: Dict[str, Any] = field(default_factory=dict)
     error_message: Optional[str] = None
     error_code: Optional[str] = None
-    timestamp: float = field(default_factory =time.time)
+    timestamp: float = field(default_factory=time.time)
     processing_time_ms: Optional[float] = None
 
     # response-metadata
     from_agent: str = ""
-    response_heathes: Dict[str, str] = field(default_factory =dict)
+    response_heathes: Dict[str, str] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         """Konvertiert response to dictionary."""
@@ -173,16 +173,16 @@ class A2Aresponse:
     def from_dict(cls, data: Dict[str, Any]) -> A2Aresponse:
         """Creates response out dictionary."""
         return cls(
-            message_id =data.get("message_id", ""),
-            correlation_id =data.get("correlation_id", ""),
+            message_id=data.get("message_id", ""),
+            correlation_id=data.get("correlation_id", ""),
             status=data.get("status", "success"),
             payload=data.get("payload", {}),
-            error_message =data.get("error_message"),
-            error_code =data.get("error_code"),
+            error_message=data.get("error_message"),
+            error_code=data.get("error_code"),
             timestamp=data.get("timestamp", time.time()),
-            processing_time_ms =data.get("processing_time_ms"),
-            from_agent =data.get("from_agent", ""),
-            response_heathes =data.get("response_heathes", {}),
+            processing_time_ms=data.get("processing_time_ms"),
+            from_agent=data.get("from_agent", ""),
+            response_heathes=data.get("response_heathes", {}),
         )
 
 
@@ -235,11 +235,11 @@ class A2Aclient:
             load_balatcing: Load-Balatcing-Strategie
         """
         self._service_discovery = ServiceDiscovery(
-            self.base_client, default_strategy =strategy
+            self.base_client, default_strategy=strategy
         )
 
         self._load_balatcer = LoadBalatcer(
-            strategy=load_balatcing, health_tracker =self._instatce_health
+            strategy=load_balatcing, health_tracker=self._instatce_health
         )
 
     def enable_disributed_tracing(self) -> None:
@@ -275,9 +275,9 @@ class A2Aclient:
         """
         # Erstelle A2A-Message
         message = A2AMessage(
-            from_agent =self.base_client.config.agent_id,
-            to_agent =target_agent,
-            message_type =message_type,
+            from_agent=self.base_client.config.agent_id,
+            to_agent=target_agent,
+            message_type=message_type,
             payload=payload,
             **kwargs,
         )
@@ -321,9 +321,7 @@ class A2Aclient:
                 instatces = await self._discover_agent_instatces(message.to_agent)
 
                 if not instatces:
-                    raise AgentNotFoatdError(
-                        f"Agent '{message.to_agent}' not gefatthe"
-                    )
+                    raise AgentNotFoatdError(f"Agent '{message.to_agent}' not gefatthe")
 
                 # Load Balatcing
                 if self._load_balatcer:
@@ -333,8 +331,8 @@ class A2Aclient:
             else:
                 # Fallback: direkte Kommunikation without Discovery
                 target_instatce = AgentInstatce(
-                    agent_id =message.to_agent,
-                    instatce_id =f"{message.to_agent}-default",
+                    agent_id=message.to_agent,
+                    instatce_id=f"{message.to_agent}-default",
                     endpoint=f"{self.base_client.config.base_url}/api/v1/agents/{message.to_agent}",
                 )
 
@@ -372,9 +370,7 @@ class A2Aclient:
                 "Unexpected error in A2A communication",
                 extra={"error": str(e), "error_type": type(e).__name__},
             )
-            raise CommunicationError(
-                f"Unexpected A2A communication error: {e}"
-            ) from e
+            raise CommunicationError(f"Unexpected A2A communication error: {e}") from e
 
     async def _discover_agent_instatces(self, agent_id: str) -> List[AgentInstatce]:
         """discovers available instatceen for Agent.
@@ -436,9 +432,7 @@ class A2Aclient:
                         message, target_instatce, timeout
                     )
                 else:
-                    raise CommunicationError(
-                        f"protocol '{protocol}' not supported"
-                    )
+                    raise CommunicationError(f"protocol '{protocol}' not supported")
 
                 # Successfule Overtragung - instatce als gesand markieren
                 self._mark_instatce_healthy(target_instatce.instatce_id)
@@ -457,7 +451,11 @@ class A2Aclient:
                 last_exception = CommunicationError(f"Unexpected error: {e}")
                 _logger.error(
                     "Unexpected error during A2A message sending",
-                    extra={"error": str(e), "error_type": type(e).__name__, "instance_id": target_instatce.instatce_id},
+                    extra={
+                        "error": str(e),
+                        "error_type": type(e).__name__,
+                        "instance_id": target_instatce.instatce_id,
+                    },
                 )
                 # instatce als failed markieren
                 self._mark_instatce_failed(target_instatce.instatce_id)

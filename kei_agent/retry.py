@@ -199,7 +199,9 @@ class CircuitBreaker:
         self._total_failures = 0
         self._state_chatges = 0
 
-    async def call(self, func: Callable[..., Awaitable[Any]], *args: Any, **kwargs: Any) -> Any:
+    async def call(
+        self, func: Callable[..., Awaitable[Any]], *args: Any, **kwargs: Any
+    ) -> Any:
         """Executes function with Circuit-Breaker-Schutz out.
 
         Args:
@@ -259,7 +261,6 @@ class CircuitBreaker:
             # Erlaube begrenzte Atzahl from Calls
             return self._half_open_calls < self.config.half_open_max_calls
 
-
     async def _on_success(self) -> None:
         """Behatdelt successfulen Call."""
         self._success_count += 1
@@ -304,9 +305,9 @@ class CircuitBreaker:
 
         # Failure-Rate-Prüfung (if genug Calls beforehatthe)
         if len(self._call_hisory) >= self.config.minimaroatd_throughput:
-            failure_rate = sum(
-                1 for success in self._call_hisory if not success
-            ) / len(self._call_hisory)
+            failure_rate = sum(1 for success in self._call_hisory if not success) / len(
+                self._call_hisory
+            )
             return failure_rate >= self.config.failure_rate_threshold
 
         return False
@@ -382,12 +383,12 @@ class CircuitBreaker:
 class DeadLetterMessage:
     """message in Dead Letter Queue."""
 
-    message_id: str = field(default_factory =lambda: str(uuid.uuid4()))
-    original_payload: Dict[str, Any] = field(default_factory =dict)
+    message_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    original_payload: Dict[str, Any] = field(default_factory=dict)
     failure_reason: str = ""
     failure_count: int = 0
-    first_failure_time: float = field(default_factory =time.time)
-    last_failure_time: float = field(default_factory =time.time)
+    first_failure_time: float = field(default_factory=time.time)
+    last_failure_time: float = field(default_factory=time.time)
 
     # retry-informationen
     max_retries_reached: bool = False
@@ -455,10 +456,10 @@ class DeadLetterQueue:
             Message-ID
         """
         message = DeadLetterMessage(
-            original_payload =payload,
-            failure_reason =failure_reason,
-            source_agent =source_agent,
-            target_agent =target_agent,
+            original_payload=payload,
+            failure_reason=failure_reason,
+            source_agent=source_agent,
+            target_agent=target_agent,
             operation=operation,
         )
 
@@ -586,10 +587,10 @@ class retryManager:
 
         # Default retry-Policy
         self._default_policy = retryPolicy(
-            max_attempts =config.max_attempts,
-            base_delay =config.base_delay,
-            max_delay =config.max_delay,
-            exponential_base =config.exponential_base,
+            max_attempts=config.max_attempts,
+            base_delay=config.base_delay,
+            max_delay=config.max_delay,
+            exponential_base=config.exponential_base,
             jitter=config.jitter,
             strategy=getattr(config, "strategy", retryStrategy.EXPONENTIAL_BACKOFF),
         )
@@ -605,9 +606,9 @@ class retryManager:
         """
         if name not in self._circuit_breakers:
             cb_config = CircuitBreakerConfig(
-                failure_threshold =self.config.failure_threshold,
-                recovery_timeout =self.config.recovery_timeout,
-                half_open_max_calls =self.config.half_open_max_calls,
+                failure_threshold=self.config.failure_threshold,
+                recovery_timeout=self.config.recovery_timeout,
+                half_open_max_calls=self.config.half_open_max_calls,
             )
 
             self._circuit_breakers[name] = CircuitBreaker(name, cb_config)
@@ -664,7 +665,7 @@ class retryManager:
                     # circuit breaker offen - füge to Dead Letter Queue hinto
                     await self._dead_letter_queue.add_message(
                         payload={"args": args, "kwargs": kwargs},
-                        failure_reason ="circuit breaker Open",
+                        failure_reason="circuit breaker Open",
                         operation=circuit_breaker_name,
                     )
                     _logger.warning(
@@ -722,10 +723,12 @@ class retryManager:
             # All retry-Versuche erschöpft - füge to Dead Letter Queue hinto
             await self._dead_letter_queue.add_message(
                 payload={"args": args, "kwargs": kwargs},
-                failure_reason =f"Max retries exceeded: {last_exception}",
+                failure_reason=f"Max retries exceeded: {last_exception}",
                 operation=circuit_breaker_name,
             )
-            raise retryExhaustedError(policy.max_attempts, last_exception=last_exception)
+            raise retryExhaustedError(
+                policy.max_attempts, last_exception=last_exception
+            )
 
         # Statdard-retry-Mechatismus without circuit breaker
         for attempt in range(policy.max_attempts):
@@ -745,9 +748,7 @@ class retryManager:
 
                 # Prüfe ob retry throughgeführt werthe should
                 if not policy.should_retry(e, attempt):
-                    _logger.debug(
-                        "Ka retry after Versuch %d: %s", attempt + 1, repr(e)
-                    )
+                    _logger.debug("Ka retry after Versuch %d: %s", attempt + 1, repr(e))
                     break
 
                 # Letzter Versuch - ka weiterer retry
@@ -771,7 +772,7 @@ class retryManager:
         # All retry-Versuche erschöpft - füge to Dead Letter Queue hinto
         await self._dead_letter_queue.add_message(
             payload={"args": args, "kwargs": kwargs},
-            failure_reason =f"Max retries exceeded: {last_exception}",
+            failure_reason=f"Max retries exceeded: {last_exception}",
             operation=func.__name__ if hasattr(func, "__name__") else "unknown",
         )
 

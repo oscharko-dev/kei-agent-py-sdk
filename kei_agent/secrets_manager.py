@@ -28,7 +28,9 @@ class SecretConfig:
 
     # External secret store configuration
     use_external_store: bool = False
-    store_type: Optional[str] = None  # "aws_secrets", "azure_keyvault", "hashicorp_vault"
+    store_type: Optional[str] = (
+        None  # "aws_secrets", "azure_keyvault", "hashicorp_vault"
+    )
     store_config: Optional[Dict[str, Any]] = None
 
     # Validation settings
@@ -59,10 +61,12 @@ class SecretsManager:
                 "env_prefix": self.config.env_prefix,
                 "external_store": self.config.use_external_store,
                 "store_type": self.config.store_type,
-            }
+            },
         )
 
-    def get_secret(self, key: str, default: Optional[str] = None, required: bool = False) -> Optional[str]:
+    def get_secret(
+        self, key: str, default: Optional[str] = None, required: bool = False
+    ) -> Optional[str]:
         """Get a secret value from environment or external store.
 
         Args:
@@ -104,10 +108,16 @@ class SecretsManager:
             except Exception as e:
                 _logger.error(
                     "Failed to retrieve secret from external store",
-                    extra={"key": key, "error": str(e), "store_type": self.config.store_type}
+                    extra={
+                        "key": key,
+                        "error": str(e),
+                        "store_type": self.config.store_type,
+                    },
                 )
                 if required:
-                    raise SecurityError(f"Failed to retrieve required secret '{key}' from external store: {e}") from e
+                    raise SecurityError(
+                        f"Failed to retrieve required secret '{key}' from external store: {e}"
+                    ) from e
 
         # Use default if provided
         if default is not None:
@@ -115,7 +125,9 @@ class SecretsManager:
 
         # Check if required
         if required or self.config.require_all_secrets:
-            raise SecurityError(f"Required secret '{key}' not found in environment or external store")
+            raise SecurityError(
+                f"Required secret '{key}' not found in environment or external store"
+            )
 
         return None
 
@@ -156,7 +168,9 @@ class SecretsManager:
         client_secret = self.get_secret("OIDC_CLIENT_SECRET", required=True)
         if client_secret is None:
             raise ValueError("OIDC_CLIENT_SECRET is required but not found")
-        scope = self.get_secret("OIDC_SCOPE", default="openid profile") or "openid profile"
+        scope = (
+            self.get_secret("OIDC_SCOPE", default="openid profile") or "openid profile"
+        )
 
         return {
             "issuer": issuer,
@@ -213,7 +227,9 @@ class SecretsManager:
                 missing_secrets.append(f"{self.config.env_prefix}{secret}")
 
         if missing_secrets:
-            raise SecurityError(f"Missing required secrets: {', '.join(missing_secrets)}")
+            raise SecurityError(
+                f"Missing required secrets: {', '.join(missing_secrets)}"
+            )
 
         return True
 

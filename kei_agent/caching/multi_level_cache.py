@@ -17,8 +17,12 @@ from dataclasses import dataclass
 from enum import Enum
 
 from .cache_framework import (
-    CacheInterface, CacheLevel, CacheStats, CacheConfig,
-    get_cache_event_manager, CacheMetrics
+    CacheInterface,
+    CacheLevel,
+    CacheStats,
+    CacheConfig,
+    get_cache_event_manager,
+    CacheMetrics,
 )
 from .memory_cache import MemoryCache
 from .redis_cache import RedisCache
@@ -29,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 class CacheStrategy(Enum):
     """Cache strategy enumeration."""
+
     WRITE_THROUGH = "write_through"
     WRITE_BACK = "write_back"
     WRITE_AROUND = "write_around"
@@ -36,6 +41,7 @@ class CacheStrategy(Enum):
 
 class CachePromotionPolicy(Enum):
     """Cache promotion policy enumeration."""
+
     ACCESS_COUNT = "access_count"
     ACCESS_FREQUENCY = "access_frequency"
     SIZE_BASED = "size_based"
@@ -117,13 +123,15 @@ class MultiLevelCache(CacheInterface):
 
         self.l3_cache: Optional[PersistentCache] = None
         if config.l3_config:
-            self.l3_cache = PersistentCache(config.l3_config, config.storage_config or {})
+            self.l3_cache = PersistentCache(
+                config.l3_config, config.storage_config or {}
+            )
 
         # Cache level mapping
         self.cache_levels = {
             CacheLevel.L1_MEMORY: self.l1_cache,
             CacheLevel.L2_DISTRIBUTED: self.l2_cache,
-            CacheLevel.L3_PERSISTENT: self.l3_cache
+            CacheLevel.L3_PERSISTENT: self.l3_cache,
         }
 
         # Analytics and monitoring
@@ -163,7 +171,9 @@ class MultiLevelCache(CacheInterface):
         # Try L1 first
         value = await self.l1_cache.get(key)
         if value is not None:
-            await self._record_operation("get", key, CacheLevel.L1_MEMORY, True, start_time)
+            await self._record_operation(
+                "get", key, CacheLevel.L1_MEMORY, True, start_time
+            )
             await self._update_access_pattern(key, CacheLevel.L1_MEMORY)
             return value
 
@@ -171,7 +181,9 @@ class MultiLevelCache(CacheInterface):
         if self.l2_cache:
             value = await self.l2_cache.get(key)
             if value is not None:
-                await self._record_operation("get", key, CacheLevel.L2_DISTRIBUTED, True, start_time)
+                await self._record_operation(
+                    "get", key, CacheLevel.L2_DISTRIBUTED, True, start_time
+                )
                 await self._update_access_pattern(key, CacheLevel.L2_DISTRIBUTED)
 
                 # Consider promotion to L1
@@ -184,7 +196,9 @@ class MultiLevelCache(CacheInterface):
         if self.l3_cache:
             value = await self.l3_cache.get(key)
             if value is not None:
-                await self._record_operation("get", key, CacheLevel.L3_PERSISTENT, True, start_time)
+                await self._record_operation(
+                    "get", key, CacheLevel.L3_PERSISTENT, True, start_time
+                )
                 await self._update_access_pattern(key, CacheLevel.L3_PERSISTENT)
 
                 # Consider promotion to L2 and L1
@@ -198,10 +212,14 @@ class MultiLevelCache(CacheInterface):
                 return value
 
         # Cache miss at all levels
-        await self._record_operation("get", key, CacheLevel.L1_MEMORY, False, start_time)
+        await self._record_operation(
+            "get", key, CacheLevel.L1_MEMORY, False, start_time
+        )
         return None
 
-    async def set(self, key: str, value: Any, ttl: Optional[float] = None, tags: List[str] = None) -> bool:
+    async def set(
+        self, key: str, value: Any, ttl: Optional[float] = None, tags: List[str] = None
+    ) -> bool:
         """Set value in multi-level cache according to strategy."""
         start_time = time.time()
         success = True
@@ -233,7 +251,9 @@ class MultiLevelCache(CacheInterface):
                 success &= await self.l3_cache.set(key, value, ttl, tags)
 
         if success:
-            await self._record_operation("set", key, CacheLevel.L1_MEMORY, True, start_time, len(str(value)))
+            await self._record_operation(
+                "set", key, CacheLevel.L1_MEMORY, True, start_time, len(str(value))
+            )
             await self._update_access_pattern(key, CacheLevel.L1_MEMORY)
 
         return success
@@ -308,14 +328,20 @@ class MultiLevelCache(CacheInterface):
         results[CacheLevel.L1_MEMORY] = await self.l1_cache.invalidate_by_tags(tags)
 
         if self.l2_cache:
-            results[CacheLevel.L2_DISTRIBUTED] = await self.l2_cache.invalidate_by_tags(tags)
+            results[CacheLevel.L2_DISTRIBUTED] = await self.l2_cache.invalidate_by_tags(
+                tags
+            )
 
         if self.l3_cache:
-            results[CacheLevel.L3_PERSISTENT] = await self.l3_cache.invalidate_by_tags(tags)
+            results[CacheLevel.L3_PERSISTENT] = await self.l3_cache.invalidate_by_tags(
+                tags
+            )
 
         return results
 
-    async def warm_cache(self, keys: List[str], source_level: CacheLevel = CacheLevel.L3_PERSISTENT) -> int:
+    async def warm_cache(
+        self, keys: List[str], source_level: CacheLevel = CacheLevel.L3_PERSISTENT
+    ) -> int:
         """Warm cache by promoting keys from lower levels."""
         if not self.config.enable_cache_warming:
             return 0
@@ -324,7 +350,7 @@ class MultiLevelCache(CacheInterface):
 
         # Process keys in batches
         for i in range(0, len(keys), self.config.warming_batch_size):
-            batch = keys[i:i + self.config.warming_batch_size]
+            batch = keys[i : i + self.config.warming_batch_size]
 
             for key in batch:
                 await self._warming_queue.put((key, source_level))
@@ -371,7 +397,9 @@ class MultiLevelCache(CacheInterface):
         """Determine if key should be promoted to L1."""
         if self.config.promotion_policy == CachePromotionPolicy.ACCESS_COUNT:
             pattern = self._access_patterns.get(key, {})
-            return pattern.get('access_count', 0) >= self.config.l2_to_l1_access_threshold
+            return (
+                pattern.get("access_count", 0) >= self.config.l2_to_l1_access_threshold
+            )
 
         elif self.config.promotion_policy == CachePromotionPolicy.SIZE_BASED:
             size = len(str(value))
@@ -380,10 +408,12 @@ class MultiLevelCache(CacheInterface):
         elif self.config.promotion_policy == CachePromotionPolicy.HYBRID:
             pattern = self._access_patterns.get(key, {})
             size = len(str(value))
-            access_count = pattern.get('access_count', 0)
+            access_count = pattern.get("access_count", 0)
 
-            return (access_count >= self.config.l2_to_l1_access_threshold and
-                    size <= self.config.promotion_size_limit_bytes)
+            return (
+                access_count >= self.config.l2_to_l1_access_threshold
+                and size <= self.config.promotion_size_limit_bytes
+            )
 
         return False
 
@@ -393,10 +423,13 @@ class MultiLevelCache(CacheInterface):
             return False
 
         pattern = self._access_patterns.get(key, {})
-        return pattern.get('access_count', 0) >= self.config.l3_to_l2_access_threshold
+        return pattern.get("access_count", 0) >= self.config.l3_to_l2_access_threshold
 
-    async def _schedule_background_write(self, key: str, value: Any, ttl: Optional[float], tags: List[str]) -> None:
+    async def _schedule_background_write(
+        self, key: str, value: Any, ttl: Optional[float], tags: List[str]
+    ) -> None:
         """Schedule background write to lower cache levels."""
+
         async def background_write():
             try:
                 if self.l2_cache:
@@ -409,14 +442,24 @@ class MultiLevelCache(CacheInterface):
 
         asyncio.create_task(background_write())
 
-    async def _record_operation(self, operation: str, key: str, level: CacheLevel,
-                               hit: bool, start_time: float, size_bytes: int = 0) -> None:
+    async def _record_operation(
+        self,
+        operation: str,
+        key: str,
+        level: CacheLevel,
+        hit: bool,
+        start_time: float,
+        size_bytes: int = 0,
+    ) -> None:
         """Record cache operation for analytics."""
         if not self.config.enable_analytics:
             return
 
         # Sample operations to avoid memory bloat
-        if len(self._operation_history) > 0 and hash(key) % int(1 / self.config.analytics_sample_rate) != 0:
+        if (
+            len(self._operation_history) > 0
+            and hash(key) % int(1 / self.config.analytics_sample_rate) != 0
+        ):
             return
 
         latency_ms = (time.time() - start_time) * 1000
@@ -427,36 +470,38 @@ class MultiLevelCache(CacheInterface):
             level=level,
             hit=hit,
             latency_ms=latency_ms,
-            size_bytes=size_bytes
+            size_bytes=size_bytes,
         )
 
         self._operation_history.append(operation_record)
 
         # Limit history size
         if len(self._operation_history) > self.config.max_analytics_entries:
-            self._operation_history = self._operation_history[-self.config.max_analytics_entries // 2:]
+            self._operation_history = self._operation_history[
+                -self.config.max_analytics_entries // 2 :
+            ]
 
     async def _update_access_pattern(self, key: str, level: CacheLevel) -> None:
         """Update access patterns for promotion decisions."""
         if key not in self._access_patterns:
             self._access_patterns[key] = {
-                'access_count': 0,
-                'last_access': time.time(),
-                'access_levels': set()
+                "access_count": 0,
+                "last_access": time.time(),
+                "access_levels": set(),
             }
 
         pattern = self._access_patterns[key]
-        pattern['access_count'] += 1
-        pattern['last_access'] = time.time()
-        pattern['access_levels'].add(level)
+        pattern["access_count"] += 1
+        pattern["last_access"] = time.time()
+        pattern["access_levels"].add(level)
 
     async def _handle_cache_hit(self, **kwargs) -> None:
         """Handle cache hit events."""
-        self._metrics.record_hit(kwargs.get('latency_ms', 0))
+        self._metrics.record_hit(kwargs.get("latency_ms", 0))
 
     async def _handle_cache_miss(self, **kwargs) -> None:
         """Handle cache miss events."""
-        self._metrics.record_miss(kwargs.get('latency_ms', 0))
+        self._metrics.record_miss(kwargs.get("latency_ms", 0))
 
     async def _handle_cache_set(self, **kwargs) -> None:
         """Handle cache set events."""
@@ -479,24 +524,26 @@ class MultiLevelCache(CacheInterface):
                 hits = sum(1 for op in level_ops if op.hit)
                 total = len(level_ops)
                 level_stats[level.value] = {
-                    'hit_ratio': hits / total,
-                    'avg_latency_ms': sum(op.latency_ms for op in level_ops) / total,
-                    'total_operations': total
+                    "hit_ratio": hits / total,
+                    "avg_latency_ms": sum(op.latency_ms for op in level_ops) / total,
+                    "total_operations": total,
                 }
 
         # Top accessed keys
         key_access_counts = {}
         for key, pattern in self._access_patterns.items():
-            key_access_counts[key] = pattern['access_count']
+            key_access_counts[key] = pattern["access_count"]
 
-        top_keys = sorted(key_access_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+        top_keys = sorted(key_access_counts.items(), key=lambda x: x[1], reverse=True)[
+            :10
+        ]
 
         return {
-            'level_statistics': level_stats,
-            'top_accessed_keys': top_keys,
-            'total_operations': len(self._operation_history),
-            'cache_warming_queue_size': self._warming_queue.qsize(),
-            'access_patterns_count': len(self._access_patterns)
+            "level_statistics": level_stats,
+            "top_accessed_keys": top_keys,
+            "total_operations": len(self._operation_history),
+            "cache_warming_queue_size": self._warming_queue.qsize(),
+            "access_patterns_count": len(self._access_patterns),
         }
 
     async def shutdown(self) -> None:

@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 class CacheLevel(Enum):
     """Cache level enumeration."""
+
     L1_MEMORY = "l1_memory"
     L2_DISTRIBUTED = "l2_distributed"
     L3_PERSISTENT = "l3_persistent"
@@ -32,6 +33,7 @@ class CacheLevel(Enum):
 
 class InvalidationStrategy(Enum):
     """Cache invalidation strategy enumeration."""
+
     TTL = "ttl"
     LRU = "lru"
     LFU = "lfu"
@@ -98,7 +100,7 @@ class CacheStats:
             "total_size_bytes": self.total_size_bytes,
             "entry_count": self.entry_count,
             "avg_access_time_ms": self.avg_access_time_ms,
-            "hit_ratio": self.hit_ratio
+            "hit_ratio": self.hit_ratio,
         }
 
 
@@ -127,7 +129,7 @@ class CacheConfig:
             "enable_encryption": self.enable_encryption,
             "background_cleanup_interval": self.background_cleanup_interval,
             "cache_warming_enabled": self.cache_warming_enabled,
-            "circuit_breaker_enabled": self.circuit_breaker_enabled
+            "circuit_breaker_enabled": self.circuit_breaker_enabled,
         }
 
 
@@ -140,7 +142,9 @@ class CacheInterface(ABC):
         pass
 
     @abstractmethod
-    async def set(self, key: str, value: Any, ttl: Optional[float] = None, tags: List[str] = None) -> bool:
+    async def set(
+        self, key: str, value: Any, ttl: Optional[float] = None, tags: List[str] = None
+    ) -> bool:
         """Set value in cache."""
         pass
 
@@ -246,7 +250,9 @@ class CacheKeyGenerator:
                 if isinstance(v, (str, int, float, bool)):
                     key_parts.append(f"{k}:{v}")
                 else:
-                    key_parts.append(f"{k}:{json.dumps(v, sort_keys=True, default=str)}")
+                    key_parts.append(
+                        f"{k}:{json.dumps(v, sort_keys=True, default=str)}"
+                    )
 
         # Join and hash for consistent length
         key_string = "|".join(key_parts)
@@ -353,11 +359,13 @@ class CacheMetrics:
 
         # Keep only recent access times
         if len(self.access_times) > self.max_access_times:
-            self.access_times = self.access_times[-self.max_access_times:]
+            self.access_times = self.access_times[-self.max_access_times :]
 
         # Update average
         if self.access_times:
-            self.stats.avg_access_time_ms = sum(self.access_times) / len(self.access_times)
+            self.stats.avg_access_time_ms = sum(self.access_times) / len(
+                self.access_times
+            )
 
     def get_stats(self) -> CacheStats:
         """Get current statistics."""
@@ -370,7 +378,7 @@ class CacheMetrics:
                 total_size_bytes=self.stats.total_size_bytes,
                 entry_count=self.stats.entry_count,
                 avg_access_time_ms=self.stats.avg_access_time_ms,
-                hit_ratio=self.stats.hit_ratio
+                hit_ratio=self.stats.hit_ratio,
             )
 
     def reset(self) -> None:

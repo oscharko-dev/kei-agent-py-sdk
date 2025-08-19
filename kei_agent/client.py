@@ -153,23 +153,25 @@ class AgentClientConfig:
         try:
             # Convert to dict for validation
             config_dict = {
-                'base_url': self.base_url,
-                'api_token': self.api_token,
-                'agent_id': self.agent_id,
-                'tenant_id': self.tenant_id,
-                'user_agent': self.user_agent,
-                'timeout': getattr(self.connection, 'timeout', 30.0),
-                'max_retries': getattr(self.retry, 'max_attempts', 3),
-                'retry_delay': getattr(self.retry, 'base_delay', 1.0),
+                "base_url": self.base_url,
+                "api_token": self.api_token,
+                "agent_id": self.agent_id,
+                "tenant_id": self.tenant_id,
+                "user_agent": self.user_agent,
+                "timeout": getattr(self.connection, "timeout", 30.0),
+                "max_retries": getattr(self.retry, "max_attempts", 3),
+                "retry_delay": getattr(self.retry, "base_delay", 1.0),
             }
 
             # Validate using Pydantic model
-            validate_configuration(config_dict, 'agent')
+            validate_configuration(config_dict, "agent")
 
         except ValidationError:
             raise
         except Exception as e:
-            raise ValidationError(f"Agent client configuration validation failed: {e}") from e
+            raise ValidationError(
+                f"Agent client configuration validation failed: {e}"
+            ) from e
 
 
 class KeiAgentClient:
@@ -362,14 +364,18 @@ class KeiAgentClient:
                     # Update span with response info
                     if span:
                         span.set_attribute("http.status_code", response.status)
-                        span.set_attribute("http.response_size", len(await response.read()))
+                        span.set_attribute(
+                            "http.response_size", len(await response.read())
+                        )
 
                     # Prüfe response-status
                     if response.status >= 400:
                         error_text = await response.text()
 
                         if span:
-                            span.set_status(Status(StatusCode.ERROR, f"HTTP {response.status}"))
+                            span.set_status(
+                                Status(StatusCode.ERROR, f"HTTP {response.status}")
+                            )
                             span.set_attribute("http.error_message", error_text)
 
                         # Check if retry is possible
@@ -395,9 +401,7 @@ class KeiAgentClient:
 
                         # Erstelle specific Exception
                         if response.status == 404:
-                            raise AgentNotFoundError(
-                                f"Agent not found: {error_text}"
-                            )
+                            raise AgentNotFoundError(f"Agent not found: {error_text}")
                         else:
                             raise KeiSDKError(f"HTTP {response.status}: {error_text}")
 

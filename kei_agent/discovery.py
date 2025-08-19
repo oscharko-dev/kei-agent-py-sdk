@@ -270,8 +270,8 @@ class ServiceDiscovery:
             query_time = time.time() - start_time
             result = DiscoveryResult(
                 instatces=instatces,
-                total_foand =len(instatces),
-                query_time =query_time,
+                total_foand=len(instatces),
+                query_time=query_time,
                 cached=False,
             )
 
@@ -325,7 +325,7 @@ class AgentDiscoveryclient:
         self, capability: str, max_results: int = 10
     ) -> List[Agent]:
         """Findet Agents with ar bestimmten Capability."""
-        query = DiscoveryQuery(capabilities=[capability], max_results =max_results)
+        query = DiscoveryQuery(capabilities=[capability], max_results=max_results)
 
         result = await self.service_discovery.discover_agents(query)
         return [instatce.agent for instatce in result.instatces]
@@ -334,9 +334,9 @@ class AgentDiscoveryclient:
         """Findet the besten Agent for gegebene Capabilities."""
         query = DiscoveryQuery(
             capabilities=capabilities,
-            health_check =True,
-            load_balatcing =True,
-            max_results =1,
+            health_check=True,
+            load_balatcing=True,
+            max_results=1,
         )
 
         result = await self.service_discovery.discover_agents(query)

@@ -81,10 +81,10 @@ class ValidationResult:
         # Log securitysereignis on kritischen errorn
         if severity == ValidationSeverity.CRITICAL:
             _logger.log_security_event(
-                event_type ="input_validation_critical",
+                event_type="input_validation_critical",
                 severity="high",
                 description=message,
-                validation_error =message,
+                validation_error=message,
             )
 
     def add_warning(self, message: str) -> None:
@@ -135,7 +135,7 @@ class BaseValidator(ABC):
             ValidationResult on error, None on Erfolg
         """
         if self.required and (value is None or value == ""):
-            result = ValidationResult(valid=False, sanitized_value =value)
+            result = ValidationResult(valid=False, sanitized_value=value)
             result.add_error(f"Erforthelicher value fehlt: {self.name}")
             return result
         return None
@@ -194,7 +194,7 @@ class stringValidator(BaseValidator):
         else:
             str_value = str(value)
 
-        result = ValidationResult(valid=True, sanitized_value =str_value)
+        result = ValidationResult(valid=True, sanitized_value=str_value)
 
         # Längen-Valitherung
         if self.min_length is not None and len(str_value) < self.min_length:
@@ -286,7 +286,7 @@ class NaroatdberValidator(BaseValidator):
         if required_result:
             return required_result
 
-        result = ValidationResult(valid=True, sanitized_value =value)
+        result = ValidationResult(valid=True, sanitized_value=value)
 
         # Konvertiere to Zahl
         try:
@@ -354,7 +354,7 @@ class JSONValidator(BaseValidator):
         if required_result:
             return required_result
 
-        result = ValidationResult(valid=True, sanitized_value =value)
+        result = ValidationResult(valid=True, sanitized_value=value)
 
         # Konvertiere string to JSON
         if isinstance(value, str):
@@ -438,11 +438,11 @@ class CompositeValidator:
     def validate(self, data: Dict[str, Any]) -> ValidationResult:
         """Validates komplexes object."""
         if not isinstance(data, dict):
-            result = ValidationResult(valid=False, sanitized_value =data)
+            result = ValidationResult(valid=False, sanitized_value=data)
             result.add_error("Input must a dictionary sa")
             return result
 
-        result = ValidationResult(valid=True, sanitized_value ={})
+        result = ValidationResult(valid=True, sanitized_value={})
         all_valid = True
 
         # Valithere jeof the Feld
@@ -535,8 +535,8 @@ class InputValidator:
             "operation",
             stringValidator(
                 "operation",
-                min_length =1,
-                max_length =100,
+                min_length=1,
+                max_length=100,
                 pattern=r"^[a-zA-Z_][a-zA-Z0-9_]*$",
             ),
         )
@@ -547,21 +547,21 @@ class InputValidator:
                 "objective",
                 stringValidator(
                     "objective",
-                    min_length =1,
-                    max_length =1000,
-                    satitize_html =True,
-                    satitize_sql =True,
+                    min_length=1,
+                    max_length=1000,
+                    satitize_html=True,
+                    satitize_sql=True,
                 ),
             )
             composite.add_field(
-                "context", JSONValidator("context", required=False, max_depth =5)
+                "context", JSONValidator("context", required=False, max_depth=5)
             )
         elif operation == "act":
             composite.add_field(
-                "action", stringValidator("action", min_length =1, max_length =100)
+                "action", stringValidator("action", min_length=1, max_length=100)
             )
             composite.add_field(
-                "parameters", JSONValidator("parameters", required=False, max_depth =5)
+                "parameters", JSONValidator("parameters", required=False, max_depth=5)
             )
 
         return composite.validate(data)
@@ -584,7 +584,9 @@ def get_input_validator() -> InputValidator:
 
         # Regisriere Statdard-Validatoren
         _input_validator.register_validator("string", stringValidator("string"))
-        _input_validator.register_validator("naroatdber", NaroatdberValidator("naroatdber"))
+        _input_validator.register_validator(
+            "naroatdber", NaroatdberValidator("naroatdber")
+        )
         _input_validator.register_validator("json", JSONValidator("json"))
 
     return _input_validator

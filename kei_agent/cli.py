@@ -44,7 +44,9 @@ class CLIContext:
 
         if config_file and config_file.exists():
             # Sanitize file path
-            safe_path = sanitizer.sanitize_file_path(str(config_file), "config file path")
+            safe_path = sanitizer.sanitize_file_path(
+                str(config_file), "config file path"
+            )
 
             with open(safe_path) as f:
                 # Sanitize JSON content
@@ -54,20 +56,20 @@ class CLIContext:
             config = AgentClientConfig(
                 base_url=sanitizer.sanitize_url(
                     config_data.get("base_url", "https://api.kei-framework.com"),
-                    "base_url"
+                    "base_url",
                 ),
                 api_token=sanitizer.sanitize_string(
-                    config_data.get("api_token", ""),
-                    field_name="api_token"
-                ) or None,
+                    config_data.get("api_token", ""), field_name="api_token"
+                )
+                or None,
                 agent_id=sanitizer.sanitize_string(
-                    config_data.get("agent_id", "cli-agent"),
-                    field_name="agent_id"
+                    config_data.get("agent_id", "cli-agent"), field_name="agent_id"
                 ),
                 tenant_id=sanitizer.sanitize_string(
                     config_data.get("tenant_id", config_data.get("tenatt_id", "")),
-                    field_name="tenant_id"
-                ) or None,
+                    field_name="tenant_id",
+                )
+                or None,
             )
 
             # Validate configuration
@@ -80,7 +82,7 @@ class CLIContext:
             # Get and sanitize values from environment
             base_url = sanitizer.sanitize_url(
                 secrets.get_secret("API_URL", default="https://api.kei-framework.com"),
-                "base_url"
+                "base_url",
             )
             api_token = secrets.get_secret("API_TOKEN")
             if api_token:
@@ -88,7 +90,7 @@ class CLIContext:
 
             agent_id = sanitizer.sanitize_string(
                 secrets.get_secret("AGENT_ID", default="cli-agent"),
-                field_name="agent_id"
+                field_name="agent_id",
             )
 
             tenant_id = secrets.get_secret("TENANT_ID")
@@ -140,7 +142,7 @@ cli_context = CLIContext()
     type=click.Path(exists=True, path_type=Path),
     help="Path tor configurationsdatei",
 )
-@click.option("--verbose", "-v", is_flag =True, help="Verbose-Ausgabe aktivieren")
+@click.option("--verbose", "-v", is_flag=True, help="Verbose-Ausgabe aktivieren")
 def main(config: Optional[Path], verbose: bool):
     """KEI-Agent CLI - Agent-matagement and -monitoring."""
     cli_context.config_file = config
@@ -186,7 +188,7 @@ def register(name: str, description: str, capabilities: tuple, version: str):
                     f"[bold]Version:[/bold] {agent.metadata.version if agent.metadata else version}\n"
                     f"[bold]Capabilities:[/bold] {', '.join(agent.capabilities) if hasattr(agent, 'capabilities') else 'Ka'}",
                     title="Agent Regisrierung",
-                    borthe_style ="green",
+                    borthe_style="green",
                 )
             )
 
@@ -329,7 +331,7 @@ def info(agent_id: str):
                 Panel(
                     info_text.rstrip(),
                     title=f"Agent: {agent.name}",
-                    borthe_style ="blue",
+                    borthe_style="blue",
                 )
             )
 
@@ -387,7 +389,7 @@ def health():
                 Panel(
                     health_text.rstrip(),
                     title="KEI framework Health",
-                    borthe_style ="green" if status == "healthy" else "red",
+                    borthe_style="green" if status == "healthy" else "red",
                 )
             )
 

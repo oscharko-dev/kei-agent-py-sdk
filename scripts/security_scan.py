@@ -35,8 +35,11 @@ def run_command(cmd: list[str], description: str) -> bool:
 def main():
     """Main security scanning function."""
     parser = argparse.ArgumentParser(description="Run security scans")
-    parser.add_argument("--fail-on-error", action="store_true",
-                       help="Exit with error code if any scan fails")
+    parser.add_argument(
+        "--fail-on-error",
+        action="store_true",
+        help="Exit with error code if any scan fails",
+    )
     args = parser.parse_args()
 
     # Create reports directory
@@ -46,27 +49,51 @@ def main():
     success = True
 
     # Run safety check
-    safety_success = run_command([
-        "safety", "check", "--json", "--output", str(reports_dir / "safety-report.json")
-    ], "Safety vulnerability scan")
+    safety_success = run_command(
+        [
+            "safety",
+            "check",
+            "--json",
+            "--output",
+            str(reports_dir / "safety-report.json"),
+        ],
+        "Safety vulnerability scan",
+    )
 
     if not safety_success:
         success = False
 
     # Run pip-audit
-    audit_success = run_command([
-        "pip-audit", "--format=json", "--output", str(reports_dir / "pip-audit-report.json")
-    ], "pip-audit dependency scan")
+    audit_success = run_command(
+        [
+            "pip-audit",
+            "--format=json",
+            "--output",
+            str(reports_dir / "pip-audit-report.json"),
+        ],
+        "pip-audit dependency scan",
+    )
 
     if not audit_success:
         success = False
 
     # Run bandit
-    bandit_success = run_command([
-        "bandit", "-r", "kei_agent/", "--format", "json",
-        "--output", str(reports_dir / "bandit-report.json"),
-        "--severity-level", "medium", "--confidence-level", "medium"
-    ], "Bandit static analysis")
+    bandit_success = run_command(
+        [
+            "bandit",
+            "-r",
+            "kei_agent/",
+            "--format",
+            "json",
+            "--output",
+            str(reports_dir / "bandit-report.json"),
+            "--severity-level",
+            "medium",
+            "--confidence-level",
+            "medium",
+        ],
+        "Bandit static analysis",
+    )
 
     if not bandit_success:
         success = False

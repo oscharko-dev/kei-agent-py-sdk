@@ -19,6 +19,7 @@ import logging
 
 try:
     import aiohttp
+
     AIOHTTP_AVAILABLE = True
 except ImportError:
     AIOHTTP_AVAILABLE = False
@@ -30,6 +31,7 @@ logger = logging.getLogger(__name__)
 
 class NotificationChannel(Enum):
     """Notification channel types."""
+
     EMAIL = "email"
     SLACK = "slack"
     WEBHOOK = "webhook"
@@ -117,12 +119,12 @@ class WebhookNotificationHandler(NotificationHandler):
             "error_message": error_event.error_message,
             "category": error_event.category.value,
             "correlation_id": error_event.correlation_id,
-            "context": error_event.context
+            "context": error_event.context,
         }
 
         headers = {
             "Content-Type": "application/json",
-            "User-Agent": "KEI-Agent-SDK-Alerting/1.0"
+            "User-Agent": "KEI-Agent-SDK-Alerting/1.0",
         }
 
         # Add custom headers if configured
@@ -135,10 +137,12 @@ class WebhookNotificationHandler(NotificationHandler):
                     webhook_url,
                     json=payload,
                     headers=headers,
-                    timeout=aiohttp.ClientTimeout(total=10)
+                    timeout=aiohttp.ClientTimeout(total=10),
                 ) as response:
                     if response.status < 400:
-                        logger.info(f"Webhook notification sent successfully: {alert_name}")
+                        logger.info(
+                            f"Webhook notification sent successfully: {alert_name}"
+                        )
                         return True
                     else:
                         logger.error(f"Webhook notification failed: {response.status}")
@@ -168,7 +172,7 @@ class SlackNotificationHandler(NotificationHandler):
             ErrorSeverity.LOW: "🟡",
             ErrorSeverity.MEDIUM: "🟠",
             ErrorSeverity.HIGH: "🔴",
-            ErrorSeverity.CRITICAL: "🚨"
+            ErrorSeverity.CRITICAL: "🚨",
         }
 
         # Create Slack message
@@ -181,52 +185,54 @@ class SlackNotificationHandler(NotificationHandler):
                         {
                             "title": "Agent ID",
                             "value": error_event.agent_id,
-                            "short": True
+                            "short": True,
                         },
                         {
                             "title": "Error Type",
                             "value": error_event.error_type,
-                            "short": True
+                            "short": True,
                         },
                         {
                             "title": "Severity",
                             "value": error_event.severity.value.upper(),
-                            "short": True
+                            "short": True,
                         },
                         {
                             "title": "Category",
                             "value": error_event.category.value,
-                            "short": True
+                            "short": True,
                         },
                         {
                             "title": "Message",
                             "value": error_event.error_message,
-                            "short": False
-                        }
+                            "short": False,
+                        },
                     ],
                     "footer": "KEI-Agent SDK",
-                    "ts": int(error_event.timestamp)
+                    "ts": int(error_event.timestamp),
                 }
-            ]
+            ],
         }
 
         # Add correlation ID if available
         if error_event.correlation_id:
-            message["attachments"][0]["fields"].append({
-                "title": "Correlation ID",
-                "value": error_event.correlation_id,
-                "short": True
-            })
+            message["attachments"][0]["fields"].append(
+                {
+                    "title": "Correlation ID",
+                    "value": error_event.correlation_id,
+                    "short": True,
+                }
+            )
 
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(
-                    webhook_url,
-                    json=message,
-                    timeout=aiohttp.ClientTimeout(total=10)
+                    webhook_url, json=message, timeout=aiohttp.ClientTimeout(total=10)
                 ) as response:
                     if response.status < 400:
-                        logger.info(f"Slack notification sent successfully: {alert_name}")
+                        logger.info(
+                            f"Slack notification sent successfully: {alert_name}"
+                        )
                         return True
                     else:
                         logger.error(f"Slack notification failed: {response.status}")
@@ -239,10 +245,10 @@ class SlackNotificationHandler(NotificationHandler):
     def _get_color_for_severity(self, severity: ErrorSeverity) -> str:
         """Get color code for severity level."""
         color_map = {
-            ErrorSeverity.LOW: "#36a64f",      # Green
-            ErrorSeverity.MEDIUM: "#ff9500",   # Orange
-            ErrorSeverity.HIGH: "#ff0000",     # Red
-            ErrorSeverity.CRITICAL: "#8b0000"  # Dark Red
+            ErrorSeverity.LOW: "#36a64f",  # Green
+            ErrorSeverity.MEDIUM: "#ff9500",  # Orange
+            ErrorSeverity.HIGH: "#ff0000",  # Red
+            ErrorSeverity.CRITICAL: "#8b0000",  # Dark Red
         }
         return color_map.get(severity, "#808080")  # Gray default
 
@@ -277,9 +283,9 @@ class PagerDutyNotificationHandler(NotificationHandler):
                     "error_id": error_event.error_id,
                     "correlation_id": error_event.correlation_id,
                     "protocol": error_event.protocol,
-                    "context": error_event.context
-                }
-            }
+                    "context": error_event.context,
+                },
+            },
         }
 
         try:
@@ -288,13 +294,17 @@ class PagerDutyNotificationHandler(NotificationHandler):
                     "https://events.pagerduty.com/v2/enqueue",
                     json=event,
                     headers={"Content-Type": "application/json"},
-                    timeout=aiohttp.ClientTimeout(total=10)
+                    timeout=aiohttp.ClientTimeout(total=10),
                 ) as response:
                     if response.status < 400:
-                        logger.info(f"PagerDuty notification sent successfully: {alert_name}")
+                        logger.info(
+                            f"PagerDuty notification sent successfully: {alert_name}"
+                        )
                         return True
                     else:
-                        logger.error(f"PagerDuty notification failed: {response.status}")
+                        logger.error(
+                            f"PagerDuty notification failed: {response.status}"
+                        )
                         return False
 
         except Exception as e:
@@ -307,7 +317,7 @@ class PagerDutyNotificationHandler(NotificationHandler):
             ErrorSeverity.LOW: "info",
             ErrorSeverity.MEDIUM: "warning",
             ErrorSeverity.HIGH: "error",
-            ErrorSeverity.CRITICAL: "critical"
+            ErrorSeverity.CRITICAL: "critical",
         }
         return mapping.get(severity, "warning")
 
@@ -331,8 +341,12 @@ class AlertManager:
         self.notification_handlers.append(handler)
         logger.info(f"Added notification handler: {handler.__class__.__name__}")
 
-    def configure_webhook(self, url: str, headers: Optional[Dict[str, str]] = None,
-                         severity_filter: Optional[List[ErrorSeverity]] = None) -> None:
+    def configure_webhook(
+        self,
+        url: str,
+        headers: Optional[Dict[str, str]] = None,
+        severity_filter: Optional[List[ErrorSeverity]] = None,
+    ) -> None:
         """Configure webhook notifications.
 
         Args:
@@ -343,13 +357,14 @@ class AlertManager:
         config = NotificationConfig(
             channel=NotificationChannel.WEBHOOK,
             config={"url": url, "headers": headers or {}},
-            severity_filter=severity_filter or list(ErrorSeverity)
+            severity_filter=severity_filter or list(ErrorSeverity),
         )
         handler = WebhookNotificationHandler(config)
         self.add_notification_handler(handler)
 
-    def configure_slack(self, webhook_url: str,
-                       severity_filter: Optional[List[ErrorSeverity]] = None) -> None:
+    def configure_slack(
+        self, webhook_url: str, severity_filter: Optional[List[ErrorSeverity]] = None
+    ) -> None:
         """Configure Slack notifications.
 
         Args:
@@ -359,13 +374,17 @@ class AlertManager:
         config = NotificationConfig(
             channel=NotificationChannel.SLACK,
             config={"webhook_url": webhook_url},
-            severity_filter=severity_filter or [ErrorSeverity.HIGH, ErrorSeverity.CRITICAL]
+            severity_filter=severity_filter
+            or [ErrorSeverity.HIGH, ErrorSeverity.CRITICAL],
         )
         handler = SlackNotificationHandler(config)
         self.add_notification_handler(handler)
 
-    def configure_pagerduty(self, integration_key: str,
-                           severity_filter: Optional[List[ErrorSeverity]] = None) -> None:
+    def configure_pagerduty(
+        self,
+        integration_key: str,
+        severity_filter: Optional[List[ErrorSeverity]] = None,
+    ) -> None:
         """Configure PagerDuty notifications.
 
         Args:
@@ -375,7 +394,7 @@ class AlertManager:
         config = NotificationConfig(
             channel=NotificationChannel.PAGERDUTY,
             config={"integration_key": integration_key},
-            severity_filter=severity_filter or [ErrorSeverity.CRITICAL]
+            severity_filter=severity_filter or [ErrorSeverity.CRITICAL],
         )
         handler = PagerDutyNotificationHandler(config)
         self.add_notification_handler(handler)
@@ -393,12 +412,14 @@ class AlertManager:
             return
 
         # Record alert in history
-        self.alert_history.append({
-            "alert_name": alert_name,
-            "error_event": error_event.to_dict(),
-            "timestamp": time.time(),
-            "handlers_notified": []
-        })
+        self.alert_history.append(
+            {
+                "alert_name": alert_name,
+                "error_event": error_event.to_dict(),
+                "timestamp": time.time(),
+                "handlers_notified": [],
+            }
+        )
 
         # Send notifications
         for handler in self.notification_handlers:
@@ -410,7 +431,9 @@ class AlertManager:
                             handler.__class__.__name__
                         )
                 except Exception as e:
-                    logger.error(f"Error in notification handler {handler.__class__.__name__}: {e}")
+                    logger.error(
+                        f"Error in notification handler {handler.__class__.__name__}: {e}"
+                    )
 
         # Suppress similar alerts
         self._suppress_alert(alert_name)
@@ -449,7 +472,8 @@ class AlertManager:
             Dictionary with alert statistics
         """
         recent_alerts = [
-            alert for alert in self.alert_history
+            alert
+            for alert in self.alert_history
             if alert["timestamp"] >= time.time() - 3600  # Last hour
         ]
 
@@ -458,7 +482,7 @@ class AlertManager:
             "recent_alerts": len(recent_alerts),
             "active_handlers": len(self.notification_handlers),
             "suppressed_alerts": len(self.suppressed_alerts),
-            "suppression_window_seconds": self.suppression_window
+            "suppression_window_seconds": self.suppression_window,
         }
 
 

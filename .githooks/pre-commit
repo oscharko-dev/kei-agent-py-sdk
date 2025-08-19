@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# Git Pre-Commit Hook für KEI Agent Python SDK
+# Führt automatisch Linting und Formatierung vor jedem Commit aus
+
+set -e  # Exit bei Fehlern
+
+# Farben für Output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+echo -e "${BLUE}🔍 Pre-Commit Hook: Führe Code-Qualitätsprüfungen aus...${NC}"
+
+# Prüfe, ob make verfügbar ist
+if ! command -v make &> /dev/null; then
+    echo -e "${RED}❌ Fehler: 'make' ist nicht verfügbar${NC}"
+    exit 1
+fi
+
+# Prüfe, ob Makefile existiert
+if [ ! -f "Makefile" ]; then
+    echo -e "${RED}❌ Fehler: Makefile nicht gefunden${NC}"
+    exit 1
+fi
+
+echo -e "${BLUE}📝 Führe 'make lint' aus...${NC}"
+
+# Führe make lint aus
+if make lint; then
+    echo -e "${GREEN}✅ Linting und Formatierung erfolgreich!${NC}"
+else
+    echo -e "${RED}❌ Linting fehlgeschlagen!${NC}"
+    echo -e "${YELLOW}💡 Bitte behebe die Fehler und versuche den Commit erneut.${NC}"
+    exit 1
+fi
+
+# Prüfe, ob Dateien durch Formatierung geändert wurden
+if ! git diff --quiet; then
+    echo -e "${YELLOW}⚠️  Dateien wurden durch Formatierung geändert.${NC}"
+    echo -e "${YELLOW}📝 Füge formatierte Dateien zum Commit hinzu...${NC}"
+    
+    # Füge alle geänderten Dateien zum Staging-Bereich hinzu
+    git add -u
+    
+    echo -e "${GREEN}✅ Formatierte Dateien wurden hinzugefügt.${NC}"
+fi
+
+echo -e "${GREEN}🎉 Pre-Commit Hook erfolgreich abgeschlossen!${NC}"
+echo -e "${GREEN}✅ Commit kann fortgesetzt werden.${NC}"
+
+exit 0

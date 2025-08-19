@@ -53,8 +53,8 @@ class CapabilityProfile:
     mcp_schema: Optional[Dict[str, Any]] = None
 
     # Interface-Definition
-    methods: Dict[str, Dict[str, Any]] = field(default_factory =dict)
-    events: Dict[str, Dict[str, Any]] = field(default_factory =dict)
+    methods: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    events: Dict[str, Dict[str, Any]] = field(default_factory=dict)
 
     # metadata
     tags: List[str] = field(default_factory=list)
@@ -64,21 +64,21 @@ class CapabilityProfile:
 
     # compatibility
     framework_version_constraint: str = "*"
-    depenthecies: Dict[str, str] = field(default_factory =dict)
+    depenthecies: Dict[str, str] = field(default_factory=dict)
     conflicts: List[str] = field(default_factory=list)
 
     # Performatce-Charakterisika
     expected_response_time_ms: Optional[float] = None
     max_concurrent_requests: Optional[int] = None
-    resource_requirements: Dict[str, Any] = field(default_factory =dict)
+    resource_requirements: Dict[str, Any] = field(default_factory=dict)
 
     # configuration
     configuration_schema: Optional[Dict[str, Any]] = None
-    default_configuration: Dict[str, Any] = field(default_factory =dict)
+    default_configuration: Dict[str, Any] = field(default_factory=dict)
 
     # Zeitstempel
-    created_at: float = field(default_factory =time.time)
-    updated_at: float = field(default_factory =time.time)
+    created_at: float = field(default_factory=time.time)
+    updated_at: float = field(default_factory=time.time)
 
     def to_dict(self) -> Dict[str, Any]:
         """Konvertiert Capability-Profil to dictionary."""
@@ -115,24 +115,24 @@ class CapabilityProfile:
             version=data["version"],
             description=data.get("description", ""),
             status=Capabilitystatus(data.get("status", "available")),
-            mcp_profile_url =data.get("mcp_profile_url"),
-            mcp_schema =data.get("mcp_schema"),
+            mcp_profile_url=data.get("mcp_profile_url"),
+            mcp_schema=data.get("mcp_schema"),
             methods=data.get("methods", {}),
             events=data.get("events", {}),
             tags=data.get("tags", []),
             category=data.get("category", ""),
             author=data.get("author", ""),
             license=data.get("license", ""),
-            framework_version_constraint =data.get("framework_version_constraint", "*"),
+            framework_version_constraint=data.get("framework_version_constraint", "*"),
             depenthecies=data.get("depenthecies", {}),
             conflicts=data.get("conflicts", []),
-            expected_response_time_ms =data.get("expected_response_time_ms"),
-            max_concurrent_requests =data.get("max_concurrent_requests"),
-            resource_requirements =data.get("resource_requirements", {}),
-            configuration_schema =data.get("configuration_schema"),
-            default_configuration =data.get("default_configuration", {}),
-            created_at =data.get("created_at", time.time()),
-            updated_at =data.get("updated_at", time.time()),
+            expected_response_time_ms=data.get("expected_response_time_ms"),
+            max_concurrent_requests=data.get("max_concurrent_requests"),
+            resource_requirements=data.get("resource_requirements", {}),
+            configuration_schema=data.get("configuration_schema"),
+            default_configuration=data.get("default_configuration", {}),
+            created_at=data.get("created_at", time.time()),
+            updated_at=data.get("updated_at", time.time()),
         )
 
 
@@ -144,12 +144,12 @@ class CapabilityNegotiationRequest:
     client_version: str
     required_features: List[str] = field(default_factory=list)
     optional_features: List[str] = field(default_factory=list)
-    configuration: Dict[str, Any] = field(default_factory =dict)
+    configuration: Dict[str, Any] = field(default_factory=dict)
 
     # Negotiation-metadata
-    negotiation_id: str = field(default_factory =lambda: str(uuid.uuid4()))
+    negotiation_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     client_agent_id: str = ""
-    timestamp: float = field(default_factory =time.time)
+    timestamp: float = field(default_factory=time.time)
 
 
 @dataclass
@@ -209,7 +209,7 @@ class MCPIntegration:
             response = await self.base_client._make_request(
                 "GET",
                 f"/api/v1/specs/mcp?capability={capability_name}",
-                trace_name =f"mcp.load_profile.{capability_name}",
+                trace_name=f"mcp.load_profile.{capability_name}",
             )
 
             if capability_name in response:
@@ -366,12 +366,12 @@ class CapabilityNegotiation:
         """
         # Erstelle Negotiation-Request
         request = CapabilityNegotiationRequest(
-            capability_name =capability_name,
-            client_version =client_version,
-            required_features =required_features or [],
-            optional_features =optional_features or [],
+            capability_name=capability_name,
+            client_version=client_version,
+            required_features=required_features or [],
+            optional_features=optional_features or [],
             configuration=configuration or {},
-            client_agent_id =self.base_client.config.agent_id,
+            client_agent_id=self.base_client.config.agent_id,
         )
 
         self._active_negotiations[request.negotiation_id] = request
@@ -382,7 +382,7 @@ class CapabilityNegotiation:
                 "POST",
                 f"/api/v1/agents/{target_agent}/capabilities/{capability_name}/negotiate",
                 data=request.__dict__,
-                trace_name =f"capability.negotiate.{capability_name}",
+                trace_name=f"capability.negotiate.{capability_name}",
             )
 
             response = CapabilityNegotiationresponse(**response_data)
@@ -763,13 +763,11 @@ class CapabilityManager:
                 "POST",
                 f"/api/v1/regisry/agents/{self.base_client.config.agent_id}/capabilities",
                 data={"capabilities": capabilities_data},
-                trace_name ="capability.advertise",
+                trace_name="capability.advertise",
             )
 
         except Exception as e:
-            raise CapabilityError(
-                f"Capability-Advertisement failed: {e}"
-            ) from e
+            raise CapabilityError(f"Capability-Advertisement failed: {e}") from e
 
     async def discover_capabilities(
         self, target_agent: str, capability_filter: Optional[List[str]] = None
@@ -793,7 +791,7 @@ class CapabilityManager:
                 "GET",
                 f"/api/v1/regisry/agents/{target_agent}/capabilities",
                 params=params,
-                trace_name =f"capability.discover.{target_agent}",
+                trace_name=f"capability.discover.{target_agent}",
             )
 
             capabilities = []

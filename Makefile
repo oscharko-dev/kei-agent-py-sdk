@@ -132,11 +132,19 @@ test-cov: ## Führt Tests mit Coverage aus
 # Code-Qualität
 # =====================================================================
 
-lint: ## Führt Linting aus
-	@echo "$(BLUE)Führe Linting aus...$(RESET)"
+lint: ## Führt vollständiges Linting und Formatierung aus
+	@echo "$(BLUE)Führe Linting und Formatierung aus...$(RESET)"
+	@echo "$(BLUE)1. Formatiere Code...$(RESET)"
+	ruff format . --exclude=venv --exclude=.venv --exclude=htmlcov --exclude=tests
+	@echo "$(BLUE)2. Führe Linting mit Auto-Fix aus...$(RESET)"
+	ruff check . --exclude=venv --exclude=.venv --exclude=htmlcov --exclude=tests --fix
+	@echo "$(GREEN)✅ Linting und Formatierung abgeschlossen!$(RESET)"
+
+lint-check: ## Prüft Linting ohne Änderungen
+	@echo "$(BLUE)Prüfe Linting...$(RESET)"
 	ruff check . --exclude=venv --exclude=.venv --exclude=htmlcov --exclude=tests
 
-lint-fix: ## Führt Linting mit Auto-Fix aus
+lint-fix: ## Führt nur Linting mit Auto-Fix aus
 	@echo "$(BLUE)Führe Linting mit Auto-Fix aus...$(RESET)"
 	ruff check --fix . --exclude=venv --exclude=.venv --exclude=htmlcov --exclude=tests
 
@@ -235,12 +243,18 @@ docs-deploy: ## Deployed Dokumentation zu GitHub Pages
 # Development Workflows
 # =====================================================================
 
-dev-setup: install-dev ## Komplettes Development-Setup
+setup-hooks: ## Installiert Git Hooks
+	@echo "$(BLUE)Installiere Git Hooks...$(RESET)"
+	@chmod +x scripts/setup-git-hooks.sh
+	@./scripts/setup-git-hooks.sh
+
+dev-setup: install-dev setup-hooks ## Komplettes Development-Setup
 	@echo "$(GREEN)Development-Setup abgeschlossen!$(RESET)"
 	@echo "$(BLUE)Nächste Schritte:$(RESET)"
 	@echo "  - make test          # Tests ausführen"
 	@echo "  - make quality       # Code-Qualität prüfen"
 	@echo "  - make coverage-html # Coverage-Report anzeigen"
+	@echo "  - Git Hooks sind aktiv # Automatisches Linting vor Commits"
 
 pre-commit: quality test-fast ## Pre-Commit-Checks (schnell)
 	@echo "$(GREEN)Pre-Commit-Checks erfolgreich!$(RESET)"
