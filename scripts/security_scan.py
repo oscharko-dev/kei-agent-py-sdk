@@ -11,7 +11,6 @@ Runs comprehensive security checks including:
 import argparse
 import subprocess
 import sys
-import os
 from pathlib import Path
 
 

@@ -134,19 +134,19 @@ test-cov: ## Führt Tests mit Coverage aus
 
 lint: ## Führt Linting aus
 	@echo "$(BLUE)Führe Linting aus...$(RESET)"
-	ruff check . --exclude=venv --exclude=.venv --exclude=htmlcov
+	ruff check . --exclude=venv --exclude=.venv --exclude=htmlcov --exclude=tests
 
 lint-fix: ## Führt Linting mit Auto-Fix aus
 	@echo "$(BLUE)Führe Linting mit Auto-Fix aus...$(RESET)"
-	ruff check --fix . --exclude=venv --exclude=.venv --exclude=htmlcov
+	ruff check --fix . --exclude=venv --exclude=.venv --exclude=htmlcov --exclude=tests
 
 format: ## Formatiert Code
 	@echo "$(BLUE)Formatiere Code...$(RESET)"
-	ruff format . --exclude=venv --exclude=.venv --exclude=htmlcov
+	ruff format . --exclude=venv --exclude=.venv --exclude=htmlcov --exclude=tests
 
 format-check: ## Prüft Code-Formatierung
 	@echo "$(BLUE)Prüfe Code-Formatierung...$(RESET)"
-	ruff format --check . --exclude=venv --exclude=.venv --exclude=htmlcov
+	ruff format --check . --exclude=venv --exclude=.venv --exclude=htmlcov --exclude=tests
 
 type-check: ## Führt Type-Checking aus
 	@echo "$(BLUE)Führe Type-Checking aus...$(RESET)"

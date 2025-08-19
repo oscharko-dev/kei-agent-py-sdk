@@ -78,10 +78,12 @@ def parse_args() -> argparse.Namespace:
 
 def _check_lxml_available() -> bool:
     """Prüft, ob lxml verfügbar ist."""
+    # Verwende importlib, um nur die Verfügbarkeit zu prüfen, ohne das Modul zu importieren
     try:
-        import lxml
-        return True
-    except ImportError:
+        import importlib.util
+
+        return importlib.util.find_spec("lxml") is not None
+    except Exception:
         return False
 
 
@@ -128,7 +130,7 @@ def run_mypy_and_generate_report(package_dir: Path, report_dir: Path, project_ro
             print(f"Verfügbare Dateien: {list(report_dir.glob('*')) if report_dir.exists() else 'Verzeichnis existiert nicht'}", file=sys.stderr)
     else:
         # Fallback: Erstelle einen Mock-Report
-        print(f"lxml nicht verfügbar - erstelle Mock-Report", file=sys.stderr)
+        print("lxml nicht verfügbar - erstelle Mock-Report", file=sys.stderr)
         _create_mock_report(package_dir, report_dir, project_root)
 
 
@@ -164,7 +166,7 @@ Coverage: 95.0%
 Module breakdown:
 kei_agent: 95.0%
 """
-        print(f"MyPy erfolgreich - erstelle optimistischen Mock-Report", file=sys.stderr)
+        print("MyPy erfolgreich - erstelle optimistischen Mock-Report", file=sys.stderr)
     else:
         # MyPy mit Fehlern - niedrigere Coverage annehmen
         mock_content = """Type checking report
@@ -177,7 +179,7 @@ Coverage: 80.0%
 Module breakdown:
 kei_agent: 80.0%
 """
-        print(f"MyPy mit Fehlern - erstelle konservativen Mock-Report", file=sys.stderr)
+        print("MyPy mit Fehlern - erstelle konservativen Mock-Report", file=sys.stderr)
         if result.stderr:
             print(f"MyPy stderr: {result.stderr}", file=sys.stderr)
 
