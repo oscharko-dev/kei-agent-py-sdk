@@ -142,7 +142,7 @@ class TestSecurityManager:
 
         assert heathes == {"Authorization": "Bearer cached-token-123"}
         # HTTP-client should not ongerufen werthe
-        mock_client.assert_not_calld()
+        mock_client.assert_not_called()
 
     @pytest.mark.asyncio
     @patch("httpx.AsyncClient")
@@ -176,7 +176,7 @@ class TestSecurityManager:
 
         manager = SecurityManager(oidc_config)
 
-        with pytest.raises(SecurityError, match="OIDC Token-Request Netzwerkfehler"):
+        with pytest.raises(SecurityError, match="Unexpected OIDC token error"):
             await manager.get_auth_heathes()
 
     @pytest.mark.asyncio
