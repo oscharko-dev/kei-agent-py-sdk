@@ -10,6 +10,8 @@ This module provides:
 - Thread-safe configuration updates without service restart
 """
 
+from __future__ import annotations
+
 import asyncio
 import json
 import time
@@ -160,27 +162,49 @@ class ConfigValidator:
         return True
 
 
-class ConfigFileHandler(FileSystemEventHandler):
-    """Handles configuration file system events."""
+# Only define ConfigFileHandler if watchdog is available
+if WATCHDOG_AVAILABLE:
 
-    def __init__(self, config_manager: "ConfigManager"):
-        """Initialize file handler.
+    class ConfigFileHandler(FileSystemEventHandler):
+        """Handles configuration file system events."""
 
-        Args:
-            config_manager: Reference to the config manager
-        """
-        self.config_manager = config_manager
-        super().__init__()
+        def __init__(self, config_manager: "ConfigManager"):
+            """Initialize file handler.
 
-    def on_modified(self, event):
-        """Handle file modification events."""
-        if event.is_directory:
-            return
+            Args:
+                config_manager: Reference to the config manager
+            """
+            self.config_manager = config_manager
+            super().__init__()
 
-        file_path = Path(event.src_path)
-        if file_path in self.config_manager.watched_files:
-            logger.info(f"Configuration file modified: {file_path}")
-            asyncio.create_task(self.config_manager._reload_config_file(file_path))
+        def on_modified(self, event):
+            """Handle file modification events."""
+            if event.is_directory:
+                return
+
+            file_path = Path(event.src_path)
+            if file_path in self.config_manager.watched_files:
+                logger.info(f"Configuration file modified: {file_path}")
+                asyncio.create_task(self.config_manager._reload_config_file(file_path))
+else:
+    # Fallback class when watchdog is not available
+    class ConfigFileHandler:
+        """Fallback ConfigFileHandler when watchdog is not available."""
+
+        def __init__(self, config_manager: "ConfigManager"):
+            """Initialize fallback handler.
+
+            Args:
+                config_manager: Reference to the config manager
+            """
+            self.config_manager = config_manager
+            logger.warning(
+                "watchdog not available: ConfigFileHandler cannot watch files"
+            )
+
+        def on_modified(self, event):
+            """Fallback method - does nothing."""
+            pass
 
 
 class ConfigManager:

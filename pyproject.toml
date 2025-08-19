@@ -60,6 +60,8 @@ dependencies = [
     "tenacity>=8.2.0,<9.0.0",
     # Serialization
     "msgpack>=1.0.0,<2.0.0",
+    "pyyaml>=6.0.0,<7.0.0",
+    "watchdog>=2.1.0,<5.0.0",
     # Utilities
     "packaging>=21.0",
     "python-dateutil>=2.8.0",
@@ -76,6 +78,9 @@ security = [
     "authlib>=1.2.0,<2.0.0",
     "cryptography>=41.0.0,<42.0.0",
     "pyopenssl>=23.0.0,<26.0.0"
+]
+file-watching = [
+    "watchdog>=3.0.0,<5.0.0"
 ]
 dev = [
     "pytest>=7.4.0,<8.0.0",

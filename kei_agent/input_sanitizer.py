@@ -11,8 +11,16 @@ from __future__ import annotations
 
 import re
 import json
-import yaml
 import urllib.parse
+
+# Optional YAML support
+try:
+    import yaml
+
+    YAML_AVAILABLE = True
+except ImportError:
+    yaml = None
+    YAML_AVAILABLE = False
 from typing import Any, Dict, List, Optional
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -267,6 +275,10 @@ class InputSanitizer:
         # Parse YAML if string
         if isinstance(value, str):
             sanitized_str = self.sanitize_string(value, self.MAX_FILE_SIZE, field_name)
+            if not YAML_AVAILABLE:
+                raise ValidationError(
+                    "YAML parsing not available: pyyaml package not installed"
+                )
             try:
                 parsed = yaml.safe_load(sanitized_str)
             except yaml.YAMLError as e:
