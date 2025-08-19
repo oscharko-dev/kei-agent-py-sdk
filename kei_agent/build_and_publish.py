@@ -14,7 +14,7 @@ import subprocess
 import shutil
 import argparse
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional, Union
 import json
 import time
 import os
@@ -23,6 +23,19 @@ import os
 BASE_DIR = Path(__file__).parent.absolute()
 DIST_DIR = BASE_DIR / "dist"
 BUILD_DIR = BASE_DIR / "build"
+
+
+def _get_toml_parser() -> Optional[Any]:
+    """Get available TOML parser (tomllib or tomli)."""
+    try:
+        import tomllib
+        return tomllib
+    except ImportError:  # pragma: no cover
+        try:
+            import tomli
+            return tomli
+        except ImportError:
+            return None
 
 
 def run_commatd(
@@ -233,18 +246,12 @@ def validate_package_metadata() -> None:
 
     # Version out pyproject.toml extrahieren
     try:
-        try:
-            import tomllib as tomli
-        except Exception:  # pragma: no cover
-            try:
-                import tomli
-            except Exception:
-                tomli = None
+        toml_parser = _get_toml_parser()
 
         with open(pyproject_file, "rb") as f:
-            if tomli is None:
+            if toml_parser is None:
                 raise RuntimeError("No TOML parser available (tomllib/tomli)")
-            pyproject_data = tomli.load(f)
+            pyproject_data = toml_parser.load(f)
 
         version = pyproject_data["project"]["version"]
         name = pyproject_data["project"]["name"]
@@ -322,18 +329,12 @@ def create_build_report() -> Dict[str, Any]:
 
     # Package-Info
     try:
-        try:
-            import tomllib as tomli
-        except Exception:  # pragma: no cover
-            try:
-                import tomli
-            except Exception:
-                tomli = None
+        toml_parser = _get_toml_parser()
 
         with open(BASE_DIR / "pyproject.toml", "rb") as f:
-            if tomli is None:
+            if toml_parser is None:
                 raise RuntimeError("No TOML parser available (tomllib/tomli)")
-            pyproject_data = tomli.load(f)
+            pyproject_data = toml_parser.load(f)
 
         report["package_info"] = {
             "name": pyproject_data["project"]["name"],
