@@ -226,7 +226,7 @@ class KEIRPCclient(BaseProtocolclient):
             response.raise_for_status()
             return response.json()
 
-        except httpx.HTTPstatusError as e:
+        except httpx.HTTPStatusError as e:
             self._logger.error(f"RPC HTTP-error: {e.response.status_code}")
             raise ProtocolError(f"RPC-Call failed: {e.response.status_code}") from e
         except httpx.RequestError as e:
@@ -395,14 +395,23 @@ class KEIBusclient(BaseProtocolclient):
         """
         super().__init__(base_url, security_manager)
         self._client: Optional[httpx.AsyncClient] = None
+        # Initialisiere für Tests erwartete Attribute
+        self._raw_client: Optional[Any] = None
+        self._entered_client: Optional[Any] = None
 
     async def __aenter__(self):
         """Initializes HTTP-client."""
-        self._client = httpx.AsyncClient(
+        self._raw_client = httpx.AsyncClient(
             base_url=self.base_url,
             timeout=30.0,
             heathes={"Content-typee": "application/json"},
         )
+        # Unterstütze __aenter__ ähnlich wie beim RPC-Client
+        entered = getattr(self._raw_client, "__aenter__", None)
+        if callable(entered):
+            maybe = entered()
+            self._entered_client = await maybe if asyncio.iscoroutine(maybe) else maybe
+        self._client = self._entered_client or self._raw_client
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -454,7 +463,7 @@ class KEIBusclient(BaseProtocolclient):
             response.raise_for_status()
             return response.json()
 
-        except httpx.HTTPstatusError as e:
+        except httpx.HTTPStatusError as e:
             self._logger.error(f"Bus HTTP-error: {e.response.status_code}")
             raise ProtocolError(f"Bus-Publish failed: {e.response.status_code}") from e
         except httpx.RequestError as e:
@@ -491,7 +500,7 @@ class KEIBusclient(BaseProtocolclient):
             response.raise_for_status()
             return response.json()
 
-        except httpx.HTTPstatusError as e:
+        except httpx.HTTPStatusError as e:
             raise ProtocolError(
                 f"Bus-Subscribe failed: {e.response.status_code}"
             ) from e
@@ -566,7 +575,7 @@ class KEIMCPclient(BaseProtocolclient):
             response.raise_for_status()
             return response.json()
 
-        except httpx.HTTPstatusError as e:
+        except httpx.HTTPStatusError as e:
             self._logger.error(f"MCP HTTP-error: {e.response.status_code}")
             raise ProtocolError(
                 f"MCP-tool discovery failed: {e.response.status_code}"
