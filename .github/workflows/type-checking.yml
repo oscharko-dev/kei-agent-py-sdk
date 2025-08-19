@@ -309,12 +309,7 @@ jobs:
       run: |
         # Extract coverage percentage from report
         if [ -f "type-coverage-detailed.json" ]; then
-          coverage=$(python -c "
-          import json
-          with open('type-coverage-detailed.json', 'r') as f:
-              data = json.load(f)
-          print(f\"{data['summary']['coverage_percentage']:.1f}\")
-          ")
+          coverage=$(python -c "import json; data=json.load(open('type-coverage-detailed.json')); print(f'{data[\"summary\"][\"coverage_percentage\"]:.1f}')")
 
           echo "Type coverage: $coverage%"
 
