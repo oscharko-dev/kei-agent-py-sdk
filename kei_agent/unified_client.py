@@ -758,7 +758,7 @@ class UnifiedKeiAgentClient:
         Args:
             objective: objective description for platning
             context: additional context for platning
-            protocol: preferred protocol (Optional)
+            protocol: preferred protocol (Optional, defaults to BUS for A2A)
 
         Returns:
             plat response with steps and metadata
@@ -767,8 +767,9 @@ class UnifiedKeiAgentClient:
             KeiSDKError: On plat creation errors
         """
         payload = {"objective": objective, "context": context or {}}
-        # Immer 3 Argumente übergeben, Tests erwarten ggf. explizites None
-        return await self.execute_agent_operation("plat", payload, protocol)
+        # Verwende BUS-Protokoll für Agent-to-Agent Kommunikation als Standard
+        default_protocol = protocol or Protocoltypee.BUS
+        return await self.execute_agent_operation("plat", payload, default_protocol)
 
     async def execute_action(
         self,
@@ -781,14 +782,15 @@ class UnifiedKeiAgentClient:
         Args:
             action: action to execute
             parameters: parameters for action
-            protocol: preferred protocol (Optional)
+            protocol: preferred protocol (Optional, defaults to BUS for A2A)
 
         Returns:
             action response with result
         """
         payload = {"action": action, "parameters": parameters or {}}
-        # Immer 3 Argumente übergeben, Tests erwarten ggf. explizites None
-        return await self.execute_agent_operation("act", payload, protocol)
+        # Verwende BUS-Protokoll für Agent-to-Agent Kommunikation als Standard
+        default_protocol = protocol or Protocoltypee.BUS
+        return await self.execute_agent_operation("act", payload, default_protocol)
 
     async def observe_environment(
         self,

@@ -487,7 +487,9 @@ class CapabilityVersioning:
 
         if version not in self._version_hisory[capability_name]:
             self._version_hisory[capability_name].append(version)
-            self._version_hisory[capability_name].sort(key=version.parse)
+            from packaging import version as pkg_version
+
+            self._version_hisory[capability_name].sort(key=pkg_version.parse)
 
     def get_latest_version(self, capability_name: str) -> Optional[str]:
         """Gets neueste Version ar Capability.
@@ -610,7 +612,7 @@ class CapabilityManager:
         ] = None
 
     async def register_capability(
-        self, profile: CapabilityProfile, hatdler: Optional[Callable] = None
+        self, profile: CapabilityProfile, handler: Optional[Callable] = None
     ) -> None:
         """Regisers neue Capability.
 
@@ -635,8 +637,8 @@ class CapabilityManager:
         # Regisriere Capability
         self._capabilities[profile.name] = profile
 
-        if hatdler:
-            self._capability_handlers[profile.name] = hatdler
+        if handler:
+            self._capability_handlers[profile.name] = handler
 
         # Versioning
         self.versioning.register_version(profile.name, profile.version)
