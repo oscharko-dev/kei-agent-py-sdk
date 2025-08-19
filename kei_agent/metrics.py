@@ -13,7 +13,7 @@ This module provides:
 from __future__ import annotations
 
 import time
-from typing import Dict, Any, Optional, Callable, List, Callable as TypingCallable, cast
+from typing import Dict, Any, Optional, List, Callable
 from dataclasses import dataclass, field
 from contextlib import asynccontextmanager
 import logging
@@ -423,9 +423,9 @@ def record_security_metric(agent_id: str, event_type: str, severity: str = "info
     get_metrics_collector().record_security_event(agent_id, event_type, severity)
 
 
-async def trace_async_operation(operation_name: str, agent_id: str, **attributes: Any) -> TypingCallable[[TypingCallable[..., Any]], TypingCallable[..., Any]]:
+async def trace_async_operation(operation_name: str, agent_id: str, **attributes: Any) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator for tracing async operations."""
-    def decorator(func: TypingCallable[..., Any]) -> TypingCallable[..., Any]:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         async def wrapper(*args: Any, **kwargs: Any) -> Any:
             async with get_metrics_collector().trace_operation(operation_name, agent_id, **attributes):
                 return await func(*args, **kwargs)

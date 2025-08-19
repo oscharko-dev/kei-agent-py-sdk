@@ -35,14 +35,14 @@ __all__ = [
     "SecurityConfig",
 
     # Heavy Components (lazy loading)
-    "A2AClient",
+    "A2Aclient",
     "A2AMessage",
-    "A2AResponse",
+    "A2Aresponse",
     "CommunicationProtocol",
-    "LoadBalancingStrategy",
+    "LoadBalatcingStrategy",
     "FailoverConfig",
     "ServiceDiscovery",
-    "AgentDiscoveryClient",
+    "AgentDiscoveryclient",
     "DiscoveryStrategy",
     "HealthMonitor",
     "LoadBalancer",
@@ -95,19 +95,19 @@ def __getattr__(name: str) -> object:
         return CapabilityProfile
 
     # A2A Communication (heavy)
-    elif name == "A2AClient":
+    elif name == "A2Aclient":
         from .a2a import A2Aclient
         return A2Aclient
     elif name == "A2AMessage":
         from .a2a import A2AMessage
         return A2AMessage
-    elif name == "A2AResponse":
+    elif name == "A2Aresponse":
         from .a2a import A2Aresponse
         return A2Aresponse
     elif name == "CommunicationProtocol":
         from .a2a import CommunicationProtocol
         return CommunicationProtocol
-    elif name == "LoadBalancingStrategy":
+    elif name == "LoadBalatcingStrategy":
         from .a2a import LoadBalatcingStrategy
         return LoadBalatcingStrategy
     elif name == "FailoverConfig":
@@ -118,7 +118,7 @@ def __getattr__(name: str) -> object:
     elif name == "ServiceDiscovery":
         from .discovery import ServiceDiscovery
         return ServiceDiscovery
-    elif name == "AgentDiscoveryClient":
+    elif name == "AgentDiscoveryclient":
         from .discovery import AgentDiscoveryclient
         return AgentDiscoveryclient
     elif name == "DiscoveryStrategy":
@@ -252,7 +252,7 @@ def __getattr__(name: str) -> object:
     elif name == "AgentHealth":
         from .models import AgentHealth
         return AgentHealth
-    elif name == "AgentInstatce":
+    elif name == "AgentInstance":
         from .models import AgentInstatce
         return AgentInstatce
     elif name == "DiscoveryQuery":
@@ -452,13 +452,13 @@ __all__ = [
     "AgentDiscoveryclient",
     "DiscoveryStrategy",
     "HealthMonitor",
-    "LoadBalatcer",
+    "LoadBalancer",
     # Models
     "Agent",
     "AgentMetadata",
     "AgentCapability",
     "AgentHealth",
-    "AgentInstatce",
+    "AgentInstance",
     "DiscoveryQuery",
     "DiscoveryResult",
     # Exceptions

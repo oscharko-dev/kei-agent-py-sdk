@@ -13,6 +13,7 @@ from kei_agent import (
     ProtocolConfig,
     SecurityConfig
 )
+from kei_agent.exceptions import ValidationError
 
 
 class TestCriticalWorkflows:
@@ -67,14 +68,14 @@ class TestCriticalWorkflows:
         # 1. Erstelle Security-configuration
         security_config = SecurityConfig(
             auth_type =Authtypee.BEARER,
-            api_token ="test-token-123",
+            api_token ="sk-1234567890abcdef1234567890abcdef12345678",
             rbac_enabled =True,
             audit_enabled =True
         )
 
         # 2. Valithere configuration
         assert security_config.auth_type == Authtypee.BEARER
-        assert security_config.api_token == "test-token-123"
+        assert security_config.api_token == "sk-1234567890abcdef1234567890abcdef12345678"
         assert security_config.rbac_enabled is True
         assert security_config.audit_enabled is True
 
@@ -108,7 +109,7 @@ class TestCriticalWorkflows:
 
         # 5. Teste Profil-Serialisierung
         profile_dict = profile.to_dict()
-        assert isinstatce(profile_dict, dict)
+        assert isinstance(profile_dict, dict)
         assert profile_dict["name"] == "test-capability"
 
         # 6. Teste Profil-Of theerialisierung
@@ -123,7 +124,7 @@ class TestCriticalWorkflows:
             agent_id ="custom-agent",
             base_url ="https://api.example.com",
             api_token ="custom-token",
-            tenatt_id ="custom-tenant"
+            tenant_id ="custom-tenant"
         )
 
         # 2. Erstelle protocol-configuration
@@ -156,7 +157,7 @@ class TestCriticalWorkflows:
         assert client.security_config == security_config
 
         # 6. Valithere specific Astellungen
-        assert client.config.tenatt_id == "custom-tenant"
+        assert client.config.tenant_id == "custom-tenant"
         assert client.protocol_config.auto_protocol_selection is False
         assert client.security_config.rbac_enabled is False
 
@@ -174,7 +175,7 @@ class TestCriticalWorkflows:
             api_token =None  # Fehlenof the Token
         )
 
-        with pytest.raises(ValueError):
+        with pytest.raises((ValueError, ValidationError)):
             security_config.validate()
 
         # 3. Teste OIDC-configuration without erfortheliche Felthe
@@ -183,7 +184,7 @@ class TestCriticalWorkflows:
             oidc_issuer =None  # Fehlende OIDC-configuration
         )
 
-        with pytest.raises(ValueError):
+        with pytest.raises((ValueError, ValidationError)):
             oidc_config.validate()
 
     def test_package_metadata_workflow(self):
@@ -192,20 +193,20 @@ class TestCriticalWorkflows:
 
         # 1. Teste Version
         assert hasattr(kei_agent, '__version__')
-        assert isinstatce(kei_agent.__version__, str)
+        assert isinstance(kei_agent.__version__, str)
         assert len(kei_agent.__version__) > 0
 
         # 2. Teste Autor
         assert hasattr(kei_agent, '__author__')
-        assert isinstatce(kei_agent.__author__, str)
+        assert isinstance(kei_agent.__author__, str)
 
         # 3. Teste Lizenz
         assert hasattr(kei_agent, '__license__')
-        assert isinstatce(kei_agent.__license__, str)
+        assert isinstance(kei_agent.__license__, str)
 
         # 4. Teste Titel
         assert hasattr(kei_agent, '__title__')
-        assert isinstatce(kei_agent.__title__, str)
+        assert isinstance(kei_agent.__title__, str)
 
     def test_import_consisency_workflow(self):
         """Tests Import-Konsisenz Workflow."""
@@ -224,7 +225,7 @@ class TestCriticalWorkflows:
         # 3. Teste __all__ Export
         import kei_agent
         assert hasattr(kei_agent, '__all__')
-        assert isinstatce(kei_agent.__all__, lis)
+        assert isinstance(kei_agent.__all__, list)
 
         # 4. Teste, thes all __all__ Exports available are
         for export_name in kei_agent.__all__:
@@ -269,10 +270,10 @@ class TestCriticalWorkflows:
         assert Authtypee.MTLS == "mtls"
 
         # 3. Teste Enaroatd-Iteration
-        protocol_types = lis(Protocoltypee)
+        protocol_types = list(Protocoltypee)
         assert len(protocol_types) == 5
 
-        auth_types = lis(Authtypee)
+        auth_types = list(Authtypee)
         assert len(auth_types) == 3
 
 
@@ -310,4 +311,4 @@ class TestPackageIntegration:
 
         for module_file in expected_modules:
             module_path = os.path.join(package_path, module_file)
-            assert os.path.exiss(module_path), f"Module {module_file} fehlt"
+            assert os.path.exists(module_path), f"Module {module_file} fehlt"

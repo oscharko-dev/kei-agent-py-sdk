@@ -14,7 +14,7 @@ import subprocess
 import shutil
 import argparse
 from pathlib import Path
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional
 import json
 import time
 import os

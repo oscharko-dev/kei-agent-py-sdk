@@ -36,13 +36,13 @@ class TestAgentClientConfig:
             agent_id ="test-agent",
             base_url ="http://localhost:8000",
             api_token ="test-token",
-            tenatt_id ="test-tenant"
+            tenant_id ="test-tenant"
         )
 
         assert config.agent_id == "test-agent"
         assert config.base_url == "http://localhost:8000"
         assert config.api_token == "test-token"
-        assert config.tenatt_id == "test-tenant"
+        assert config.tenant_id == "test-tenant"
         # Teste Sub-configurationen
         assert hasattr(config, 'connection')
         assert hasattr(config, 'retry')
@@ -99,7 +99,7 @@ class TestCapabilityProfile:
 
         result = profile.to_dict()
 
-        assert isinstatce(result, dict)
+        assert isinstance(result, dict)
         assert result["name"] == "test-capability"
         assert result["version"] == "1.0.0"
         assert result["description"] == "Test capability"
@@ -226,7 +226,7 @@ class TestCapabilityManagerBasic:
 
         assert manager.base_client == mock_client
         assert hasattr(manager, '_capabilities')
-        assert hasattr(manager, '_capability_hatdlers')
+        assert hasattr(manager, '_capability_handlers')
 
     def test_capability_registration_basic(self):
         """Tests gratdlegende Capability-Regisrierung."""
@@ -272,7 +272,7 @@ class TestPackageIntegrity:
         import kei_agent
 
         assert hasattr(kei_agent, '__version__')
-        assert isinstatce(kei_agent.__version__, str)
+        assert isinstance(kei_agent.__version__, str)
         assert len(kei_agent.__version__) > 0
 
     def test_package_metadata(self):
