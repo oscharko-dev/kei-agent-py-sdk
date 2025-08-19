@@ -1,0 +1,261 @@
+{
+  "summary": {
+    "annotated_lines": 36261,
+    "total_lines": 41470,
+    "coverage_percentage": 87.44
+  },
+  "modules": [
+    {
+      "module": "kei_agent",
+      "annotated_lines": 570,
+      "total_lines": 587,
+      "coverage_percentage": 97.27
+    },
+    {
+      "module": "kei_agent.a2a",
+      "annotated_lines": 628,
+      "total_lines": 715,
+      "coverage_percentage": 87.97
+    },
+    {
+      "module": "kei_agent.agent_skeleton",
+      "annotated_lines": 171,
+      "total_lines": 191,
+      "coverage_percentage": 89.53
+    },
+    {
+      "module": "kei_agent.alerting",
+      "annotated_lines": 447,
+      "total_lines": 487,
+      "coverage_percentage": 91.99
+    },
+    {
+      "module": "kei_agent.build_and_publish",
+      "annotated_lines": 322,
+      "total_lines": 495,
+      "coverage_percentage": 65.25
+    },
+    {
+      "module": "kei_agent.caching.cache_framework",
+      "annotated_lines": 364,
+      "total_lines": 391,
+      "coverage_percentage": 93.35
+    },
+    {
+      "module": "kei_agent.caching.cache_manager",
+      "annotated_lines": 478,
+      "total_lines": 569,
+      "coverage_percentage": 84.01
+    },
+    {
+      "module": "kei_agent.caching.memory_cache",
+      "annotated_lines": 395,
+      "total_lines": 428,
+      "coverage_percentage": 92.29
+    },
+    {
+      "module": "kei_agent.caching.multi_level_cache",
+      "annotated_lines": 431,
+      "total_lines": 523,
+      "coverage_percentage": 82.41
+    },
+    {
+      "module": "kei_agent.caching.persistent_cache",
+      "annotated_lines": 459,
+      "total_lines": 556,
+      "coverage_percentage": 82.73
+    },
+    {
+      "module": "kei_agent.caching.redis_cache",
+      "annotated_lines": 367,
+      "total_lines": 467,
+      "coverage_percentage": 78.8
+    },
+    {
+      "module": "kei_agent.caching.specialized_caches",
+      "annotated_lines": 520,
+      "total_lines": 617,
+      "coverage_percentage": 84.28
+    },
+    {
+      "module": "kei_agent.capabilities",
+      "annotated_lines": 725,
+      "total_lines": 831,
+      "coverage_percentage": 87.36
+    },
+    {
+      "module": "kei_agent.cli",
+      "annotated_lines": 291,
+      "total_lines": 461,
+      "coverage_percentage": 63.34
+    },
+    {
+      "module": "kei_agent.client",
+      "annotated_lines": 610,
+      "total_lines": 646,
+      "coverage_percentage": 94.58
+    },
+    {
+      "module": "kei_agent.config_api",
+      "annotated_lines": 381,
+      "total_lines": 455,
+      "coverage_percentage": 83.74
+    },
+    {
+      "module": "kei_agent.config_manager",
+      "annotated_lines": 518,
+      "total_lines": 592,
+      "coverage_percentage": 87.5
+    },
+    {
+      "module": "kei_agent.dashboard_generators",
+      "annotated_lines": 559,
+      "total_lines": 559,
+      "coverage_percentage": 100.0
+    },
+    {
+      "module": "kei_agent.discovery",
+      "annotated_lines": 334,
+      "total_lines": 346,
+      "coverage_percentage": 96.82
+    },
+    {
+      "module": "kei_agent.enterprise_logging",
+      "annotated_lines": 424,
+      "total_lines": 475,
+      "coverage_percentage": 89.47
+    },
+    {
+      "module": "kei_agent.error_aggregation",
+      "annotated_lines": 479,
+      "total_lines": 517,
+      "coverage_percentage": 92.65
+    },
+    {
+      "module": "kei_agent.exceptions",
+      "annotated_lines": 137,
+      "total_lines": 174,
+      "coverage_percentage": 79.31
+    },
+    {
+      "module": "kei_agent.health_checks",
+      "annotated_lines": 524,
+      "total_lines": 573,
+      "coverage_percentage": 91.45
+    },
+    {
+      "module": "kei_agent.input_sanitizer",
+      "annotated_lines": 334,
+      "total_lines": 374,
+      "coverage_percentage": 89.57
+    },
+    {
+      "module": "kei_agent.input_validation",
+      "annotated_lines": 524,
+      "total_lines": 603,
+      "coverage_percentage": 87.06
+    },
+    {
+      "module": "kei_agent.kei_agent",
+      "annotated_lines": 171,
+      "total_lines": 191,
+      "coverage_percentage": 89.53
+    },
+    {
+      "module": "kei_agent.metrics",
+      "annotated_lines": 371,
+      "total_lines": 431,
+      "coverage_percentage": 86.31
+    },
+    {
+      "module": "kei_agent.metrics_server",
+      "annotated_lines": 1098,
+      "total_lines": 1160,
+      "coverage_percentage": 94.74
+    },
+    {
+      "module": "kei_agent.models",
+      "annotated_lines": 187,
+      "total_lines": 207,
+      "coverage_percentage": 90.82
+    },
+    {
+      "module": "kei_agent.protocol_clients",
+      "annotated_lines": 498,
+      "total_lines": 626,
+      "coverage_percentage": 79.71000000000001
+    },
+    {
+      "module": "kei_agent.protocol_selector",
+      "annotated_lines": 325,
+      "total_lines": 350,
+      "coverage_percentage": 92.86
+    },
+    {
+      "module": "kei_agent.protocol_types",
+      "annotated_lines": 249,
+      "total_lines": 250,
+      "coverage_percentage": 99.6
+    },
+    {
+      "module": "kei_agent.retry",
+      "annotated_lines": 736,
+      "total_lines": 813,
+      "coverage_percentage": 90.53
+    },
+    {
+      "module": "kei_agent.run_tests",
+      "annotated_lines": 348,
+      "total_lines": 379,
+      "coverage_percentage": 92.08
+    },
+    {
+      "module": "kei_agent.secrets_manager",
+      "annotated_lines": 277,
+      "total_lines": 282,
+      "coverage_percentage": 98.58
+    },
+    {
+      "module": "kei_agent.security_manager",
+      "annotated_lines": 348,
+      "total_lines": 396,
+      "coverage_percentage": 87.88
+    },
+    {
+      "module": "kei_agent.tracing",
+      "annotated_lines": 687,
+      "total_lines": 881,
+      "coverage_percentage": 78.09
+    },
+    {
+      "module": "kei_agent.unified_client",
+      "annotated_lines": 872,
+      "total_lines": 1014,
+      "coverage_percentage": 86.0
+    },
+    {
+      "module": "kei_agent.utils",
+      "annotated_lines": 194,
+      "total_lines": 198,
+      "coverage_percentage": 97.98
+    },
+    {
+      "module": "kei_agent.validate_setup",
+      "annotated_lines": 430,
+      "total_lines": 505,
+      "coverage_percentage": 85.15
+    },
+    {
+      "module": "kei_agent.validation_models",
+      "annotated_lines": 337,
+      "total_lines": 420,
+      "coverage_percentage": 80.24
+    },
+    {
+      "module": "Total",
+      "annotated_lines": 18141,
+      "total_lines": 20735,
+      "coverage_percentage": 87.49
+    }
+  ]
+}

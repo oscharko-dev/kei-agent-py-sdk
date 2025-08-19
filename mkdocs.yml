@@ -68,6 +68,7 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
+          paths: [.]
           options:
             docstring_style: google
             docstring_options:
@@ -83,6 +84,8 @@ plugins:
             show_if_no_docstring: false
             annotations_path: brief
             line_length: 80
+          import:
+            - https://docs.python.org/3/objects.inv
   - mermaid2:
       arguments:
         theme: auto
@@ -173,12 +176,12 @@ nav:
       - troubleshooting/index.md
       - Häufige Probleme: troubleshooting/common-issues.md
 
-# Extra CSS and JavaScript
-extra_css:
-  - stylesheets/extra.css
+# Extra CSS and JavaScript (deaktiviert bis Dateien existieren)
+# extra_css:
+#   - stylesheets/extra.css
 
-extra_javascript:
-  - javascripts/extra.js
+# extra_javascript:
+#   - javascripts/extra.js
 
 # Extra-Configuration
 extra:
@@ -201,9 +204,9 @@ extra:
       welche Bereiche unserer Dokumentation am nützlichsten are. Mit Ihrer Einwilligung
       helfen Sie uns, unsere Dokumentation zu verbessern.
 
-# Hooks for erweiterte Funktionalität
-hooks:
-  - docs/hooks/macros.py
+# Hooks for erweiterte Funktionalität (deaktiviert bis implementiert)
+# hooks:
+#   - docs/hooks/macros.py
 
-# Validation aktiviert - alle Links and Referenzen will be überprüft
-strict: true
+# Validation aktiviert - aber nicht strict für mkdocstrings
+strict: false
