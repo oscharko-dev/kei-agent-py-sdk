@@ -121,6 +121,7 @@ class AgentClientConfig:
     # Optional Settings
     tenant_id: Optional[str] = None
     user_agent: str = "KEI-Agent-SDK/1.0.0"
+    timeout: Optional[float] = None  # For backward compatibility with tests
 
     # Backward compatibility alias
     @property

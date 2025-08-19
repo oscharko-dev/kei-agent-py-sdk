@@ -313,7 +313,7 @@ class TestUnifiedKeiAgentClient:
 
         assert result["plat_id"] == "plat-123"
         mock_execute.assert_called_once_with(
-            "plat", {"objective": "Test objective", "context": {"context": "data"}}
+            "plat", {"objective": "Test objective", "context": {"context": "data"}}, None
         )
 
     async def test_send_agent_message(self, client):

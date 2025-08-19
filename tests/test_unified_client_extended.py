@@ -279,7 +279,7 @@ class TestUnifiedclientExtended:
                 mock_execute.assert_called_once_with("plat", {
                     "objective": "Create report",
                     "context": {"format": "pdf"}
-                })
+                }, None)
 
     @pytest.mark.asyncio
     async def test_high_level_api_execute_action(self, basic_config):
@@ -300,7 +300,7 @@ class TestUnifiedclientExtended:
                 mock_execute.assert_called_once_with("act", {
                     "action": "generate_file",
                     "parameters": {"path": "/tmp/test.txt"}
-                })
+                }, None)
 
     @pytest.mark.asyncio
     async def test_high_level_api_observe_environment(self, basic_config):
@@ -320,7 +320,7 @@ class TestUnifiedclientExtended:
                 assert result == {"observation_id": "obs-789"}
                 mock_execute.assert_called_once_with("observe", {
                     "sensors": ["file_system", "network"]
-                })
+                }, None)
 
     @pytest.mark.asyncio
     async def test_high_level_api_explain_reasoning(self, basic_config):
@@ -341,7 +341,7 @@ class TestUnifiedclientExtended:
                 mock_execute.assert_called_once_with("explain", {
                     "decision_id": "decision-123",
                     "detail_level": "detailed"
-                })
+                }, None)
 
     @pytest.mark.asyncio
     async def test_error_hatdling_authentication_error(self, basic_config):

@@ -197,6 +197,9 @@ class SecurityConfig:
     audit_enabled: bool = True
     token_refresh_enabled: bool = True
     token_cache_ttl: int = 3600  # Sekatthe
+    token_refresh_interval: Optional[int] = (
+        None  # For backward compatibility with tests
+    )
 
     def validate(self) -> None:
         """Validates the security configuration using Pydantic models.
