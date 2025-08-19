@@ -36,7 +36,7 @@ class AgentSkeleton:
     def __init__(self, cfg: AgentConfig) -> None:
         self.cfg = cfg
         self._session: Optional[aiohttp.ClientSession] = None
-        self._hb_task: Optional[asyncio.Task] = None
+        self._hb_task: Optional[asyncio.Task[Any]] = None
         self._initialized: bool = False
 
     async def _ensure_session(self) -> aiohttp.ClientSession:

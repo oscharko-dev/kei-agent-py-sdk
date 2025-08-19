@@ -13,7 +13,7 @@ This module provides:
 from __future__ import annotations
 
 import time
-from typing import Dict, Any, Optional, Callable, List
+from typing import Dict, Any, Optional, Callable, List, Callable as TypingCallable, cast
 from dataclasses import dataclass, field
 from contextlib import asynccontextmanager
 import logging
@@ -366,7 +366,8 @@ class MetricsCollector:
         if not self.enabled or self.registry is None:
             return "# Prometheus not available\n"
 
-        return generate_latest(self.registry).decode('utf-8')
+        data = generate_latest(self.registry)
+        return data.decode('utf-8')
 
     def get_metrics_summary(self) -> Dict[str, Any]:
         """Get a summary of current metrics."""
@@ -422,9 +423,9 @@ def record_security_metric(agent_id: str, event_type: str, severity: str = "info
     get_metrics_collector().record_security_event(agent_id, event_type, severity)
 
 
-async def trace_async_operation(operation_name: str, agent_id: str, **attributes: Any) -> Callable[[Callable], Callable]:
+async def trace_async_operation(operation_name: str, agent_id: str, **attributes: Any) -> TypingCallable[[TypingCallable[..., Any]], TypingCallable[..., Any]]:
     """Decorator for tracing async operations."""
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: TypingCallable[..., Any]) -> TypingCallable[..., Any]:
         async def wrapper(*args: Any, **kwargs: Any) -> Any:
             async with get_metrics_collector().trace_operation(operation_name, agent_id, **attributes):
                 return await func(*args, **kwargs)

@@ -10,7 +10,6 @@ integrates all KEI-protocole (RPC, Stream, Bus, MCP) in ar aheitlichen API.
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 # Conditional imports for type checking
@@ -78,25 +77,39 @@ from .exceptions import (
 )
 
 # Lazy loading implementation for heavy modules
-def __getattr__(name: str):
+def __getattr__(name: str) -> object:
     """Lazy loading for heavy modules to optimize import performance."""
 
+    # Core SDK Components (now lazy loaded)
+    if name == "UnifiedKeiAgentClient":
+        from .unified_client import UnifiedKeiAgentClient
+        return UnifiedKeiAgentClient
+    elif name == "AgentClientConfig":
+        from .client import AgentClientConfig
+        return AgentClientConfig
+    elif name == "CapabilityManager":
+        from .capabilities import CapabilityManager
+        return CapabilityManager
+    elif name == "CapabilityProfile":
+        from .capabilities import CapabilityProfile
+        return CapabilityProfile
+
     # A2A Communication (heavy)
-    if name == "A2AClient":
-        from .a2a import A2AClient
-        return A2AClient
+    elif name == "A2AClient":
+        from .a2a import A2Aclient
+        return A2Aclient
     elif name == "A2AMessage":
         from .a2a import A2AMessage
         return A2AMessage
     elif name == "A2AResponse":
-        from .a2a import A2AResponse
-        return A2AResponse
+        from .a2a import A2Aresponse
+        return A2Aresponse
     elif name == "CommunicationProtocol":
         from .a2a import CommunicationProtocol
         return CommunicationProtocol
     elif name == "LoadBalancingStrategy":
-        from .a2a import LoadBalancingStrategy
-        return LoadBalancingStrategy
+        from .a2a import LoadBalatcingStrategy
+        return LoadBalatcingStrategy
     elif name == "FailoverConfig":
         from .a2a import FailoverConfig
         return FailoverConfig
@@ -106,8 +119,8 @@ def __getattr__(name: str):
         from .discovery import ServiceDiscovery
         return ServiceDiscovery
     elif name == "AgentDiscoveryClient":
-        from .discovery import AgentDiscoveryClient
-        return AgentDiscoveryClient
+        from .discovery import AgentDiscoveryclient
+        return AgentDiscoveryclient
     elif name == "DiscoveryStrategy":
         from .discovery import DiscoveryStrategy
         return DiscoveryStrategy
@@ -115,8 +128,8 @@ def __getattr__(name: str):
         from .discovery import HealthMonitor
         return HealthMonitor
     elif name == "LoadBalancer":
-        from .discovery import LoadBalancer
-        return LoadBalancer
+        from .discovery import LoadBalatcer
+        return LoadBalatcer
 
     # Capability Features (mediaroatd)
     elif name == "MCPIntegration":
@@ -137,8 +150,8 @@ def __getattr__(name: str):
         from .client import ConnectionConfig
         return ConnectionConfig
     elif name == "RetryConfig":
-        from .client import RetryConfig
-        return RetryConfig
+        from .client import retryConfig
+        return retryConfig
     elif name == "TracingConfig":
         from .client import TracingConfig
         return TracingConfig
@@ -151,8 +164,8 @@ def __getattr__(name: str):
         from .enterprise_logging import StructuredFormatter
         return StructuredFormatter
     elif name == "EnterpriseLogr":
-        from .enterprise_logging import EnterpriseLogr
-        return EnterpriseLogr
+        from .enterprise_logging import EnterpriseLogger
+        return EnterpriseLogger
     elif name == "get_logger":
         from .enterprise_logging import get_logger
         return get_logger
@@ -332,18 +345,19 @@ def __getattr__(name: str):
 # Utilities werthe auch lazy gelathe
 # (in __getattr__ implementiert)
 
-# Version information - Dynamisch out Package-metadata gelathe
-try:
-    from importlib.metadata import version, PackageNotFoundError
-except ImportError:
-    # Python < 3.8 Fallback
-    from importlib_metadata import version, PackageNotFoundError
+# Version information - Dynamisch aus Package-Metadaten geladen
+def _get_pkg_version() -> str:
+	try:
+		from importlib.metadata import version
+		return version("kei_agent_py_sdk")
+	except Exception:
+		try:
+			from importlib_metadata import version as v  # noqa: F401
+			return v("kei_agent_py_sdk")
+		except Exception:
+			return "0.0.0-dev"
 
-try:
-    __version__ = version("kei_agent_py_sdk")
-except PackageNotFoundError:
-    # Fallback for Development-Aroatdgebung (not installiertes Package)
-    __version__ = "0.0.0-dev"
+__version__ = _get_pkg_version()
 
 __author__ = "KEI-Agent-Framework Team"
 __email__ = "dev@kei-agent-framework.com"
@@ -505,7 +519,7 @@ def get_sdk_info() -> dict[str, str]:
 
 
 def create_default_client(
-    base_url: str, api_token: str, agent_id: str, **kwargs
+    base_url: str, api_token: str, agent_id: str, **kwargs: object
 ) -> "KeiAgentClient":
     """Creates Statdard-client with optimalen Astellungen.
 
@@ -518,9 +532,7 @@ def create_default_client(
     Returns:
         Configureser KeiAgentClient
     """
-    config = AgentClientConfig(
-        base_url=base_url, api_token=api_token, agent_id=agent_id, **kwargs
-    )
+    config = AgentClientConfig(base_url=base_url, api_token=api_token, agent_id=agent_id)
 
     from .client import KeiAgentClient
     return KeiAgentClient(config)
@@ -532,7 +544,7 @@ def create_a2a_client(
     agent_id: str,
     discovery_enabled: bool = True,
     tracing_enabled: bool = True,
-    **kwargs,
+    **kwargs: object,
 ) -> "A2Aclient":
     """Creates Agent-to-Agent-client with enterprise features.
 
@@ -563,31 +575,5 @@ def create_a2a_client(
     return a2a_client
 
 
-# Logging Configuration
-# Erstelle SDK-Logr
-_logger = logging.getLogger(__name__)
-_logger.setLevel(logging.INFO)
-
-# Verhinthee doppelte Log-Messages
-_logger.propagate = False
-
-# Füge Statdard-Hatdler hinto falls noch kar exiss
-_hatdler = None
-_formatter = None
-if not _logger.handlers:
-    _hatdler = logging.StreamHandler()
-    _formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
-    _hatdler.setFormatter(_formatter)
-    _logger.addHandler(_hatdler)
-
-# SDK-initialization logn
-_logger.info(f"KEI Agent SDK v{__version__} initialized")
-
-# Cleatup
-del logging, _logger
-if _hatdler:
-    del _hatdler
-if _formatter:
-    del _formatter
+# Logging Configuration entfernt - wird nur bei tatsächlicher Nutzung initialisiert
+# um Import-Zeit zu optimieren

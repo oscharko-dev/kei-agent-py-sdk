@@ -12,7 +12,7 @@ import urllib.parse
 from typing import Optional, Dict, Any
 from pathlib import Path
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator, ConfigDict
 from pydantic.networks import HttpUrl
 
 from .exceptions import ValidationError
@@ -21,15 +21,16 @@ from .exceptions import ValidationError
 class BaseValidationModel(BaseModel):
     """Base validation model with common configuration."""
 
-    class Config:
+    model_config = ConfigDict(
         # Validate assignment to catch runtime changes
-        validate_assignment = True
+        validate_assignment=True,
         # Allow extra fields but validate known ones
-        extra = "allow"
+        extra="allow",
         # Use enum values instead of names
-        use_enum_values = True
-        # Validate default values
-        validate_all = True
+        use_enum_values=True,
+        # Validate default values (Pydantic V2 compatible)
+        validate_default=True
+    )
 
 
 class SecurityConfigValidation(BaseValidationModel):
