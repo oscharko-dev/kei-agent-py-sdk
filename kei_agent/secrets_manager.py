@@ -29,13 +29,13 @@ class SecretConfig:
     # External secret store configuration
     use_external_store: bool = False
     store_type: Optional[str] = None  # "aws_secrets", "azure_keyvault", "hashicorp_vault"
-    store_config: Dict[str, Any] = None
+    store_config: Optional[Dict[str, Any]] = None
 
     # Validation settings
     validate_secrets: bool = True
     require_all_secrets: bool = False
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.store_config is None:
             self.store_config = {}
 
@@ -147,11 +147,19 @@ class SecretsManager:
         Raises:
             SecurityError: If required OIDC credentials are missing
         """
+        issuer = self.get_secret("OIDC_ISSUER", required=True)
+        assert issuer is not None
+        client_id = self.get_secret("OIDC_CLIENT_ID", required=True)
+        assert client_id is not None
+        client_secret = self.get_secret("OIDC_CLIENT_SECRET", required=True)
+        assert client_secret is not None
+        scope = self.get_secret("OIDC_SCOPE", default="openid profile") or "openid profile"
+
         return {
-            "issuer": self.get_secret("OIDC_ISSUER", required=True),
-            "client_id": self.get_secret("OIDC_CLIENT_ID", required=True),
-            "client_secret": self.get_secret("OIDC_CLIENT_SECRET", required=True),
-            "scope": self.get_secret("OIDC_SCOPE", default="openid profile"),
+            "issuer": issuer,
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "scope": scope,
         }
 
     def get_mtls_paths(self) -> Dict[str, str]:
@@ -163,11 +171,18 @@ class SecretsManager:
         Raises:
             SecurityError: If required certificate paths are missing
         """
-        paths = {
-            "cert_path": self.get_secret("MTLS_CERT_PATH", required=True),
-            "key_path": self.get_secret("MTLS_KEY_PATH", required=True),
-            "ca_path": self.get_secret("MTLS_CA_PATH"),
+        cert_path = self.get_secret("MTLS_CERT_PATH", required=True)
+        assert cert_path is not None
+        key_path = self.get_secret("MTLS_KEY_PATH", required=True)
+        assert key_path is not None
+        ca_path = self.get_secret("MTLS_CA_PATH")
+
+        paths: Dict[str, str] = {
+            "cert_path": cert_path,
+            "key_path": key_path,
         }
+        if ca_path is not None:
+            paths["ca_path"] = ca_path
 
         # Validate paths exist
         for path_type, path in paths.items():

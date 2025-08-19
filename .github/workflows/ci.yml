@@ -65,7 +65,7 @@ jobs:
     steps:
       # Repository auschecken
       - name: 📥 Checkout Repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       # Python Setup
       - name: 🐍 Setup Python
@@ -158,7 +158,7 @@ jobs:
     steps:
       # Repository auschecken
       - name: 📥 Checkout Repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       # Python Setup
       - name: 🐍 Setup Python ${{ matrix.python-version }}
@@ -206,7 +206,7 @@ jobs:
     steps:
       # Repository auschecken
       - name: 📥 Checkout Repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       # Python Setup
       - name: 🐍 Setup Python
@@ -267,31 +267,32 @@ jobs:
           python -m pip install --upgrade pip
           pip install dist/*.whl
           # Basic import tests
-          python -c |
-            import importlib
-            modules = [
-                'kei_agent',
-                'kei_agent.client',
-                'kei_agent.unified_client',
-                'kei_agent.enterprise_logging',
-                'kei_agent.security_manager',
-                'kei_agent.utils',
-                'kei_agent.capabilities',
-                'kei_agent.models',
-                'kei_agent.cli',
-                'kei_agent.config_manager',
-                'kei_agent.retry',
-                'kei_agent.tracing',
-                'kei_agent.metrics',
-            ]
-            for m in modules:
-                try:
-                    importlib.import_module(m)
-                    print(f'✓ {m}')
-                except Exception as e:
-                    print(f'✗ {m}: {e}')
-                    raise
-            print('SUCCESS: All main modules imported')
+          python - <<'PY'
+          import importlib
+          modules = [
+              'kei_agent',
+              'kei_agent.client',
+              'kei_agent.unified_client',
+              'kei_agent.enterprise_logging',
+              'kei_agent.security_manager',
+              'kei_agent.utils',
+              'kei_agent.capabilities',
+              'kei_agent.models',
+              'kei_agent.cli',
+              'kei_agent.config_manager',
+              'kei_agent.retry',
+              'kei_agent.tracing',
+              'kei_agent.metrics',
+          ]
+          for m in modules:
+              try:
+                  importlib.import_module(m)
+                  print(f'✓ {m}')
+              except Exception as e:
+                  print(f'✗ {m}: {e}')
+                  raise
+          print('SUCCESS: All main modules imported')
+          PY
           # CLI smoke
           kei-agent --help || (echo 'ERROR: CLI entry point failed' && exit 1)
 
@@ -340,7 +341,7 @@ jobs:
     steps:
       # Repository auschecken
       - name: 📥 Checkout Repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       # Python Setup
       - name: 🐍 Setup Python
