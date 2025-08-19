@@ -149,15 +149,13 @@ jobs:
       run: |
         mkdir -p stubs
         # Use stubgen command directly (most reliable)
-        if ! stubgen -p kei_agent -o stubs/; then
-          echo "⚠️ Direct stubgen failed, trying Python fallback..."
-          python -c "
-import mypy.stubgen
-import sys
-sys.argv = ['stubgen', '-p', 'kei_agent', '-o', 'stubs/']
-mypy.stubgen.main()
-"
-        fi
+        stubgen -p kei_agent -o stubs/ || \
+        python -c "
+        import mypy.stubgen
+        import sys
+        sys.argv = ['stubgen', '-p', 'kei_agent', '-o', 'stubs/']
+        mypy.stubgen.main()
+        "
 
     - name: 🔍 Validate Generated Stubs
       run: |
