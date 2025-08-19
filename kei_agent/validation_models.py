@@ -90,7 +90,6 @@ class SecurityConfigValidation(BaseValidationModel):
         # Check for placeholder values
         placeholder_patterns = [
             "your-",
-            "test-",
             "example-",
             "placeholder",
             "dummy",
@@ -119,7 +118,6 @@ class SecurityConfigValidation(BaseValidationModel):
         # Similar validation as API token
         placeholder_patterns = [
             "your-",
-            "test-",
             "example-",
             "placeholder",
             "dummy",

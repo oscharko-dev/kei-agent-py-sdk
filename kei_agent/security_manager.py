@@ -272,7 +272,13 @@ class SecurityManager:
                                 "TLS certificate pinning validation failed"
                             )
 
-                return response.json()
+                # Support sowohl sync als auch async JSON-Methoden
+                import inspect
+
+                json_result = response.json()
+                if inspect.iscoroutine(json_result):
+                    json_result = await json_result
+                return json_result
 
         # Retry fetching token with exponential backoff and jitter
         async for attempt in AsyncRetrying(

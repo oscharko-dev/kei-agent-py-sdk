@@ -29,7 +29,8 @@ def test_security_config_validation():
     valid_oidc_config.validate()
 
     # Test invalid OIDC configuration (missing required fields)
-    with pytest.raises(ValueError):
+    from kei_agent.exceptions import ValidationError
+    with pytest.raises(ValidationError):
         invalid_config = SecurityConfig(
             auth_type=Authtypee.OIDC,
             oidc_client_id="",  # Empty client ID
@@ -102,7 +103,7 @@ async def test_oidc_authentication_flow():
     assert token_data["token_type"] == "Bearer"
 
     # Test authentication header creation
-    headers = await security_manager.get_auth_headers()
+    headers = await security_manager.get_auth_heathes()
     assert "Authorization" in headers
     assert headers["Authorization"] == "Bearer test-access-token"
 
@@ -148,7 +149,7 @@ def test_tls_configuration():
         auth_type=Authtypee.BEARER,
         api_token="test-token",
         tls_verify=True,
-        tls_pinned_sha256="sha256:abcd1234..."
+        tls_pinned_sha256="0" * 64
     )
 
     config_with_pinning.validate()
@@ -215,7 +216,7 @@ async def test_concurrent_authentication():
     import asyncio
 
     async def get_headers():
-        return await security_manager.get_auth_headers()
+        return await security_manager.get_auth_heathes()
 
     # Run multiple concurrent requests
     tasks = [get_headers() for _ in range(5)]
