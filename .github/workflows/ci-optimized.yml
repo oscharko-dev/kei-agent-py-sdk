@@ -97,7 +97,8 @@ jobs:
         # Make scripts executable
         chmod +x scripts/security_scan.py scripts/generate_sbom.py
 
-        # Run comprehensive security scan
+        # Run comprehensive security scan (non-interactive)
+        echo "Running security scans in CI mode..."
         python scripts/security_scan.py --fail-on-error
 
         # Generate SBOM for compliance
