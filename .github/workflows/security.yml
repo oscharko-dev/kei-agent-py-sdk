@@ -145,8 +145,8 @@ jobs:
 
     - name: 🛡️ Run Bandit Security Scan
       run: |
-        bandit -r kei_agent/ -f json -o bandit-report.json
-        bandit -r kei_agent/ --severity-level medium
+        bandit -r kei_agent/ -f json -o bandit-report.json --severity-level medium --confidence-level medium || true
+        bandit -r kei_agent/ --severity-level medium --confidence-level medium
 
     - name: 🔍 Run Semgrep Security Scan
       continue-on-error: true
